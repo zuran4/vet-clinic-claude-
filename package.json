@@ -1,0 +1,24 @@
+{
+  "name": "vet-project2",
+  "version": "1.2.0",
+  "description": "Documentation and utility scripts for VET Project (frontend + backend)",
+  "type": "module",
+  "scripts": {
+    "sync:docs": "node scripts/syncVersions.js"
+  },
+  "keywords": [
+    "vet",
+    "documentation",
+    "scripts",
+    "sync"
+  ],
+  "author": "Codex + Architect Review",
+  "license": "MIT",
+  "dependencies": {
+    "express-rate-limit": "^8.2.1",
+    "fs-extra": "^11.2.0",
+    "helmet": "^8.1.0",
+    "path": "^0.12.7",
+    "react-hot-toast": "^2.6.0"
+  }
+}

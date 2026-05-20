@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------- */
+/* Custom styles (μετά τα Tailwind layers) */
+/* ------------------------------------- */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* ===================================== */
+/* ✨ Fade-In Animation για Dropdowns     */
+/* ===================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ===================================== */
+/* Thin vertical scrollbar for tables     */
+/* ===================================== */
+.thin-scroll {
+  /* Σταθερό layout όταν εμφανίζεται η μπάρα */
+  scrollbar-gutter: stable both-edges;
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100,116,139,.45) transparent;
+}
+
+/* Chrome/Edge/Safari */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(100,116,139,.45); /* ~ slate-500 */
+  border-radius: 9999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}

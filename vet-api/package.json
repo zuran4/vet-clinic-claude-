@@ -1,0 +1,50 @@
+{
+  "name": "vet-api",
+  "version": "1.0.0",
+  "description": "Backend για το κτηνιατρείο",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint:fix": "eslint . --fix",
+    "lint": "eslint .",
+    "test": "jest --runInBand",
+    "deps:check": "depcheck",
+    "deps:graph": "madge --extensions js,mjs,cjs --image dependency-graph.svg .",
+    "deadcode": "knip",
+    "unused:imports": "unimported"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.61.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.18",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.1",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.0",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.9",
+    "playwright": "^1.56.1",
+    "socket.io": "^4.8.1",
+    "twilio": "^5.10.3",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "depcheck": "^1.4.7",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.32.0",
+    "jest": "^30.0.2",
+    "knip": "^5.66.2",
+    "madge": "^8.0.0",
+    "nodemon": "^3.0.2",
+    "unimported": "^1.31.0"
+  }
+}

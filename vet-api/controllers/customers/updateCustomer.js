@@ -1,0 +1,37 @@
+// ===============================================
+// 📄 updateCustomer.js
+// Περιγραφή: Ενημερώνει στοιχεία υπάρχοντος πελάτη
+// ===============================================
+
+import Customer from "../../models/Customer.js";
+import ApiError from "../../utils/apiError.js";
+import logger from "../../utils/logger.js";
+
+// ===============================
+// PUT /api/customers/:id
+// ===============================
+export const updateCustomer = async (req, res, next) => {
+  try {
+    // 🔹 Ενημέρωση πελάτη
+    const updated = await Customer.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    if (!updated) {
+      logger.warn(
+        `⚠️ Απόπειρα ενημέρωσης μη υπαρκτού πελάτη (id: ${req.params.id})`
+      );
+      throw new ApiError(404, "Ο πελάτης δεν βρέθηκε");
+    }
+
+    logger.info(`✏️ Ενημερώθηκε πελάτης: ${updated.name}`);
+    res.json(updated);
+  } catch (err) {
+    logger.error("❌ Σφάλμα κατά την ενημέρωση πελάτη", { stack: err.stack });
+    next(
+      err instanceof ApiError
+        ? err
+        : new ApiError(500, "Σφάλμα κατά την ενημέρωση πελάτη")
+    );
+  }
+};

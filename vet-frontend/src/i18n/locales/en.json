@@ -1,0 +1,10 @@
+{
+  "dashboard": "Dashboard",
+  "appointments": "Appointments",
+  "products": "Products",
+  "customers": "Customers",
+  "pets": "Pets",
+  "prescriptions": "Prescriptions",
+  "settings": "Settings",
+  "logout": "Logout"
+}

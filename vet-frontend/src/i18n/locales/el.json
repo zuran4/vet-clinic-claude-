@@ -1,0 +1,10 @@
+{
+  "dashboard": "Πίνακας Ελέγχου",
+  "appointments": "Ραντεβού",
+  "products": "Αποθήκη",
+  "customers": "Πελάτες",
+  "pets": "Κατοικίδια",
+  "prescriptions": "Συνταγές",
+  "settings": "Ρυθμίσεις",
+  "logout": "Αποσύνδεση"
+}

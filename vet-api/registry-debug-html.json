@@ -1,0 +1,24 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"ok":true,"length":36420,"htmlSnippet":"<!DOCTYPE html><html><head>\n<title>Εθνικό Μητρώο Ζώων Συντροφιάς</title>\n\n<script type=\"text/javascript\" 
+                    src=\"/emzs-backoffice/zkau/web/4fc964a9/js/zk.wp...
+RawContent        : HTTP/1.1 200 OK
+                    Connection: keep-alive
+                    Keep-Alive: timeout=5
+                    Content-Length: 2197
+                    Content-Type: application/json; charset=utf-8
+                    Date: Thu, 20 Nov 2025 07:32:30 GMT
+                    
+                    {"ok":true,"length":36420,"h...
+Forms             : {}
+Headers           : {[Connection, keep-alive], [Keep-Alive, timeout=5], [Content-Length, 2197], [Content-Type, application/json; charset=utf-8]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : System.__ComObject
+RawContentLength  : 2197
+
+
+

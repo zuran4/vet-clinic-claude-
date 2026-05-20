@@ -1,0 +1,44 @@
+IDEES GIA ARGOTERA
+
+🧠 Επόμενο λογικό βήμα (αν θέλεις)
+
+Logs middleware → να κρατάει logs για κάθε αίτημα (method, path, status, responseTime).
+
+Auth middleware → ενιαίο έλεγχο ρόλων (admin, assistant).
+
+Request validation → με βιβλιοθήκη όπως express-validator ή zod.
+
+
+Layer	Εμείς	Επαγγελματικά	Επόμενο βήμα
+MVC + Services	✅	✅	Καλή βάση
+Config	⚠️	✅	/config φάκελος
+Logging	⚠️	✅	Winston/Pino logger
+Auth middleware	⚠️	✅	role-based control
+Domain logic	⚠️	✅	μεταφορά κανόνων
+API client layer	❌	✅	/src/api
+Frontend error system	❌	✅	Toast notifications
+Tests + Swagger	❌	✅	auto docs
+Cache layer	❌	✅	Redis/Memory
+CI/CD	❌	✅	Docker + GitHub Actions
+
+app password google gmail.com
+gwyc wzuj muuw crqd
+
+Gia na trexei to script 
+
+PS C:\Users\zuran\Documents\GitHub\Vet-project2> npm run sync:docs
+
+
+# A) Αχρησιμοποίητα πακέτα / missing deps
+npx depcheck
+
+# B) Αχρησιμοποίητα αρχεία/exports (JS)
+npx unimported
+
+# C) Static reachability (βρίσκει dead files/exports καλύτερα)
+npx knip
+2.3 Κυκλικές εξαρτήσεις
+bash
+Αντιγραφή κώδικα
+# Δημιούργησε γραφική αναφορά για imports και κύκλους
+npx madge --extensions js --circular --warning --skip-file ext:.test.js,.spec.js .
