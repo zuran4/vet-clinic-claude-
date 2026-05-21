@@ -5,7 +5,6 @@ import "dayjs/locale/el";
 import { AlertTriangle, Activity } from "lucide-react";
 import HeaderBar from "../components/ui/HeaderBar";
 import Dashboard from "../components/dashboard/Dashboard";
-import AlertsPanel from "../components/dashboard/AlertsPanel";
 import RegistryStatus from "../components/registry/RegistryStatus";
 
 import AppointmentsPage from "../pages/AppointmentsPage";
@@ -259,17 +258,6 @@ function MainLayout({
               }}
             />
 
-            <AlertsPanel
-              products={productsWithExpDate}
-              pets={[]} // TODO: πέρασε pets
-              onEditProduct={(product) => {
-                openPanel("products");
-                setTimeout(() => {
-                  const event = new CustomEvent("edit-product", { detail: product });
-                  window.dispatchEvent(event);
-                }, 0);
-              }}
-            />
           </div>
         )}
 

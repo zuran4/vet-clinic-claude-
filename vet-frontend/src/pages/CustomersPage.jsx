@@ -6,7 +6,7 @@ function CustomersPage({ onClose }) {
   return (
     <div>
       {/* Gradient Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-violet-400 rounded-2xl px-5 pt-4 pb-0 mb-5">
+      <div className="bg-gradient-to-r from-indigo-500 to-violet-400 rounded-2xl px-5 py-4 mb-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5 text-white">
             <Users className="w-5 h-5" />

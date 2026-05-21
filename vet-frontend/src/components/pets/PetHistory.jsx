@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from "react";
-import Modal from "../ui/Modal";
-import { Search, User } from "lucide-react";
-import request from "@/api/apiClient.js"; // 👈 χρήση apiClient με το @ alias
+import { Clock, Plus, Trash2, CalendarDays, FileText } from "lucide-react";
+import request from "@/api/apiClient.js";
+import dayjs from "dayjs";
 
 const PetHistory = ({ petId }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState("");
   const [result, setResult] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // 🔹 Φόρτωση ιστορικού
   const fetchHistory = async () => {
     try {
       setLoading(true);
-
       const data = await request(`/pets/${petId}/history`);
       setHistory(data || []);
     } catch (err) {
-      console.error("❌ Σφάλμα φόρτωσης ιστορικού:", err);
+      console.error("❌", err);
     } finally {
       setLoading(false);
     }
@@ -25,39 +24,31 @@ const PetHistory = ({ petId }) => {
 
   useEffect(() => {
     if (petId) fetchHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [petId]);
 
-  // 🔹 Προσθήκη νέας εγγραφής
-  const handleAddEntry = async (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    if (!reason.trim()) {
-      alert("⚠️ Ο λόγος είναι υποχρεωτικός");
-      return;
-    }
-
+    if (!reason.trim()) return;
     try {
+      setSaving(true);
       await request(`/pets/${petId}/history`, {
         method: "POST",
         body: { reason, result },
       });
-
-      await fetchHistory(); // ανανέωση λίστας
+      await fetchHistory();
       setReason("");
       setResult("");
     } catch (err) {
       alert("❌ " + err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
-  // 🔹 Διαγραφή εγγραφής
   const handleDelete = async (entryId) => {
     if (!window.confirm("Διαγραφή εγγραφής;")) return;
     try {
-      await request(`/pets/${petId}/history/${entryId}`, {
-        method: "DELETE",
-      });
-
+      await request(`/pets/${petId}/history/${entryId}`, { method: "DELETE" });
       await fetchHistory();
     } catch (err) {
       alert("❌ " + err.message);
@@ -65,71 +56,74 @@ const PetHistory = ({ petId }) => {
   };
 
   return (
-    <div className="p-4 border rounded-2xl bg-gray-50 mt-4">
-      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-        <Clock className="w-5 h-5 text-purple-600" />
-        Ιστορικό Ζώου
-      </h3>
+    <div className="p-4 space-y-4">
 
       {/* Φόρμα νέας εγγραφής */}
-      <form
-        onSubmit={handleAddEntry}
-        className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4"
-      >
-        <input
-          type="text"
-          placeholder="Λόγος επίσκεψης"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="border px-3 py-2 rounded-2xl shadow-sm w-full text-sm"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Αποτέλεσμα / Σχόλια"
-          value={result}
-          onChange={(e) => setResult(e.target.value)}
-          className="border px-3 py-2 rounded-2xl shadow-sm w-full text-sm"
-        />
-        <Button type="submit" variant="primary">
-          <Plus className="w-4 h-4" />
-          Προσθήκη
-        </Button>
+      <form onSubmit={handleAdd} className="bg-sky-50 rounded-2xl border border-sky-100 p-4 space-y-3">
+        <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide">Νέα Εγγραφή</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="Λόγος επίσκεψης *"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            required
+            className="border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Αποτέλεσμα / Σχόλια"
+            value={result}
+            onChange={(e) => setResult(e.target.value)}
+            className="border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+          />
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={saving || !reason.trim()}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            {saving ? "Αποθήκευση..." : "Προσθήκη"}
+          </button>
+        </div>
       </form>
 
-      {/* Λίστα ιστορικού */}
+      {/* Λίστα */}
       {loading ? (
-        <p className="text-gray-500">Φόρτωση...</p>
+        <div className="py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
       ) : history.length === 0 ? (
-        <p className="text-gray-600">Δεν υπάρχουν εγγραφές στο ιστορικό.</p>
+        <div className="py-8 text-center">
+          <Clock className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+          <p className="text-sm text-gray-400">Δεν υπάρχουν εγγραφές ιστορικού.</p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {history.map((entry) => (
-            <li
-              key={entry._id}
-              className="flex justify-between items-start bg-white p-3 rounded-2xl shadow"
-            >
-              <div>
-                <p className="font-semibold">
-                  📅 {new Date(entry.date).toLocaleDateString("el-GR")}
-                </p>
-                <p className="text-sm text-gray-700">
-                  Λόγος: {entry.reason}
-                </p>
-                {entry.result && (
-                  <p className="text-sm text-gray-600">
-                    Αποτέλεσμα: {entry.result}
+            <li key={entry._id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 transition-colors">
+              <div className="flex gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CalendarDays className="w-4 h-4 text-sky-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400 font-medium">
+                    {dayjs(entry.date).format("DD/MM/YYYY")}
                   </p>
-                )}
+                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{entry.reason}</p>
+                  {entry.result && (
+                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                      <FileText className="w-3 h-3" />{entry.result}
+                    </p>
+                  )}
+                </div>
               </div>
-              <Button
-                variant="danger"
-                size="sm"
+              <button
                 onClick={() => handleDelete(entry._id)}
+                className="p-1.5 rounded-xl hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors flex-shrink-0"
               >
-                <Trash2 className="w-4 h-4" />
-                Διαγραφή
-              </Button>
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </li>
           ))}
         </ul>

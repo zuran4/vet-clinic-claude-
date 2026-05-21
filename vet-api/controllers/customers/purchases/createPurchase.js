@@ -7,7 +7,7 @@ import Customer from "../../../models/Customer.js";
 import Product from "../../../models/Product.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
-import { getProductQuantity, applyFIFO } from "../../../services/productService.js";
+import { getProductQuantity, applyFIFO } from "../../../services/products/stockService.js";
 
 // ===============================
 // POST /api/customers/:id/purchases
@@ -40,7 +40,7 @@ export const createPurchase = async (req, res, next) => {
     const purchaseItems = [];
 
     for (const item of products) {
-      const { productId, quantity } = item;
+      const { product: productId, quantity } = item;
 
       if (!productId || !quantity || quantity < 1) {
         throw new ApiError(400, "Μη έγκυρα προϊόντα/ποσότητες");
@@ -74,22 +74,23 @@ export const createPurchase = async (req, res, next) => {
     }
 
     // --------------------------------------------
-    // 🔹 Δημιουργία εγγραφής αγοράς
+    // 🔹 Αποθήκευση κάθε προϊόντος ως ξεχωριστή εγγραφή
     // --------------------------------------------
-    const purchaseRecord = {
-      items: purchaseItems,
-      date: new Date(),
-    };
-
     customer.purchases = customer.purchases || [];
-    customer.purchases.push(purchaseRecord);
+    const now = new Date();
+    for (const item of purchaseItems) {
+      customer.purchases.push({
+        product: item.product,
+        quantity: item.quantity,
+        date: now,
+      });
+    }
     await customer.save();
 
     logger.info(`🛒 Καταχωρήθηκε αγορά για πελάτη ${customer.name}`);
 
     res.status(201).json({
       message: "✅ Οι αγορές καταχωρήθηκαν επιτυχώς",
-      purchase: purchaseRecord,
     });
   } catch (err) {
     logger.error("❌ Σφάλμα κατά την καταχώριση αγοράς", { stack: err.stack });

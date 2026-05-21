@@ -25,6 +25,7 @@ const productSchema = new mongoose.Schema(
     expirationWarningDays: { type: Number, default: 30 },
 
     notes: { type: String },
+    supplier: { type: String, default: "" },
 
     // 📦 Παρτίδες προϊόντος
     batches: [

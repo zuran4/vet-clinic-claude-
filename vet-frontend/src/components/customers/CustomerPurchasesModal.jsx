@@ -19,6 +19,8 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
   const [loading, setLoading] = useState(false);
   const [customerName, setCustomerName] = useState("");
 
+  const [confirmId, setConfirmId] = useState(null);
+
   // 🧩 Undo state
   const [undoItem, setUndoItem] = useState(null);
   const [undoTimeout, setUndoTimeout] = useState(null);
@@ -162,13 +164,31 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
                       : "-"}
                   </span>
                   <span>Ποσότητα: {p.quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(p)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
+                  {confirmId === p._id ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-red-600 font-medium">Διαγραφή;</span>
+                      <button
+                        onClick={() => { setConfirmId(null); handleDelete(p); }}
+                        className="text-xs px-2 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                      >
+                        Ναι
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        className="text-xs px-2 py-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                      >
+                        Όχι
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmId(p._id)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

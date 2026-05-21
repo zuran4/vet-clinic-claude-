@@ -14,7 +14,7 @@ export const getCustomerPurchases = async (req, res, next) => {
   try {
     // 🔹 Αναζήτηση πελάτη με populate στα προϊόντα των αγορών
     const customer = await Customer.findById(req.params.id).populate(
-      "purchases.items.product",
+      "purchases.product",
       "name"
     );
 
