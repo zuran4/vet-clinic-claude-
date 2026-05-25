@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 
 const supplierSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true }, // Όνομα προμηθευτή
-    phone: { type: String },                // Τηλέφωνο
-    email: { type: String },                // Email
-    address: { type: String },              // Διεύθυνση
-    notes: { type: String },                // Σημειώσεις
+    name:    { type: String, required: true }, // Επωνυμία προμηθευτή
+    contact: { type: String },                 // Υπεύθυνος επικοινωνίας
+    phone:   { type: String },                 // Τηλέφωνο
+    email:   { type: String },                 // Email
+    website: { type: String },                 // Ιστότοπος
+    address: { type: String },                 // Διεύθυνση
+    notes:   { type: String },                 // Σημειώσεις
   },
   { timestamps: true }
 );

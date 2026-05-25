@@ -1,66 +1,63 @@
-import { useState, useEffect } from "react";
-import { API_URL } from "../api/api.js"; // ✅ κεντρικό API base
-
-const API = `${API_URL}/suppliers`;
+import { useState, useEffect, useCallback } from "react";
+import request from "../api/apiClient.js";
 
 export function useSuppliers() {
-  const [suppliers, setSuppliers] = useState([]);
-  const [error, setError] = useState("");
+  const [suppliers, setSuppliers]   = useState([]);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      const res = await fetch(API);
-      if (!res.ok) throw new Error("Αποτυχία φόρτωσης προμηθευτών");
-      const data = await res.json();
+      const data = await request("/suppliers");
       setSuppliers(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Σφάλμα φόρτωσης προμηθευτών");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   const saveSupplier = async (supplier) => {
     const isEdit = !!supplier._id;
     try {
-      const res = await fetch(
-        `${API}${isEdit ? `/${supplier._id}` : ""}`,
-        {
-          method: isEdit ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(supplier),
-        }
-      );
-
-      if (!res.ok) throw new Error("Αποτυχία αποθήκευσης");
-
-      const saved = await res.json();
-
+      const saved = await request(`/suppliers${isEdit ? `/${supplier._id}` : ""}`, {
+        method: isEdit ? "PUT" : "POST",
+        body: supplier,
+      });
       setSuppliers((prev) =>
         isEdit
           ? prev.map((s) => (s._id === saved._id ? saved : s))
           : [...prev, saved]
       );
-
       return saved;
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Σφάλμα αποθήκευσης");
+      throw err;
     }
   };
 
   const deleteSupplier = async (id) => {
     if (!window.confirm("Θες σίγουρα να διαγράψεις τον προμηθευτή;")) return;
-
     try {
-      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Αποτυχία διαγραφής");
+      await request(`/suppliers/${id}`, { method: "DELETE" });
       setSuppliers((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "��φάλμα διαγραφής");
     }
   };
 
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
+  const importSuppliers = async (rows) => {
+    const result = await request("/suppliers/import", {
+      method: "POST",
+      body: { suppliers: rows },
+    });
+    await fetchSuppliers(); // refresh λίστα μετά το import
+    return result;
+  };
 
-  return { suppliers, error, fetchSuppliers, saveSupplier, deleteSupplier };
+  useEffect(() => { fetchSuppliers(); }, [fetchSuppliers]);
+
+  return { suppliers, loading, error, fetchSuppliers, saveSupplier, deleteSupplier, importSuppliers };
 }

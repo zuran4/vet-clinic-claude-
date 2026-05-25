@@ -4,10 +4,11 @@
 // ===============================================
 
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Button } from "../ui/button";
 import CustomerCard from "./CustomerCard.jsx";
 import CustomerModal from "./CustomerModal.jsx";
+import CustomerImportModal from "./CustomerImportModal.jsx";
 import CustomerPurchasesModal from "./CustomerPurchasesModal.jsx";
 import { useCustomers } from "../../hooks/useCustomers.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
@@ -20,9 +21,10 @@ const CustomerList = () => {
   const {
   customers,
   error,
-  loading, // ✨ νέο state για skeletons
+  loading,
   saveCustomer,
   deleteCustomer,
+  importCustomers,
   page,
   setPage,
   total,
@@ -35,11 +37,12 @@ const CustomerList = () => {
   // 2️⃣ Τοπικά states για modals & UI
   // -------------------------------------
   const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingCustomer, setEditingCustomer]     = useState(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
-  const [showPetModal, setShowPetModal] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showPetModal, setShowPetModal]           = useState(false);
+  const [selectedCustomer, setSelectedCustomer]   = useState(null);
+  const [showImportModal, setShowImportModal]     = useState(false);
 
   // -------------------------------------
   // 3️⃣ Οι πελάτες έρχονται ήδη φιλτραρισμένοι από το backend
@@ -54,26 +57,29 @@ const CustomerList = () => {
       {/* Εμφάνιση σφάλματος */}
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* Αναζήτηση + Κουμπί */}
-      <div className="grid grid-cols-[1fr_auto] items-center gap-3 mb-2">
+      {/* Αναζήτηση + Κουμπιά */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center mb-2">
         <SearchBar
           value={searchTerm}
-          onChange={(val) => {
-            setSearchTerm(val);
-            setPage(1); // ✅ κάθε νέα αναζήτηση ξεκινά από την 1η σελίδα
-          }}
+          onChange={(val) => { setSearchTerm(val); setPage(1); }}
           placeholder="Αναζήτηση (όνομα, τηλέφωνο, email)"
+          className="flex-1"
         />
-        <Button
-          variant="primary"
-          className="focus:outline-none"
-          onClick={() => {
-            setEditingCustomer(null);
-            setShowCustomerModal(true);
-          }}
-        >
-          <Plus className="w-4 h-4" /> Προσθήκη Πελάτη
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload className="w-4 h-4" /> Εισαγωγή CSV
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => { setEditingCustomer(null); setShowCustomerModal(true); }}
+          >
+            <Plus className="w-4 h-4" /> Νέος Πελάτης
+          </Button>
+        </div>
       </div>
 
       {/* Λίστα Πελατών */}
@@ -183,14 +189,16 @@ const CustomerList = () => {
       {showPetModal && (
         <PetModal
           owner={selectedCustomer}
-          onCancel={() => {
-            setShowPetModal(false);
-            setSelectedCustomer(null);
-          }}
-          onSaved={() => {
-            setShowPetModal(false);
-            setSelectedCustomer(null);
-          }}
+          onCancel={() => { setShowPetModal(false); setSelectedCustomer(null); }}
+          onSaved={() => { setShowPetModal(false); setSelectedCustomer(null); }}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <CustomerImportModal
+          onClose={() => setShowImportModal(false)}
+          onImport={importCustomers}
         />
       )}
     </div>

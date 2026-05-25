@@ -28,7 +28,14 @@ async function request(endpoint, { method = "GET", body, headers = {} } = {}) {
     // Αν η απάντηση δεν είναι ΟΚ (π.χ. 400 ή 500)
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || `Σφάλμα ${res.status}`);
+      // Υποστηρίζει { message }, { error: "..." } και { error: { message: "..." } }
+      const msg =
+        errorData.message ||
+        (typeof errorData.error === "string" ? errorData.error : errorData.error?.message) ||
+        `Σφάλμα ${res.status}`;
+      const err = new Error(msg);
+      err.status = res.status;
+      throw err;
     }
 
     // Αν δεν υπάρχει περιεχόμενο (π.χ. DELETE 204)

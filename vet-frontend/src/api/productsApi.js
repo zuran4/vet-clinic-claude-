@@ -54,6 +54,13 @@ export const exportProduct = (productId, quantity) =>
     body: { productId, quantity },
   });
 
+// ---------- Bulk Import ----------
+export const importProducts = (products) =>
+  request(`${PRODUCTS_ENDPOINT}/import`, {
+    method: "POST",
+    body: { products },
+  });
+
 // ---------- Default export ----------
 const productsApi = {
   // CRUD
@@ -69,6 +76,8 @@ const productsApi = {
   removeProductBatch,
   // Export
   exportProduct,
+  // Import
+  importProducts,
 };
 
 export default productsApi;

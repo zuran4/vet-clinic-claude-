@@ -1,42 +1,69 @@
 import React, { useState } from "react";
-import { Trash2, Edit, Truck, Phone, Mail, Globe, StickyNote, Search } from "lucide-react";
+import { Trash2, Edit, Truck, Phone, Mail, Globe, StickyNote, Upload, Loader2 } from "lucide-react";
 import SupplierModal from "./SupplierModal.jsx";
+import SupplierImportModal from "./SupplierImportModal.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
 import { useSuppliers } from "../../hooks/useSuppliers.jsx";
+import { Button } from "../ui/button.jsx";
 
 const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSupplier }) => {
-  const { suppliers, error, saveSupplier, deleteSupplier } = useSuppliers();
-  const [searchTerm, setSearchTerm] = useState("");
+  const { suppliers, loading, error, saveSupplier, deleteSupplier, importSuppliers } = useSuppliers();
+  const [searchTerm, setSearchTerm]   = useState("");
+  const [showImport, setShowImport]   = useState(false);
 
   const filteredSuppliers = suppliers.filter((s) => {
     const term = searchTerm.toLowerCase();
     return (
-      s.name?.toLowerCase().includes(term) ||
-      s.phone?.toLowerCase().includes(term) ||
-      s.email?.toLowerCase().includes(term) ||
+      s.name?.toLowerCase().includes(term)    ||
+      s.contact?.toLowerCase().includes(term) ||
+      s.phone?.toLowerCase().includes(term)   ||
+      s.email?.toLowerCase().includes(term)   ||
       s.website?.toLowerCase().includes(term)
     );
   });
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder="Αναζήτηση (όνομα, τηλέφωνο, email)"
-        className="w-full md:w-96"
-      />
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Αναζήτηση (όνομα, υπεύθυνος, email…)"
+          className="w-full sm:w-80"
+        />
+        <Button variant="secondary" size="sm" onClick={() => setShowImport(true)}>
+          <Upload className="w-3.5 h-3.5" />
+          Εισαγωγή CSV
+        </Button>
+      </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+          {error}
+        </p>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="flex items-center justify-center py-12 gap-2 text-gray-400">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm">Φόρτωση προμηθευτών…</span>
+        </div>
+      )}
 
       {/* Empty state */}
-      {filteredSuppliers.length === 0 ? (
+      {!loading && filteredSuppliers.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-gray-200 rounded-2xl">
           <Truck className="w-8 h-8 text-gray-300" />
-          <p className="text-sm text-gray-400">Δεν βρέθηκαν προμηθευτές.</p>
+          <p className="text-sm text-gray-400">
+            {searchTerm ? "Δεν βρέθηκαν αποτελέσματα." : "Δεν υπάρχουν προμηθευτές ακόμα."}
+          </p>
         </div>
-      ) : (
+      )}
+
+      {/* Grid */}
+      {!loading && filteredSuppliers.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredSuppliers.map((s) => (
             <div
@@ -49,7 +76,12 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
                   <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
                     <Truck className="w-4 h-4 text-orange-500" />
                   </div>
-                  <span className="font-semibold text-gray-800 truncate">{s.name}</span>
+                  <div className="min-w-0">
+                    <span className="font-semibold text-gray-800 truncate block">{s.name}</span>
+                    {s.contact && (
+                      <span className="text-xs text-gray-400 truncate block">{s.contact}</span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -101,7 +133,7 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
                   </div>
                 )}
                 {s.notes && (
-                  <div className="flex items-start gap-2 text-sm text-gray-400 pt-1 border-t border-gray-50">
+                  <div className="flex items-start gap-2 text-sm text-gray-400 pt-1.5 border-t border-gray-50">
                     <StickyNote className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                     <span className="italic">{s.notes}</span>
                   </div>
@@ -112,7 +144,7 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
         </div>
       )}
 
-      {/* Modal */}
+      {/* Edit/Create Modal */}
       {showForm && (
         <SupplierModal
           initialData={editingSupplier}
@@ -125,6 +157,14 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
             setShowForm(false);
             setEditingSupplier(null);
           }}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImport && (
+        <SupplierImportModal
+          onClose={() => setShowImport(false)}
+          onImport={importSuppliers}
         />
       )}
     </div>

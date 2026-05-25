@@ -1,60 +1,86 @@
 import express from "express";
-
 import Supplier from "../models/Supplier.js";
 
 const router = express.Router();
 
+// Επιτρεπτά πεδία — αποφεύγουμε mass-assignment
+const ALLOWED = ["name", "contact", "phone", "email", "website", "address", "notes"];
+const pick = (obj) =>
+  ALLOWED.reduce((acc, k) => {
+    if (obj[k] !== undefined) acc[k] = String(obj[k] ?? "").trim();
+    return acc;
+  }, {});
+
 // ==========================
 // 📦 GET: Όλοι οι προμηθευτές
 // ==========================
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     const suppliers = await Supplier.find().sort({ name: 1 });
     res.json(suppliers);
-  } catch (err) {
-    console.error("❌ Σφάλμα φόρτωσης προμηθευτών:", err);
-    res.status(500).json({ message: "❌ Σφάλμα φόρτωσης προμηθευτών" });
-  }
+  } catch (err) { next(err); }
 });
 
 // ==========================
-// ➕ POST: Δημιουργία νέου προμηθευτή
+// ➕ POST: Δημιουργία νέου
 // ==========================
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
-    const supplier = new Supplier(req.body);
-    await supplier.save();
+    const data = pick(req.body);
+    if (!data.name) return res.status(400).json({ message: "Το όνομα είναι υποχρεωτικό." });
+    const supplier = await Supplier.create(data);
     res.status(201).json(supplier);
-  } catch (err) {
-    console.error("❌ Σφάλμα δημιουργίας προμηθευτή:", err);
-    res.status(400).json({ message: "❌ Σφάλμα αποθήκευσης προμηθευτή" });
-  }
+  } catch (err) { next(err); }
 });
 
 // ==========================
-// ✏️ PUT: Ενημέρωση προμηθευτή
+// 📥 POST: Bulk import από CSV
 // ==========================
-router.put("/:id", async (req, res) => {
+router.post("/import", async (req, res, next) => {
   try {
-    const updated = await Supplier.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
-  } catch (err) {
-    console.error("❌ Σφάλμα ενημέρωσης προμηθευτή:", err);
-    res.status(400).json({ message: "❌ Σφάλμα ενημέρωσης προμηθευτή" });
-  }
+    const rows = req.body?.suppliers;
+    if (!Array.isArray(rows) || rows.length === 0)
+      return res.status(400).json({ message: "Δεν στάλθηκαν δεδομένα." });
+
+    let inserted = 0;
+    const errors = [];
+
+    for (const row of rows) {
+      const data = pick(row);
+      if (!data.name) { errors.push({ row, reason: "Λείπει το όνομα" }); continue; }
+      try {
+        await Supplier.create(data);
+        inserted++;
+      } catch (e) {
+        errors.push({ row, reason: e.message });
+      }
+    }
+
+    res.json({ inserted, errors });
+  } catch (err) { next(err); }
 });
 
 // ==========================
-// 🗑️ DELETE: Διαγραφή προμηθευτή
+// ✏️ PUT: Ενημέρωση
 // ==========================
-router.delete("/:id", async (req, res) => {
+router.put("/:id", async (req, res, next) => {
+  try {
+    const data = pick(req.body);
+    if (!data.name) return res.status(400).json({ message: "Το όνομα είναι υποχρεωτικό." });
+    const updated = await Supplier.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+    if (!updated) return res.status(404).json({ message: "Ο προμηθευτής δεν βρέθηκε." });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// ==========================
+// 🗑️ DELETE: Διαγραφή
+// ==========================
+router.delete("/:id", async (req, res, next) => {
   try {
     await Supplier.findByIdAndDelete(req.params.id);
-    res.json({ message: "✅ Ο προμηθευτής διαγράφηκε" });
-  } catch (err) {
-    console.error("❌ Σφάλμα διαγραφής προμηθευτή:", err);
-    res.status(400).json({ message: "❌ Σφάλμα διαγραφής προμηθευτή" });
-  }
+    res.json({ message: "Ο προμηθευτής διαγράφηκε." });
+  } catch (err) { next(err); }
 });
 
 export default router;

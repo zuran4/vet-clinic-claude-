@@ -88,12 +88,20 @@ export function useProductList() {
     }
   };
 
+  // 🔹 Bulk import προϊόντων
+  const importProducts = async (rows) => {
+    const result = await productsApi.importProducts(rows);
+    await fetchProducts(); // refresh μετά το import
+    return result;
+  };
+
   return {
     products,
     setProducts,
     fetchProducts,
     handleDeleteProduct,
     handleSortClick,
+    importProducts,
     sortField,
     sortDirection,
     loading,

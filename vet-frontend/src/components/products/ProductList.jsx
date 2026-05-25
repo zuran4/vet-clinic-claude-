@@ -1,9 +1,10 @@
 // src/components/products/ProductList.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Edit, Trash2, Plus, Minus, Download, ChevronRight } from "lucide-react";
+import { Edit, Trash2, Plus, Minus, Download, ChevronRight, Upload } from "lucide-react";
 import Button from "../ui/button.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
 import ProductModal from "./ProductModal.jsx";
+import ProductImportModal from "./ProductImportModal.jsx";
 import QuickStockModal from "./QuickStockModal.jsx";
 import BatchList from "../dashboard/BatchList.jsx";
 import PurchaseHistoryList from "./PurchaseHistoryList.jsx";
@@ -13,13 +14,14 @@ import { getStockStatus } from "@/utils/stock.js";
 import { useStockThresholds } from "@/hooks";
 
 const ProductList = () => {
-  const { products, setProducts, fetchProducts, handleDeleteProduct } = useProductList();
+  const { products, setProducts, fetchProducts, handleDeleteProduct, importProducts } = useProductList();
   const { getThresholdForCategory } = useStockThresholds();
 
-  const [showForm, setShowForm] = useState(false);
-  const [productId, setProductId] = useState(null);
-  const [initialTab, setInitialTab] = useState("info");
+  const [showForm, setShowForm]           = useState(false);
+  const [productId, setProductId]         = useState(null);
+  const [initialTab, setInitialTab]       = useState("info");
   const [quickStockProduct, setQuickStockProduct] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const BATCHED_CATEGORIES = ["Τροφή", "Φάρμακο"];
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -143,26 +145,35 @@ const ProductList = () => {
           </select>
         </div>
 
-        {/* Δεξιά: Icon download */}
-<div className="flex items-center gap-2 ml-auto">
-  <button
-    type="button"
-    onClick={() => {
-      const rows = products.filter((p) => {
-        const cfg = getThresholdForCategory(p?.category);
-        const totalQty = p?.stockTotal ?? p?.quantity ?? 0;
-        const k = getStockStatus(totalQty, cfg).key;
-        return k === "out" || k === "low";
-      });
-      exportCsv(rows);
-    }}
-    title="Λήψη CSV: Χαμηλά/Εξαντλημένα"
-    aria-label="Λήψη CSV"
-    className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 shadow-sm hover:bg-gray-100 active:scale-95 transition"
-  >
-    <Download className="w-5 h-5 text-gray-700" />
-  </button>
-</div>
+        {/* Δεξιά: actions */}
+        <div className="flex items-center gap-2 ml-auto">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+            title="Εισαγωγή προϊόντων από CSV"
+          >
+            <Upload className="w-4 h-4" />
+            Εισαγωγή CSV
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              const rows = products.filter((p) => {
+                const cfg = getThresholdForCategory(p?.category);
+                const totalQty = p?.stockTotal ?? p?.quantity ?? 0;
+                const k = getStockStatus(totalQty, cfg).key;
+                return k === "out" || k === "low";
+              });
+              exportCsv(rows);
+            }}
+            title="Λήψη CSV: Χαμηλά/Εξαντλημένα"
+            aria-label="Λήψη CSV"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 shadow-sm hover:bg-gray-100 active:scale-95 transition"
+          >
+            <Download className="w-5 h-5 text-gray-700" />
+          </button>
+        </div>
 
       </div>
 
@@ -356,6 +367,14 @@ const ProductList = () => {
             setProductId(null);
             setInitialTab("info");
           }}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <ProductImportModal
+          onClose={() => setShowImportModal(false)}
+          onImport={importProducts}
         />
       )}
     </>

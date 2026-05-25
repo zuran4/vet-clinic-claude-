@@ -52,6 +52,13 @@ export const deleteCustomerPurchase = (customerId, purchaseId) =>
     method: "DELETE",
   });
 
+// 🔹 Bulk import πελατών από CSV (χωρίς email/SMS)
+export const importCustomers = (customers) =>
+  request(`${CUSTOMERS_ENDPOINT}/import`, {
+    method: "POST",
+    body: { customers },
+  });
+
 // ✅ Ενοποιημένη εξαγωγή
 const customersApi = {
   getAllCustomers,
@@ -62,6 +69,7 @@ const customersApi = {
   addCustomerPurchases,
   getCustomerPurchases,
   deleteCustomerPurchase,
+  importCustomers,
 };
 
 export default customersApi;

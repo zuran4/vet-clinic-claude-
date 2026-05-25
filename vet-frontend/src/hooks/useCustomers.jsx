@@ -154,13 +154,22 @@ export function useCustomers() {
   }, [page, debouncedSearch]);
 
   // -------------------------------------
+  // 🔟 Bulk import πελατών
+  // -------------------------------------
+  const importCustomers = async (rows) => {
+    const result = await customersApi.importCustomers(rows);
+    await fetchCustomers(); // refresh μετά το import
+    return result;
+  };
+
+  // -------------------------------------
   // 9️⃣ Επιστρέφουμε όλα τα states & handlers
   // -------------------------------------
   return {
   customers,
   petsByCustomer,
   error,
-  loading, // ✨ νέο state
+  loading,
   total,
   page,
   setPage,
@@ -173,6 +182,7 @@ export function useCustomers() {
   addPet,
   updatePet,
   deletePet,
+  importCustomers,
 };
 
 }
