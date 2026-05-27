@@ -111,6 +111,28 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
         </div>
       </div>
 
+      {/* Τιμολόγηση */}
+      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Τιμολόγηση</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className={LABEL}>Τιμή Λιανικής (€)</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium pointer-events-none">€</span>
+              <input
+                type="number"
+                value={productInfo.retailPrice ?? ""}
+                onChange={(e) => updateField("retailPrice", e.target.value === "" ? null : Number(e.target.value))}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                className="mt-1 w-full border border-gray-200 rounded-2xl pl-8 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Σημειώσεις */}
       <div className="bg-gray-50 rounded-2xl px-4 py-3">
         <label className={LABEL}>Σημειώσεις</label>

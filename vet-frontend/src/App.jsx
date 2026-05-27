@@ -25,7 +25,7 @@ function App() {
     fetchAppointments,
     saveAppointment,
     deleteAppointment,
-  } = useAppointmentsData(getAuthHeaders, setErrorMessage);
+  } = useAppointmentsData(setErrorMessage);
 
   const { products, fetchProducts } = useProductsData();
 
@@ -37,11 +37,12 @@ function App() {
   }, [user, selectedDate, fetchAppointments, fetchProducts]);
 
   const handleSaveAppointment = async (details, appointmentId = null) => {
+    // Το date, time και doctor έρχονται από τη φόρμα μέσα στο details
+    // Διατηρούμε selectedDoctor/selectedTime ως fallback μόνο
     const newAppt = {
-      date: selectedDate,
-      time: selectedTime,
       doctor: selectedDoctor,
-      ...details,
+      time: selectedTime,
+      ...details, // details.date, details.time, details.doctor από τη φόρμα
     };
     await saveAppointment(newAppt, appointmentId);
     setSelectedTime(null);
@@ -71,7 +72,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
       <MainLayout
         user={user}
         onLogout={logout}

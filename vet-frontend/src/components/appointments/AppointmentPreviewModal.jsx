@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
   User, Phone, Calendar, Clock, Stethoscope, Scissors,
-  StickyNote, PawPrint, ShoppingBag, FlaskConical, X,
+  StickyNote, PawPrint, ShoppingBag, Pill, X,
 } from "lucide-react";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
-import PetHistory from "../pets/PetHistory";
 import PetProfile from "../pets/PetProfile";
 import InlinePurchases from "./InlinePurchases.jsx";
+import InlinePrescriptions from "./InlinePrescriptions.jsx";
 
 const TYPE_COLORS = {
   "Εξέταση":            "bg-indigo-100 text-indigo-700",
@@ -29,10 +29,10 @@ const InfoRow = ({ icon: Icon, label, value, iconColor = "text-gray-400" }) => (
 );
 
 const TABS = [
-  { key: "overview",    label: "Επισκόπηση",  icon: Calendar },
-  { key: "purchases",   label: "Αγορές",      icon: ShoppingBag },
-  { key: "history",     label: "Εξετάσεις",   icon: FlaskConical },
-  { key: "pet",         label: "Κατοικίδιο",  icon: PawPrint },
+  { key: "overview",       label: "Επισκόπηση", icon: Calendar },
+  { key: "purchases",      label: "Αγορές",     icon: ShoppingBag },
+  { key: "prescriptions",  label: "Συνταγές",   icon: Pill },
+  { key: "pet",            label: "Κατοικίδιο", icon: PawPrint },
 ];
 
 const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
@@ -163,14 +163,14 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
             </div>
           )}
 
-          {/* ΕΞΕΤΑΣΕΙΣ */}
-          {activeTab === "history" && (
+          {/* ΣΥΝΤΑΓΕΣ */}
+          {activeTab === "prescriptions" && (
             <div className="p-4">
-              {matchedPet ? (
-                <PetHistory petId={matchedPet._id} />
-              ) : (
-                <Empty text="Δεν βρέθηκε κατοικίδιο για εμφάνιση εξετάσεων." />
-              )}
+              <InlinePrescriptions
+                petId={matchedPet?._id}
+                pet={matchedPet}
+                customer={ownerId ? { _id: ownerId, name: appointment.clientName, phone: appointment.phone } : null}
+              />
             </div>
           )}
 

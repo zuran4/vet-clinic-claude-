@@ -24,6 +24,7 @@ import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import purchaseRoutes from "./routes/purchases.js";
+import reminderRoutes from "./routes/reminders.js";
 import registryRoutes from "./routes/registry/index.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
@@ -31,6 +32,7 @@ import errorHandler from "./middlewares/errorHandler.js";
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";
+import { startPurchaseReminderJob } from "./jobs/purchaseReminderJob.js";
 
 // ==============================
 // 📁 Path Setup for ES Modules
@@ -179,6 +181,7 @@ app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/purchases", purchaseRoutes);
+app.use("/api/reminders", reminderRoutes);
 app.use("/api/registry", registryRoutes);
 
 // ==============================
@@ -238,6 +241,7 @@ mongoose
     startAppointmentReminderJob();
     startPetVaccinationJob();
     startProductExpirationJob();
+    startPurchaseReminderJob();
     logger.info("✅ Cron jobs ξεκίνησαν.");
   })
   .catch((err) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import request from "../api/apiClient.js"; // ✅ κεντρικός API client
 
-export function useAppointmentForm({ time, doctor, existingData, onSave }) {
+export function useAppointmentForm({ time, doctor, selectedDate, existingData, onSave }) {
   const [formData, setFormData] = useState({
     clientName: "",
     phone: "",
@@ -18,9 +18,12 @@ export function useAppointmentForm({ time, doctor, existingData, onSave }) {
   const [selectedPetId, setSelectedPetId] = useState("new");
   const [newPetSpecies, setNewPetSpecies] = useState("Σκύλος");
   const [newPetGender, setNewPetGender] = useState("Αρσενικό");
-  const [date, setDate] = useState(
-    existingData ? new Date(existingData.date) : new Date()
-  );
+  const [date, setDate] = useState(() => {
+    if (existingData) return new Date(existingData.date);
+    // Χρησιμοποίησε την επιλεγμένη ημερομηνία από το calendar (αν υπάρχει)
+    if (selectedDate) return new Date(selectedDate);
+    return new Date();
+  });
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(existingData?.time || time);
   const [allCustomers, setAllCustomers] = useState([]);

@@ -9,7 +9,7 @@ import AppointmentFormFields from "./AppointmentFormFields";
 import { Button } from "../ui/button";
 import { useAppointmentForm } from "../../hooks/useAppointmentForm";
 
-const AppointmentDetailsForm = ({ time, doctor, existingData, onSave, onCancel }) => {
+const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSave, onCancel }) => {
   const {
     formData,
     setFormData,
@@ -34,7 +34,7 @@ const AppointmentDetailsForm = ({ time, doctor, existingData, onSave, onCancel }
     handlePetChange,
     handleSubmit,
     handlePrescriptionSubmit,
-  } = useAppointmentForm({ time, doctor, existingData, onSave });
+  } = useAppointmentForm({ time, doctor, selectedDate, existingData, onSave });
 
   const optionsByDoctor = {
     Ιατρείο: ["Εμβολιασμός", "Στείρωση", "Εξέταση", "Chip"],

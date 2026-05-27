@@ -47,7 +47,7 @@ const ProductList = () => {
 
   // Εξαγωγή CSV για χαμηλά/εξαντλημένα
   function exportCsv(rows) {
-    const headers = ["Όνομα", "Κατηγορία", "Barcode", "Ποσότητα", "Κατάσταση"];
+    const headers = ["Όνομα", "Κατηγορία", "Barcode", "Ποσότητα", "Τιμή Λιανικής", "Κατάσταση"];
     const lines = [headers.join(",")];
     rows.forEach((p) => {
       const cfg = getThresholdForCategory(p?.category);
@@ -58,6 +58,7 @@ const ProductList = () => {
         (p?.category ?? "").replaceAll('"', '""'),
         String(p?.barcode ?? ""),
         String(totalQty),
+        p?.retailPrice != null ? Number(p.retailPrice).toFixed(2) : "",
         label,
       ];
       lines.push(values.map((v) => `"${v}"`).join(","));
@@ -187,6 +188,7 @@ const ProductList = () => {
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Κατηγορία</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Barcode</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Ποσότητα</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Τιμή</th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase tracking-wide">Ενέργειες</th>
             </tr>
           </thead>
@@ -215,6 +217,12 @@ const ProductList = () => {
                       <td className="px-4 py-3 text-sm text-gray-400 font-mono">{product.barcode || "—"}</td>
                       <td className="px-4 py-3">
                         <StockBadge qty={product.stockTotal ?? product.quantity ?? 0} config={cfg} />
+                      </td>
+                      <td className="px-4 py-3">
+                        {product.retailPrice != null
+                          ? <span className="text-sm font-semibold text-emerald-600">{Number(product.retailPrice).toFixed(2)} €</span>
+                          : <span className="text-xs text-gray-300">—</span>
+                        }
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex gap-1.5 justify-end">
@@ -253,7 +261,7 @@ const ProductList = () => {
 
                     {expandedProduct === product._id && (
                       <tr>
-                        <td colSpan="5" className="bg-gray-50 px-6 py-4">
+                        <td colSpan="6" className="bg-gray-50 px-6 py-4">
                           {BATCHED_CATEGORIES.includes(product.category) ? (
                             <BatchList
                               key={batchRefreshKeys[product._id] || 0}
@@ -281,7 +289,7 @@ const ProductList = () => {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="p-4 text-center text-gray-500">
+                <td colSpan="6" className="p-4 text-center text-gray-500">
                   Δεν βρέθηκαν προϊόντα.
                 </td>
               </tr>

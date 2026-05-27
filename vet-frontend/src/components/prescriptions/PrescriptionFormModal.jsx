@@ -210,10 +210,36 @@ const PetSelector = ({ customerId, selectedPet, onSelect }) => {
 };
 
 /* ── Main Modal ── */
-const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedPet, setSelectedPet] = useState(null);
+const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initialCustomer, initialPet }) => {
+  const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer || null);
+  const [selectedPet, setSelectedPet] = useState(initialPet || null);
   const [form, setForm] = useState({ medicines: [], dosage: "", notes: "", doctor: "" });
+  const [doctors, setDoctors] = useState([]);
+  const [customDoctor, setCustomDoctor] = useState(false);
+
+  // Φόρτωση γιατρών από settings
+  useEffect(() => {
+    let cancelled = false;
+    request("/settings")
+      .then((data) => {
+        if (cancelled) return;
+        const staff = Array.isArray(data?.staff) ? data.staff : [];
+        const filtered = staff
+          .filter((m) => m.role === "Κτηνίατρος" || m.role === "Βοηθός Κτηνιάτρου")
+          .map((m) => m.name);
+        setDoctors(filtered);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (initialCustomer) setSelectedCustomer(initialCustomer);
+  }, [initialCustomer]);
+
+  useEffect(() => {
+    if (initialPet) setSelectedPet(initialPet);
+  }, [initialPet]);
 
   useEffect(() => {
     if (initialData) {
@@ -314,11 +340,44 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               </div>
               <div>
                 <label className={LABEL}>Γιατρός *</label>
-                <div className="relative">
-                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                  <input type="text" value={form.doctor} required
-                    onChange={(e) => setForm((p) => ({ ...p, doctor: e.target.value }))}
-                    placeholder="π.χ. Δρ. Παπαδόπουλος" className={INPUT} />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none z-10" />
+                    <select
+                      value={customDoctor ? "__custom__" : (form.doctor || "")}
+                      required={!customDoctor}
+                      onChange={(e) => {
+                        if (e.target.value === "__custom__") {
+                          setCustomDoctor(true);
+                          setForm((p) => ({ ...p, doctor: "" }));
+                        } else {
+                          setCustomDoctor(false);
+                          setForm((p) => ({ ...p, doctor: e.target.value }));
+                        }
+                      }}
+                      className={INPUT + " appearance-none cursor-pointer"}
+                    >
+                      <option value="">— Επίλεξε γιατρό —</option>
+                      {doctors.map((name) => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                      <option value="__custom__">✏️ Άλλος (χειροκίνητη εισαγωγή)</option>
+                    </select>
+                  </div>
+                  {customDoctor && (
+                    <div className="relative">
+                      <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={form.doctor}
+                        required
+                        autoFocus
+                        onChange={(e) => setForm((p) => ({ ...p, doctor: e.target.value }))}
+                        placeholder="Όνομα γιατρού..."
+                        className={INPUT}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               <div>

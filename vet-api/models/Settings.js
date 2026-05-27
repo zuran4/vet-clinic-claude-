@@ -28,6 +28,30 @@ const settingsSchema = new mongoose.Schema({
   language: { type: String, enum: ["el", "en"], default: "el" },
   timezone: { type: String, default: "Europe/Athens" },
 
+  // 🔹 Dark mode
+  darkMode: { type: Boolean, default: false },
+
+  // 🔹 Email / SMTP config
+  emailConfig: {
+    host:      { type: String, default: "smtp.gmail.com" },
+    port:      { type: Number, default: 587 },
+    user:      { type: String, default: "" },
+    password:  { type: String, default: "" },
+    fromName:  { type: String, default: "" },
+    fromEmail: { type: String, default: "" },
+  },
+
+  // 🔹 Προσωπικό κλινικής
+  staff: {
+    type: [
+      {
+        name: { type: String, required: true },
+        role: { type: String, enum: ["Κτηνίατρος", "Βοηθός Κτηνιάτρου", "Groomer"], required: true },
+      },
+    ],
+    default: [],
+  },
+
   // 🔹 Registry worker (headless / visible)
   registryWorkerHeadless: { type: Boolean, default: true },
 

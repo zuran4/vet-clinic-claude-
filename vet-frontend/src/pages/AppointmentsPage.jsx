@@ -100,6 +100,7 @@ function AppointmentsPage({
         <AppointmentDetailsForm
           time={selectedTime}
           doctor={selectedDoctor}
+          selectedDate={selectedDate}
           existingData={editingAppointment}
           onSave={onSaveAppointment}
           onCancel={() => {

@@ -1,149 +1,132 @@
-// src/components/settings/WorkingHoursSection.jsx
 import React, { useState } from "react";
-import { Power, PlusCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
+import { Clock, ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 
 const DAYS = [
-  { key: "monday", label: "Δευτέρα" },
-  { key: "tuesday", label: "Τρίτη" },
-  { key: "wednesday", label: "Τετάρτη" },
-  { key: "thursday", label: "Πέμπτη" },
-  { key: "friday", label: "Παρασκευή" },
-  { key: "saturday", label: "Σάββατο" },
-  { key: "sunday", label: "Κυριακή" },
+  { key: "monday",    label: "Δευτέρα"   },
+  { key: "tuesday",   label: "Τρίτη"     },
+  { key: "wednesday", label: "Τετάρτη"   },
+  { key: "thursday",  label: "Πέμπτη"    },
+  { key: "friday",    label: "Παρασκευή" },
+  { key: "saturday",  label: "Σάββατο"   },
+  { key: "sunday",    label: "Κυριακή"   },
 ];
+
+const TIME_INPUT = "border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white tabular-nums w-[90px]";
 
 const WorkingHoursSection = ({ title = "Ωράριο Λειτουργίας", workingHours, updateDay }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border rounded-2xl shadow-md bg-white">
-      {/* Header */}
-      <div
-        className="flex items-center justify-between p-4 cursor-pointer select-none"
+    <div className="rounded-2xl border border-gray-200 overflow-hidden">
+
+      {/* Header — collapsible */}
+      <button
+        type="button"
         onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Power className="w-5 h-5 text-emerald-600" />
-          <h4 className="font-semibold">{title}</h4>
+          <Clock className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm font-semibold text-gray-700">{title}</span>
+          {/* Σύνοψη ανοιχτών ημερών */}
+          <span className="text-xs text-gray-400 ml-1">
+            {DAYS.filter(d => workingHours?.[d.key]?.enabled).length} / 7 ημέρες
+          </span>
         </div>
-        {open ? (
-          <ChevronDown className="w-5 h-5 text-gray-600" />
-        ) : (
-          <ChevronRight className="w-5 h-5 text-gray-600" />
-        )}
-      </div>
+        {open
+          ? <ChevronUp className="w-4 h-4 text-gray-400" />
+          : <ChevronDown className="w-4 h-4 text-gray-400" />
+        }
+      </button>
 
-      {/* Περιεχόμενο */}
+      {/* Content */}
       {open && (
-        <div className="p-4 border-t">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {DAYS.map(({ key, label }) => {
-              const day = workingHours?.[key] || {
-                enabled: false,
-                intervals: [{ start: "09:00", end: "17:00" }],
-              };
+        <div className="divide-y divide-gray-100">
+          {DAYS.map(({ key, label }) => {
+            const day = workingHours?.[key] || {
+              enabled: false,
+              intervals: [{ start: "09:00", end: "17:00" }],
+            };
 
-              return (
-                <div key={key} className="border rounded-xl p-3 space-y-3">
-                  {/* Ημέρα + Switch */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
-                      {label}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={!!day.enabled}
-                        onChange={(e) =>
-                          updateDay(key, { enabled: e.target.checked })
-                        }
-                        className="h-4 w-4"
-                      />
-                      <span
-                        className={`text-xs ${
-                          day.enabled ? "text-emerald-600" : "text-gray-400"
-                        }`}
-                      >
-                        {day.enabled ? "Ανοιχτά" : "Κλειστά"}
-                      </span>
-                    </div>
-                  </div>
+            return (
+              <div key={key} className={`px-5 py-3 transition-colors ${day.enabled ? "" : "opacity-50"}`}>
+                <div className="flex items-center gap-4">
 
-                  {/* Διαστήματα */}
-                  <div className="space-y-2">
-                    {day.intervals?.map((interval, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          type="time"
-                          step="900"
-                          value={interval.start}
-                          disabled={!day.enabled}
-                          onChange={(e) => {
-                            const newIntervals = [...day.intervals];
-                            newIntervals[idx] = {
-                              ...newIntervals[idx],
-                              start: e.target.value,
-                            };
-                            updateDay(key, { intervals: newIntervals });
-                          }}
-                          className="border rounded-lg px-2 py-1 shadow-sm focus:ring-2 focus:ring-indigo-500"
-                        />
-                        <span className="text-gray-400">–</span>
-                        <input
-                          type="time"
-                          step="900"
-                          value={interval.end}
-                          disabled={!day.enabled}
-                          onChange={(e) => {
-                            const newIntervals = [...day.intervals];
-                            newIntervals[idx] = {
-                              ...newIntervals[idx],
-                              end: e.target.value,
-                            };
-                            updateDay(key, { intervals: newIntervals });
-                          }}
-                          className="border rounded-lg px-2 py-1 shadow-sm focus:ring-2 focus:ring-indigo-500"
-                        />
-                        {day.intervals.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newIntervals = day.intervals.filter(
-                                (_, i) => i !== idx
-                              );
-                              updateDay(key, { intervals: newIntervals });
+                  {/* Pill toggle */}
+                  <button
+                    type="button"
+                    onClick={() => updateDay(key, { enabled: !day.enabled })}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full flex-shrink-0 transition-colors ${
+                      day.enabled ? "bg-emerald-500" : "bg-gray-300"
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      day.enabled ? "translate-x-4" : "translate-x-0.5"
+                    }`} />
+                  </button>
+
+                  {/* Day label */}
+                  <span className="text-sm font-medium text-gray-700 w-24 flex-shrink-0">{label}</span>
+
+                  {/* Intervals */}
+                  {day.enabled ? (
+                    <div className="flex-1 space-y-1.5">
+                      {day.intervals?.map((interval, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            step="900"
+                            value={interval.start}
+                            onChange={(e) => {
+                              const updated = [...day.intervals];
+                              updated[idx] = { ...updated[idx], start: e.target.value };
+                              updateDay(key, { intervals: updated });
                             }}
-                            className="text-red-500 hover:text-red-700"
-                            title="Διαγραφή διαστήματος"
-                          >
-                            <XCircle className="w-5 h-5" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                            className={TIME_INPUT}
+                          />
+                          <span className="text-gray-400 text-sm">—</span>
+                          <input
+                            type="time"
+                            step="900"
+                            value={interval.end}
+                            onChange={(e) => {
+                              const updated = [...day.intervals];
+                              updated[idx] = { ...updated[idx], end: e.target.value };
+                              updateDay(key, { intervals: updated });
+                            }}
+                            className={TIME_INPUT}
+                          />
+                          {day.intervals.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => updateDay(key, { intervals: day.intervals.filter((_, i) => i !== idx) })}
+                              className="p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
 
-                    {/* Προσθήκη νέου διαστήματος */}
-                    {day.enabled && (
+                      {/* Add interval */}
                       <button
                         type="button"
-                        onClick={() => {
-                          const newIntervals = [
-                            ...day.intervals,
-                            { start: "09:00", end: "17:00" },
-                          ];
-                          updateDay(key, { intervals: newIntervals });
-                        }}
-                        className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 mt-2"
+                        onClick={() => updateDay(key, {
+                          intervals: [...day.intervals, { start: "09:00", end: "17:00" }]
+                        })}
+                        className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 mt-1 transition-colors"
                       >
-                        <PlusCircle className="w-4 h-4" />
+                        <Plus className="w-3 h-3" />
                         Προσθήκη διαστήματος
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">Κλειστά</span>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

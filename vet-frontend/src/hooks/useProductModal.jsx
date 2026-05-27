@@ -98,6 +98,7 @@ export function useProductModal(productId) {
             expirationDate: "",
             expirationWarningDays: 30,
             notes: "",
+            retailPrice: null,
           });
           setBatches([]);
           initialBatchesRef.current = [];

@@ -24,6 +24,9 @@ const productSchema = new mongoose.Schema(
     expirationDate: { type: Date },
     expirationWarningDays: { type: Number, default: 30 },
 
+    // 💰 Τιμή λιανικής πώλησης
+    retailPrice: { type: Number, default: null },
+
     notes: { type: String },
     supplier: { type: String, default: "" },
 
