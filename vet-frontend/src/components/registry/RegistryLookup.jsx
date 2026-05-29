@@ -1,11 +1,21 @@
 // src/components/registry/RegistryLookup.jsx
-import React, { useMemo, useState, useCallback } from "react";
-import { lookupMicrochip } from "../../api/registryApi.js";
+import React, { useMemo, useState, useCallback, useRef } from "react";
+import { lookupMicrochip, fetchMedicalEvents } from "../../api/registryApi.js";
+import { addPetHistoryEntry } from "../../api/petsApi.js";
 import MicrochipResultCard from "./MicrochipResultCard.jsx";
 import PetDetailsModal from "./PetDetailsModal.jsx";
 import CustomerModal from "../customers/CustomerModal.jsx";
 import PetModal from "../pets/PetModal.jsx";
 import { Loader2 } from "lucide-react";
+
+function parseGreekDate(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return null;
+  const [day, month, year] = parts;
+  const d = new Date(Number(year), Number(month) - 1, Number(day));
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
 
 export default function RegistryLookup({
   onLookupStart = () => {},
@@ -31,6 +41,9 @@ export default function RegistryLookup({
   const [showPetModal, setShowPetModal] = useState(false);
   const [petFormInitialData, setPetFormInitialData] = useState(null);
   const [petOwner, setPetOwner] = useState(null);
+
+  // 🔹 Medical events (background fetch)
+  const medicalTimelineRef = useRef(null); // αποθηκεύει timeline χωρίς re-render
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -158,6 +171,17 @@ export default function RegistryLookup({
 
       setPetModalData(modalPayload);
       setPetModalOpen(true);
+
+      // 🔹 Background fetch ιατρικού ιστορικού
+      medicalTimelineRef.current = null;
+      fetchMedicalEvents(trimmed)
+        .then(res => {
+          if (res?.ok && res?.data?.timeline?.length > 0) {
+            medicalTimelineRef.current = res.data.timeline;
+            console.log(`[RegistryLookup] Medical timeline: ${res.data.timeline.length} εγγραφές`);
+          }
+        })
+        .catch(() => {}); // silent fail — δεν μπλοκάρει τη ροή
     } catch (err) {
       if (isDev) {
         // eslint-disable-next-line no-console
@@ -323,10 +347,31 @@ export default function RegistryLookup({
         <PetModal
           initialData={petFormInitialData}
           owner={petOwner}
-          onSaved={() => {
+          onSaved={async (savedPet) => {
             setShowPetModal(false);
             setPetFormInitialData(null);
             setPetOwner(null);
+
+            // 🔹 Αποθήκευση ιατρικού ιστορικού από μητρώο
+            const petId = savedPet?._id || savedPet?.id;
+            const timeline = medicalTimelineRef.current;
+            if (petId && Array.isArray(timeline) && timeline.length > 0) {
+              for (const row of timeline) {
+                try {
+                  const reason = row["Γεγονός"] || row["Γεγονος"] || Object.values(row)[0] || "";
+                  const dateStr = row["Ημερομηνία"] || row["Ημερομηνια"] || "";
+                  const registeredBy = row["Καταχωρίσθηκε από"] || row["Καταχωρίσθηκε απο"] || "";
+                  if (!reason) continue;
+                  await addPetHistoryEntry(petId, {
+                    reason: `[Μητρώο] ${reason}`,
+                    result: registeredBy ? `Καταχωρίσθηκε από: ${registeredBy}` : "",
+                    date: parseGreekDate(dateStr) || undefined,
+                  });
+                } catch {}
+              }
+              medicalTimelineRef.current = null;
+              console.log(`[RegistryLookup] Αποθηκεύτηκαν ${timeline.length} εγγραφές ιστορικού.`);
+            }
           }}
           onCancel={() => {
             setShowPetModal(false);
