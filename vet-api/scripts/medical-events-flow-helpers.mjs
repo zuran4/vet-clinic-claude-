@@ -1,68 +1,92 @@
 // scripts/medical-events-flow-helpers.mjs
 //
-// Scraping του tab "Γεγονότα Ιατρικού Φακέλου" από pet.gov.gr/emzs-backoffice/
-// Χρησιμοποιεί DOM-based extraction (όχι ZK widget IDs) γιατί τα δεδομένα
-// είναι σε πίνακες, όχι σε individual form fields.
+// Scraping του "Ψηφιακό Χρονολόγιο" tab από pet.gov.gr/emzs-backoffice/
+// Περιέχει ΟΛΑ τα γεγονότα σε έναν πίνακα — ομαδοποιούμε ανά τύπο.
 
 import { BOOKLET_WIDGET_IDS } from "./zk-helpers.mjs";
 
-const SECTIONS = [
-  { key: "vaccinations",    label: "Εμβολιασμοί" },
-  { key: "diagnostics",     label: "Διαγνωστικές εξετάσεις" },
-  { key: "diseases",        label: "Νοσήματα υποχρεωτικής δήλωσης" },
-  { key: "hereditary",      label: "Κληρονομικές παθήσεις" },
-  { key: "sterilization",   label: "Στείρωση" },
-  { key: "genetic",         label: "Γενετικό Υλικό" },
-  { key: "antiparasitic",   label: "Αντιπαρασιτικές αγωγές" },
-  { key: "clinical",        label: "Κλινική Εξέταση" },
-  { key: "treatments",      label: "Θεραπείες/αγωγές" },
-  { key: "surgeries",       label: "Επεμβάσεις" },
-  { key: "hospitalization", label: "Νοσηλεία/παρακολούθηση" },
+// Mapping από "Γεγονός" text → section key
+const EVENT_TYPE_MAP = [
+  { key: "vaccinations",    patterns: ["εμβολιασμ"] },
+  { key: "antiparasitic",   patterns: ["αντιπαρασιτικ"] },
+  { key: "sterilization",   patterns: ["στείρωση", "στειρωση"] },
+  { key: "microchip",       patterns: ["σήμανση", "σημανση", "καταγραφ"] },
+  { key: "acquisition",     patterns: ["απόκτηση", "αποκτηση"] },
+  { key: "birth",           patterns: ["γέννηση", "γεννηση"] },
+  { key: "diagnostics",     patterns: ["διαγνωστικ"] },
+  { key: "diseases",        patterns: ["νόσημα", "νοσημα"] },
+  { key: "hereditary",      patterns: ["κληρονομικ"] },
+  { key: "genetic",         patterns: ["γενετικ"] },
+  { key: "clinical",        patterns: ["κλινικ"] },
+  { key: "treatments",      patterns: ["θεραπε"] },
+  { key: "surgeries",       patterns: ["επέμβαση", "επεμβαση"] },
+  { key: "hospitalization", patterns: ["νοσηλε"] },
+  { key: "passport",        patterns: ["διαβατήριο", "διαβατηριο"] },
+  { key: "ownership",       patterns: ["ιδιοκτησ", "μεταβίβαση", "μεταβιβαση"] },
 ];
 
+function classifyEvent(eventText) {
+  const lower = (eventText || "").toLowerCase();
+  for (const { key, patterns } of EVENT_TYPE_MAP) {
+    if (patterns.some(p => lower.includes(p))) return key;
+  }
+  return "other";
+}
+
 /**
- * Κύρια ροή: αναζητά microchip, ανοίγει booklet, πηγαίνει στο tab
- * "Γεγονότα Ιατρικού Φακέλου" και εξάγει δεδομένα από κάθε ενότητα.
+ * Κύρια ροή: αναζητά microchip, ανοίγει booklet, πηγαίνει στο
+ * "Ψηφιακό Χρονολόγιο" tab και εξάγει ΟΛΑ τα events.
+ * Επιστρέφει data ομαδοποιημένα ανά τύπο + timeline (όλα μαζί).
  */
 export async function runMedicalEventsFlow(page, microchip) {
   const trimmed = (microchip || "").trim();
   console.log("🏥 runMedicalEventsFlow για microchip:", trimmed);
 
-  const empty = () =>
-    Object.fromEntries(SECTIONS.map((s) => [s.key, []]));
+  const emptyData = () => ({
+    timeline: [],
+    vaccinations: [], antiparasitic: [], sterilization: [],
+    microchip: [], acquisition: [], birth: [], diagnostics: [],
+    diseases: [], hereditary: [], genetic: [], clinical: [],
+    treatments: [], surgeries: [], hospitalization: [],
+    passport: [], ownership: [], other: [],
+  });
 
   try {
     if (!trimmed) {
-      return { ok: false, found: false, reason: "MISSING_MICROCHIP", data: empty() };
+      return { ok: false, found: false, reason: "MISSING_MICROCHIP", data: emptyData() };
     }
 
     // 1) Search page
     const inSearch = await goToSearchPage(page);
     if (!inSearch) {
-      return { ok: false, found: false, reason: "SEARCH_PAGE_NOT_REACHED", data: empty() };
+      return { ok: false, found: false, reason: "SEARCH_PAGE_NOT_REACHED", data: emptyData() };
     }
 
     // 2) Search + open booklet
     const opened = await searchAndOpenBooklet(page, trimmed);
     if (!opened) {
-      return { ok: true, found: false, reason: "NO_RESULTS_OR_OPEN_FAILED", data: empty() };
+      return { ok: true, found: false, reason: "NO_RESULTS_OR_OPEN_FAILED", data: emptyData() };
     }
 
-    // 3) Click tab "Γεγονότα Ιατρικού Φακέλου"
-    const tabOpened = await clickMedicalEventsTab(page);
-    if (!tabOpened) {
-      await goToSearchPage(page);
-      return { ok: true, found: true, reason: "MEDICAL_TAB_NOT_FOUND", data: empty() };
+    // 3) Κλικ στο "Ψηφιακό Χρονολόγιο" tab (ή είναι ήδη το default)
+    await clickChronologyTab(page);
+
+    // 4) Εξαγωγή ολόκληρου του πίνακα
+    const allRows = await extractChronologyTable(page);
+    console.log(`   📋 Βρέθηκαν ${allRows.length} εγγραφές συνολικά`);
+
+    // 5) Ομαδοποίηση ανά τύπο γεγονότος
+    const data = emptyData();
+    data.timeline = allRows;
+
+    for (const row of allRows) {
+      const eventText = row["Γεγονός"] || row["Γεγονος"] || row["event"] || Object.values(row)[0] || "";
+      const key = classifyEvent(eventText);
+      if (data[key]) data[key].push(row);
+      else data.other.push(row);
     }
 
-    // 4) Εξαγωγή δεδομένων από κάθε ενότητα
-    const data = {};
-    for (const section of SECTIONS) {
-      console.log(`   📋 Εξάγω: ${section.label}`);
-      data[section.key] = await extractSection(page, section.label);
-    }
-
-    // 5) Επιστροφή σε search page
+    // 6) Επιστροφή σε search page
     await goToSearchPage(page);
 
     return { ok: true, found: true, reason: "OK", data };
@@ -71,7 +95,7 @@ export async function runMedicalEventsFlow(page, microchip) {
     try { await goToSearchPage(page); } catch {}
     return {
       ok: false, found: false, reason: "EXCEPTION",
-      details: err?.message, data: empty(),
+      details: err?.message, data: emptyData(),
     };
   }
 }
@@ -111,7 +135,6 @@ async function searchAndOpenBooklet(page, microchip) {
     await page.waitForTimeout(900);
   }
 
-  // Click αποτέλεσμα
   try {
     const row = page.getByRole("row", { name: new RegExp(microchip) }).first();
     if (await row.isVisible().catch(() => false)) {
@@ -128,7 +151,6 @@ async function searchAndOpenBooklet(page, microchip) {
     }
   } catch { return false; }
 
-  // Verify booklet loaded
   return await page.waitForFunction(
     (ids) => {
       try {
@@ -142,217 +164,108 @@ async function searchAndOpenBooklet(page, microchip) {
   ).then(() => true).catch(() => false);
 }
 
-async function clickMedicalEventsTab(page) {
-  console.log("➡️ [clickMedicalEventsTab] Ψάχνω tab 'Γεγονότα Ιατρικού Φακέλου'");
-
+/**
+ * Κλικ στο "Ψηφιακό Χρονολόγιο" tab.
+ * Είναι συνήθως το πρώτο/default tab — αν όχι το κάνουμε κλικ.
+ */
+async function clickChronologyTab(page) {
   const tabTexts = [
-    /Γεγονότα\s+Ιατρικού\s+Φακέλου/i,
-    /Ιατρικού\s+Φακέλου/i,
-    /Ιατρικό\s+Φάκελο/i,
-    /Γεγονότα/i,
+    /Ψηφιακό\s*Χρονολόγιο/i,
+    /Χρονολόγιο/i,
+    /Χρονολογιο/i,
+    /Digital/i,
+    /Timeline/i,
   ];
 
   for (const re of tabTexts) {
-    // Tab button
-    try {
-      const btn = page.getByRole("tab", { name: re }).first();
-      if (await btn.isVisible().catch(() => false)) {
-        await btn.click({ timeout: 8000 });
-        await page.waitForTimeout(1000);
-        console.log("✅ [clickMedicalEventsTab] Πάτησα tab (getByRole tab).");
-        return true;
-      }
-    } catch {}
-
-    // Οποιοδήποτε element με το κείμενο
     try {
       const el = page.getByText(re, { exact: false }).first();
       if (await el.isVisible().catch(() => false)) {
-        await el.click({ timeout: 8000 });
+        await el.click({ timeout: 5000 });
         await page.waitForTimeout(1000);
-        console.log("✅ [clickMedicalEventsTab] Πάτησα tab (getByText).");
+        console.log("✅ [clickChronologyTab] Πάτησα Χρονολόγιο tab.");
         return true;
       }
     } catch {}
   }
 
-  console.log("⚠️ [clickMedicalEventsTab] Δεν βρέθηκε tab.");
-  return false;
+  // Ίσως είναι ήδη ανοιχτό — συνεχίζουμε
+  console.log("ℹ️ [clickChronologyTab] Tab δεν βρέθηκε — ίσως είναι default.");
+  return true;
 }
 
 /**
- * Κάνει κλικ σε sidebar section χρησιμοποιώντας ZK events + DOM click.
- * Στρατηγική: βρίσκει το element με το label που βρίσκεται αριστερά στη σελίδα.
+ * Εξάγει τον πίνακα του Ψηφιακού Χρονολογίου.
+ * Στήλες: Γεγονός | Ημερομηνία | Όνομα Κατόχου | Καταχωρίσθηκε από
  */
-async function extractSection(page, sectionLabel) {
-  try {
-    // Κλικ στο σωστό sidebar item
-    await page.evaluate((label) => {
-      // Βρίσκουμε όλα τα elements με αυτό το κείμενο
-      const walker = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_ELEMENT,
-        null
-      );
+async function extractChronologyTable(page) {
+  // Περιμένουμε να φορτώσει ο πίνακας
+  await page.waitForTimeout(1200);
 
-      const matches = [];
-      let node;
-      while ((node = walker.nextNode())) {
-        const text = (node.innerText || "").trim();
-        if (text === label && node.children.length === 0) {
-          matches.push(node);
-        }
-      }
-
-      if (!matches.length) return;
-
-      // Προτιμάμε το element που βρίσκεται στο αριστερό μισό της σελίδας
-      const pageWidth = window.innerWidth;
-      const leftEl = matches.find(el => {
-        const rect = el.getBoundingClientRect();
-        return rect.left < pageWidth / 2 && rect.width > 0;
-      }) || matches[0];
-
-      if (!leftEl) return;
-
-      // Δοκιμάζουμε ZK event πρώτα
-      if (window.zk && window.zAu) {
-        try {
-          const w = zk.Widget.$(leftEl);
-          if (w) {
-            window.zAu.send(new zk.Event(w, "onClick"));
-            return;
-          }
-          // Ανεβαίνουμε στο parent για να βρούμε το ZK widget
-          let parent = leftEl.parentElement;
-          for (let i = 0; i < 5 && parent; i++) {
-            const pw = zk.Widget.$(parent);
-            if (pw) {
-              window.zAu.send(new zk.Event(pw, "onClick"));
-              return;
-            }
-            parent = parent.parentElement;
-          }
-        } catch {}
-      }
-
-      // Fallback: απλό DOM click
-      leftEl.click();
-    }, sectionLabel);
-
-    // Περιμένουμε να φορτώσει το content (1.5 δευτ.)
-    await page.waitForTimeout(1500);
-
-    return await extractContentTable(page);
-  } catch (err) {
-    console.warn(`⚠️ extractSection(${sectionLabel}):`, err?.message);
-    return [];
-  }
-}
-
-/**
- * Εξάγει δεδομένα από τον πίνακα δεδομένων.
- * Βρίσκει το σωστό listbox εξετάζοντας τα headers του:
- * - Sidebar listbox: έχει section ονόματα ως items (Εμβολιασμοί, Στείρωση κλπ)
- * - Content listbox: έχει data columns (Ημερομηνία, κλπ)
- */
-async function extractContentTable(page) {
   return await page.evaluate(() => {
     const rows = [];
-    const SECTION_NAMES = [
-      "Εμβολιασμοί", "Διαγνωστικές εξετάσεις", "Νοσήματα",
-      "Κληρονομικές", "Στείρωση", "Γενετικό", "Αντιπαρασιτικές",
-      "Κλινική", "Θεραπείες", "Επεμβάσεις", "Νοσηλεία",
-    ];
 
-    const isSidebarListbox = (lb) => {
-      // Αν τα items του είναι section ονόματα → είναι sidebar
-      const items = lb.querySelectorAll(".z-listitem, .z-treeitem");
-      let sectionCount = 0;
-      items.forEach(item => {
-        const text = (item.innerText || "").trim();
-        if (SECTION_NAMES.some(s => text.startsWith(s))) sectionCount++;
-      });
-      return sectionCount > 2;
-    };
-
-    const extractFromListbox = (listbox) => {
+    const extractFromListbox = (lb) => {
       const result = [];
-      const headerCells = listbox.querySelectorAll(".z-listheader");
-      const headers = Array.from(headerCells)
+      const headerEls = lb.querySelectorAll(".z-listheader");
+      const headers = Array.from(headerEls)
         .map(h => (h.innerText || h.textContent || "").trim())
-        .filter(h => h && h !== "Ενέργειες" && h !== "#" && h.length > 0);
+        .filter(h => h && h !== "#" && h !== "Ενέργειες");
 
-      const listItems = listbox.querySelectorAll(".z-listitem");
-      listItems.forEach(item => {
+      if (headers.length === 0) return result;
+
+      const items = lb.querySelectorAll(".z-listitem");
+      items.forEach(item => {
         const cells = Array.from(item.querySelectorAll(".z-listcell"));
         if (!cells.length) return;
+
         const values = cells.map(c => (c.innerText || c.textContent || "").trim());
-        const meaningful = values.filter(v => v && v !== "×" && v !== "✎" && v !== "");
+        const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
         if (!meaningful.length) return;
 
-        if (headers.length >= 2) {
-          const obj = {};
-          // Skip πρώτο cell αν είναι αριθμός (index #)
-          const offset = /^\d+$/.test(values[0]) ? 1 : 0;
-          headers.forEach((h, i) => {
-            const cell = cells[i + offset];
-            obj[h] = cell ? (cell.innerText || cell.textContent || "").trim() : "";
-          });
+        // Skip index cell (#) αν είναι αριθμός
+        const offset = /^\d+$/.test(values[0]) ? 1 : 0;
+
+        const obj = {};
+        headers.forEach((h, i) => {
+          const cell = cells[i + offset];
+          obj[h] = cell ? (cell.innerText || cell.textContent || "").trim() : "";
+        });
+
+        // Αν τουλάχιστον μία στήλη έχει τιμή
+        if (Object.values(obj).some(v => v && v !== "")) {
           result.push(obj);
-        } else {
-          result.push({ value: meaningful.join(" | ") });
         }
       });
+
       return result;
     };
 
-    try {
-      // Βρίσκουμε όλα τα listboxes
-      const allListboxes = Array.from(document.querySelectorAll(".z-listbox"));
+    // Βρίσκουμε τον "σωστό" listbox:
+    // Έχει headers που περιλαμβάνουν "Γεγονός" ή "Ημερομηνία"
+    const allListboxes = Array.from(document.querySelectorAll(".z-listbox"));
 
-      // Φιλτράρουμε — κρατάμε μόνο αυτά που ΔΕΝ είναι sidebar
-      const contentListboxes = allListboxes.filter(lb => !isSidebarListbox(lb));
+    for (const lb of allListboxes) {
+      const headers = Array.from(lb.querySelectorAll(".z-listheader"))
+        .map(h => (h.innerText || h.textContent || "").trim());
 
-      // Παίρνουμε αυτό με τα περισσότερα headers (πίνακας δεδομένων)
-      const best = contentListboxes.sort(
-        (a, b) =>
-          b.querySelectorAll(".z-listheader").length -
-          a.querySelectorAll(".z-listheader").length
-      )[0];
+      const isChronology = headers.some(h =>
+        h.includes("Γεγον") || h.includes("Ημερομ") || h.includes("Κάτοχ") || h.includes("Κατοχ")
+      );
 
-      if (best) {
-        const result = extractFromListbox(best);
-        if (result.length > 0 || best.querySelectorAll(".z-listheader").length >= 2) {
-          return result;
-        }
+      if (isChronology) {
+        const data = extractFromListbox(lb);
+        if (data.length > 0) return data;
       }
-
-      // Fallback: grid
-      const grid = document.querySelector(".z-grid");
-      if (grid) {
-        const headers = Array.from(grid.querySelectorAll(".z-column"))
-          .map(h => (h.innerText || "").trim())
-          .filter(h => h && h !== "Ενέργειες" && h !== "#");
-
-        grid.querySelectorAll(".z-row").forEach(row => {
-          const cells = Array.from(row.querySelectorAll(".z-cell"));
-          const meaningful = cells.map(c => (c.innerText || "").trim()).filter(v => v && v !== "×");
-          if (!meaningful.length) return;
-          if (headers.length >= 2) {
-            const obj = {};
-            headers.forEach((h, i) => { obj[h] = cells[i] ? (cells[i].innerText || "").trim() : ""; });
-            rows.push(obj);
-          } else {
-            rows.push({ value: meaningful.join(" | ") });
-          }
-        });
-      }
-    } catch (e) {
-      console.error("extractContentTable error:", e);
     }
+
+    // Fallback: παίρνουμε τον μεγαλύτερο listbox
+    const biggest = allListboxes.sort(
+      (a, b) => b.querySelectorAll(".z-listitem").length - a.querySelectorAll(".z-listitem").length
+    )[0];
+
+    if (biggest) return extractFromListbox(biggest);
 
     return rows;
   });
 }
-

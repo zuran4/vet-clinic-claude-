@@ -3,17 +3,24 @@ import { RefreshCw, ChevronDown, ChevronRight, AlertCircle, Wifi, WifiOff } from
 import { fetchMedicalEvents } from "../../api/registryApi.js";
 
 const SECTION_LABELS = {
+  timeline:        "Όλα τα Γεγονότα (Χρονολόγιο)",
   vaccinations:    "Εμβολιασμοί",
-  diagnostics:     "Διαγνωστικές εξετάσεις",
-  diseases:        "Νοσήματα υποχρεωτικής δήλωσης",
-  hereditary:      "Κληρονομικές παθήσεις",
-  sterilization:   "Στείρωση",
-  genetic:         "Γενετικό Υλικό",
   antiparasitic:   "Αντιπαρασιτικές αγωγές",
+  sterilization:   "Στείρωση",
+  microchip:       "Σήμανση / Καταγραφή",
+  acquisition:     "Απόκτηση",
+  birth:           "Γέννηση",
+  diagnostics:     "Διαγνωστικές εξετάσεις",
+  diseases:        "Νοσήματα",
+  hereditary:      "Κληρονομικές παθήσεις",
+  genetic:         "Γενετικό Υλικό",
   clinical:        "Κλινική Εξέταση",
   treatments:      "Θεραπείες / Αγωγές",
   surgeries:       "Επεμβάσεις",
   hospitalization: "Νοσηλεία / Παρακολούθηση",
+  passport:        "Διαβατήριο",
+  ownership:       "Ιδιοκτησία / Μεταβίβαση",
+  other:           "Άλλα",
 };
 
 const SectionTable = ({ rows }) => {
@@ -183,8 +190,8 @@ const MedicalEventsTab = ({ microchip }) => {
   }
 
   // success
-  const sectionKeys = Object.keys(SECTION_LABELS);
-  const totalRecords = sectionKeys.reduce((sum, k) => sum + (data?.[k]?.length ?? 0), 0);
+  const sectionKeys = Object.keys(SECTION_LABELS).filter(k => k !== "timeline");
+  const totalRecords = data?.timeline?.length ?? 0;
 
   return (
     <div className="p-4 space-y-2">
@@ -200,7 +207,10 @@ const MedicalEventsTab = ({ microchip }) => {
         </button>
       </div>
 
-      {sectionKeys.map(key => (
+      {/* Timeline πρώτα */}
+      <Section key="timeline" sectionKey="timeline" rows={data?.timeline ?? []} />
+      {/* Ανά κατηγορία — μόνο αν έχουν δεδομένα */}
+      {sectionKeys.filter(k => (data?.[k]?.length ?? 0) > 0).map(key => (
         <Section key={key} sectionKey={key} rows={data?.[key] ?? []} />
       ))}
     </div>
