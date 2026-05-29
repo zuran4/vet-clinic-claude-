@@ -182,18 +182,75 @@ async function clickMedicalEventsTab(page) {
 
 /**
  * Κάνει κλικ σε sidebar section και εξάγει τον πίνακα.
+ * Περιμένει να αλλάξει το content πριν κάνει extract.
  */
 async function extractSection(page, sectionLabel) {
   try {
-    // Κλικ στο sidebar item
-    const sidebarItem = page.getByText(sectionLabel, { exact: false }).first();
-    if (await sidebarItem.isVisible().catch(() => false)) {
-      await sidebarItem.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+    // Παίρνουμε snapshot του τρέχοντος content για να ξέρουμε πότε άλλαξε
+    const beforeSnapshot = await page.evaluate(() => {
+      const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
+      return content ? (content.innerText || content.textContent || "").trim().slice(0, 200) : "";
+    });
+
+    // Κλικ μέσα στη sidebar (αριστερό panel) — αποφεύγουμε matches στο content
+    const clicked = await page.evaluate((label) => {
+      // Ψάχνουμε στο αριστερό panel / sidebar
+      const sidebarCandidates = [
+        document.querySelector(".z-west"),
+        document.querySelector(".z-west-body"),
+        document.querySelector("[class*='sidebar']"),
+        document.querySelector("[class*='west']"),
+        document.querySelector("[class*='nav']"),
+      ].filter(Boolean);
+
+      const sidebar = sidebarCandidates[0];
+
+      // Αν βρήκαμε sidebar, ψάχνουμε μόνο εκεί
+      const container = sidebar || document;
+
+      const allEls = Array.from(container.querySelectorAll("*"));
+      const match = allEls.find(el => {
+        const text = (el.innerText || el.textContent || "").trim();
+        return text === label && !el.querySelector("*[class*='listhead'], *[class*='column']");
+      });
+
+      if (match) {
+        match.click();
+        return true;
+      }
+      return false;
+    }, sectionLabel);
+
+    if (!clicked) {
+      // Fallback: Playwright getByText περιορισμένο αριστερά
+      try {
+        const el = page.getByText(sectionLabel, { exact: true }).first();
+        if (await el.isVisible().catch(() => false)) {
+          await el.click({ timeout: 5000 });
+        }
+      } catch {}
     }
 
-    // Εξαγωγή πίνακα από το DOM
-    return await extractActiveTable(page);
+    // Περιμένουμε να αλλάξει το content (max 3 δευτ.)
+    let changed = false;
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(500);
+      const afterSnapshot = await page.evaluate(() => {
+        const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
+        return content ? (content.innerText || content.textContent || "").trim().slice(0, 200) : "";
+      });
+      if (afterSnapshot !== beforeSnapshot) {
+        changed = true;
+        break;
+      }
+    }
+
+    if (!changed) {
+      // Μάλλον ήταν ήδη επιλεγμένο ή δεν άλλαξε — extract ό,τι έχει
+      console.log(`   ℹ️ Content δεν άλλαξε για: ${sectionLabel}`);
+    }
+
+    return await extractContentTable(page);
   } catch (err) {
     console.warn(`⚠️ extractSection(${sectionLabel}):`, err?.message);
     return [];
@@ -201,39 +258,50 @@ async function extractSection(page, sectionLabel) {
 }
 
 /**
- * Εξάγει δεδομένα από τον ενεργό πίνακα στη σελίδα.
- * Χρησιμοποιεί DOM traversal — λειτουργεί με ZK Listbox/Grid.
+ * Εξάγει δεδομένα από τον πίνακα του ΚΕΝΤΡΙΚΟΥ content area.
+ * Αποφεύγει τη sidebar (αριστερό panel).
  */
-async function extractActiveTable(page) {
+async function extractContentTable(page) {
   return await page.evaluate(() => {
     const rows = [];
 
     try {
-      // ZK Listbox: z-listbox > z-listhead (headers) + z-listitem (rows)
-      const listbox = document.querySelector(".z-listbox");
+      const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
+      if (!content) return rows;
+
+      // ZK Listbox μέσα στο content area
+      const listboxes = content.querySelectorAll(".z-listbox");
+      // Παίρνουμε το τελευταίο/μεγαλύτερο (συνήθως ο πίνακας δεδομένων)
+      const listbox = Array.from(listboxes).sort(
+        (a, b) => b.querySelectorAll(".z-listitem").length - a.querySelectorAll(".z-listitem").length
+      )[0];
+
       if (listbox) {
-        const headerCells = listbox.querySelectorAll(".z-listheader, .z-listhead .z-listcell");
+        const headerCells = listbox.querySelectorAll(".z-listheader");
         const headers = Array.from(headerCells)
           .map(h => (h.innerText || h.textContent || "").trim())
           .filter(h => h && h !== "Ενέργειες" && h !== "#");
 
         const listItems = listbox.querySelectorAll(".z-listitem");
         listItems.forEach(item => {
-          const cells = item.querySelectorAll(".z-listcell");
+          const cells = Array.from(item.querySelectorAll(".z-listcell"));
           if (!cells.length) return;
 
-          const values = Array.from(cells)
-            .map(c => (c.innerText || c.textContent || "").trim());
-
-          // Παράλειψη κενών rows και action columns
-          const meaningful = values.filter(v => v && v !== "×" && v !== "✎" && !/^\d+$/.test(v));
+          const values = cells.map(c => (c.innerText || c.textContent || "").trim());
+          const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
           if (!meaningful.length) return;
 
           if (headers.length > 0) {
             const obj = {};
+            // Βρίσκουμε το index του πρώτου non-# header για offset
+            const startIdx = values.findIndex((v, i) => {
+              const h = headers[0];
+              return (cells[i]?.innerText || "").trim().includes(h) || i > 0;
+            });
+            const offset = startIdx > 0 ? startIdx : 1;
+
             headers.forEach((h, i) => {
-              // +1 για skip του # column
-              const cell = cells[i + 1];
+              const cell = cells[i + offset];
               obj[h] = cell ? (cell.innerText || cell.textContent || "").trim() : "";
             });
             rows.push(obj);
@@ -245,51 +313,17 @@ async function extractActiveTable(page) {
         if (rows.length > 0) return rows;
       }
 
-      // ZK Grid fallback: z-grid > z-rows > z-row
-      const grid = document.querySelector(".z-grid");
+      // ZK Grid fallback
+      const grid = content.querySelector(".z-grid");
       if (grid) {
         const headerCells = grid.querySelectorAll(".z-columns .z-column");
         const headers = Array.from(headerCells)
           .map(h => (h.innerText || h.textContent || "").trim())
           .filter(h => h && h !== "Ενέργειες" && h !== "#");
 
-        const gridRows = grid.querySelectorAll(".z-rows .z-row");
-        gridRows.forEach(row => {
-          const cells = row.querySelectorAll(".z-cell");
-          if (!cells.length) return;
-
-          const values = Array.from(cells).map(c => (c.innerText || c.textContent || "").trim());
-          const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
-          if (!meaningful.length) return;
-
-          if (headers.length > 0) {
-            const obj = {};
-            headers.forEach((h, i) => {
-              obj[h] = cells[i] ? (cells[i].innerText || cells[i].textContent || "").trim() : "";
-            });
-            rows.push(obj);
-          } else {
-            rows.push({ value: meaningful.join(" | ") });
-          }
-        });
-
-        if (rows.length > 0) return rows;
-      }
-
-      // HTML table fallback
-      const table = document.querySelector("table");
-      if (table) {
-        const headerEls = table.querySelectorAll("thead th, thead td");
-        const headers = Array.from(headerEls)
-          .map(h => (h.innerText || h.textContent || "").trim())
-          .filter(h => h && h !== "Ενέργειες" && h !== "#");
-
-        const bodyRows = table.querySelectorAll("tbody tr");
-        bodyRows.forEach(row => {
-          const cells = row.querySelectorAll("td");
-          if (!cells.length) return;
-
-          const values = Array.from(cells).map(c => (c.innerText || c.textContent || "").trim());
+        grid.querySelectorAll(".z-rows .z-row").forEach(row => {
+          const cells = Array.from(row.querySelectorAll(".z-cell"));
+          const values = cells.map(c => (c.innerText || c.textContent || "").trim());
           const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
           if (!meaningful.length) return;
 
@@ -305,9 +339,10 @@ async function extractActiveTable(page) {
         });
       }
     } catch (e) {
-      console.error("extractActiveTable error:", e);
+      console.error("extractContentTable error:", e);
     }
 
     return rows;
   });
 }
+
