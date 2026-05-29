@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cp /opt/vet-clinic/api/.env /opt/vet-clinic/repo/vet-api/.env && cd /opt/vet-clinic/repo/vet-api && npm install --omit=dev 2>&1 | tail -3\" 2>&1)"
+    ]
+  }
+}

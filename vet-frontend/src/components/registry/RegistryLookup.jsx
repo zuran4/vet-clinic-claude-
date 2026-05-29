@@ -1,6 +1,6 @@
 // src/components/registry/RegistryLookup.jsx
-import React, { useMemo, useState, useCallback, useRef } from "react";
-import { lookupMicrochip } from "../../api/registryApi.js";
+import React, { useMemo, useState, useCallback } from "react";
+import { lookupMicrochip, fetchMedicalEvents } from "../../api/registryApi.js";
 import { addPetHistoryEntry } from "../../api/petsApi.js";
 import MicrochipResultCard from "./MicrochipResultCard.jsx";
 import PetDetailsModal from "./PetDetailsModal.jsx";
@@ -42,8 +42,10 @@ export default function RegistryLookup({
   const [petFormInitialData, setPetFormInitialData] = useState(null);
   const [petOwner, setPetOwner] = useState(null);
 
-  // 🔹 Medical timeline (από το lookup result)
-  const medicalTimelineRef = useRef(null);
+  // 🔹 Medical confirm dialog
+  const [medicalConfirm, setMedicalConfirm]   = useState(null); // { petId, microchip }
+  const [savingMedical, setSavingMedical]      = useState(false);
+  const [medicalSavedCount, setMedicalSavedCount] = useState(null);
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -88,6 +90,41 @@ export default function RegistryLookup({
       setShowCustomerModal(true);
     }
   }, []);
+
+  const handleSaveMedical = useCallback(async () => {
+    if (!medicalConfirm) return;
+    setSavingMedical(true);
+    try {
+      const res = await fetchMedicalEvents(medicalConfirm.microchip);
+      const timeline = res?.data?.timeline;
+      if (!Array.isArray(timeline) || timeline.length === 0) {
+        setMedicalSavedCount(0);
+        setMedicalConfirm(null);
+        return;
+      }
+      let saved = 0;
+      for (const row of timeline) {
+        try {
+          const reason = row["Γεγονός"] || row["Γεγονος"] || Object.values(row)[0] || "";
+          const dateStr = row["Ημερομηνία"] || row["Ημερομηνια"] || "";
+          const registeredBy = row["Καταχωρίσθηκε από"] || row["Καταχωρίσθηκε απο"] || "";
+          if (!reason) continue;
+          await addPetHistoryEntry(medicalConfirm.petId, {
+            reason: `[Μητρώο] ${reason}`,
+            result: registeredBy ? `Καταχωρίσθηκε από: ${registeredBy}` : "",
+            date: parseGreekDate(dateStr) || undefined,
+          });
+          saved++;
+        } catch {}
+      }
+      setMedicalSavedCount(saved);
+    } catch {
+      setMedicalSavedCount(0);
+    } finally {
+      setSavingMedical(false);
+      setMedicalConfirm(null);
+    }
+  }, [medicalConfirm]);
 
   const isDev = useMemo(() => {
     try {
@@ -168,11 +205,6 @@ export default function RegistryLookup({
         // eslint-disable-next-line no-console
         console.log("[RegistryLookup] modalPayload", modalPayload);
       }
-
-      // 🔹 Αποθηκεύουμε το timeline που ήρθε μαζί με το lookup
-      medicalTimelineRef.current = Array.isArray(data.timeline) && data.timeline.length > 0
-        ? data.timeline : null;
-      console.log(`[RegistryLookup] Timeline από lookup: ${data.timeline?.length ?? 0} εγγραφές`);
 
       setPetModalData(modalPayload);
       setPetModalOpen(true);
@@ -341,44 +373,18 @@ export default function RegistryLookup({
         <PetModal
           initialData={petFormInitialData}
           owner={petOwner}
-          onSaved={async (savedPet) => {
+          onSaved={(savedPet) => {
             setShowPetModal(false);
             setPetFormInitialData(null);
             setPetOwner(null);
 
-            // 🔹 Αποθήκευση ιατρικού ιστορικού από μητρώο
+            // 🔹 Ρώτα αν να αποθηκευτεί ο ιατρικός φάκελος
             const petId = savedPet?._id || savedPet?.id;
-            const timeline = medicalTimelineRef.current;
-
-            if (!petId) {
-              console.warn("[RegistryLookup] Δεν βρέθηκε petId στο savedPet:", savedPet);
-              return;
+            const microchip = chipDataForPet?.microchip;
+            if (petId && microchip) {
+              setMedicalConfirm({ petId, microchip });
+              setMedicalSavedCount(null);
             }
-
-            if (!Array.isArray(timeline) || timeline.length === 0) {
-              console.log("[RegistryLookup] Δεν υπάρχει timeline για αποθήκευση.");
-              return;
-            }
-
-            let saved = 0;
-            for (const row of timeline) {
-              try {
-                const reason = row["Γεγονός"] || row["Γεγονος"] || Object.values(row)[0] || "";
-                const dateStr = row["Ημερομηνία"] || row["Ημερομηνια"] || "";
-                const registeredBy = row["Καταχωρίσθηκε από"] || row["Καταχωρίσθηκε απο"] || "";
-                if (!reason) continue;
-                await addPetHistoryEntry(petId, {
-                  reason: `[Μητρώο] ${reason}`,
-                  result: registeredBy ? `Καταχωρίσθηκε από: ${registeredBy}` : "",
-                  date: parseGreekDate(dateStr) || undefined,
-                });
-                saved++;
-              } catch (err) {
-                console.warn("[RegistryLookup] addPetHistoryEntry error:", err?.message);
-              }
-            }
-            medicalTimelineRef.current = null;
-            console.log(`[RegistryLookup] Αποθηκεύτηκαν ${saved}/${timeline.length} εγγραφές ιστορικού.`);
           }}
           onCancel={() => {
             setShowPetModal(false);
@@ -386,6 +392,60 @@ export default function RegistryLookup({
             setPetOwner(null);
           }}
         />
+      )}
+      {/* ── Confirmation: Αποθήκευση Ιατρικού Φακέλου ── */}
+      {(medicalConfirm || savingMedical || medicalSavedCount !== null) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center space-y-4">
+
+            {savingMedical ? (
+              <>
+                <div className="w-12 h-12 mx-auto rounded-full bg-sky-50 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-sky-500 animate-spin" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Φόρτωση από Μητρώο...</p>
+                <p className="text-xs text-gray-400">Μπορεί να πάρει 30-60 δευτερόλεπτα.</p>
+              </>
+            ) : medicalSavedCount !== null ? (
+              <>
+                <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 flex items-center justify-center text-2xl">✅</div>
+                <p className="text-sm font-semibold text-gray-800">
+                  {medicalSavedCount > 0
+                    ? `Αποθηκεύτηκαν ${medicalSavedCount} εγγραφές ιατρικού ιστορικού!`
+                    : "Δεν βρέθηκαν εγγραφές στο Μητρώο."}
+                </p>
+                <button
+                  onClick={() => setMedicalSavedCount(null)}
+                  className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium transition-colors"
+                >
+                  Κλείσιμο
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 mx-auto rounded-full bg-indigo-50 flex items-center justify-center text-2xl">🏥</div>
+                <p className="text-base font-semibold text-gray-800">Αποθήκευση Ιατρικού Φακέλου</p>
+                <p className="text-sm text-gray-500">
+                  Θέλετε να φορτωθούν και να αποθηκευτούν τα γεγονότα ιατρικού ιστορικού από το Εθνικό Μητρώο;
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setMedicalConfirm(null)}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Όχι
+                  </button>
+                  <button
+                    onClick={handleSaveMedical}
+                    className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+                  >
+                    Ναι, αποθήκευση
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </>
   );

@@ -271,7 +271,6 @@ export async function lookupMicrochip(microchip, options = {}) {
       htmlSnippet: json.htmlSnippet || null,
       bookletData: json.bookletData || json.pet || null,
       owner: json.owner || json.ownerData || null,
-      timeline: Array.isArray(json.timeline) ? json.timeline : [],
       raw: json,
     };
   } catch (err) {
