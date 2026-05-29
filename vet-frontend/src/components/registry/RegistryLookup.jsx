@@ -43,7 +43,8 @@ export default function RegistryLookup({
   const [petOwner, setPetOwner] = useState(null);
 
   // 🔹 Medical events (background fetch)
-  const medicalTimelineRef = useRef(null); // αποθηκεύει timeline χωρίς re-render
+  const medicalTimelineRef = useRef(null);   // αποθηκεύει timeline
+  const medicalPromiseRef  = useRef(null);   // αποθηκεύει το promise για να το await-άρουμε
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -172,16 +173,16 @@ export default function RegistryLookup({
       setPetModalData(modalPayload);
       setPetModalOpen(true);
 
-      // 🔹 Background fetch ιατρικού ιστορικού
+      // 🔹 Background fetch ιατρικού ιστορικού — αποθηκεύουμε το promise
       medicalTimelineRef.current = null;
-      fetchMedicalEvents(trimmed)
+      medicalPromiseRef.current = fetchMedicalEvents(trimmed)
         .then(res => {
           if (res?.ok && res?.data?.timeline?.length > 0) {
             medicalTimelineRef.current = res.data.timeline;
             console.log(`[RegistryLookup] Medical timeline: ${res.data.timeline.length} εγγραφές`);
           }
         })
-        .catch(() => {}); // silent fail — δεν μπλοκάρει τη ροή
+        .catch(() => {}); // silent fail
     } catch (err) {
       if (isDev) {
         // eslint-disable-next-line no-console
@@ -352,26 +353,45 @@ export default function RegistryLookup({
             setPetFormInitialData(null);
             setPetOwner(null);
 
+            // 🔹 Περιμένουμε το medical events fetch (αν ακόμα τρέχει)
+            if (medicalPromiseRef.current) {
+              await medicalPromiseRef.current.catch(() => {});
+              medicalPromiseRef.current = null;
+            }
+
             // 🔹 Αποθήκευση ιατρικού ιστορικού από μητρώο
             const petId = savedPet?._id || savedPet?.id;
             const timeline = medicalTimelineRef.current;
-            if (petId && Array.isArray(timeline) && timeline.length > 0) {
-              for (const row of timeline) {
-                try {
-                  const reason = row["Γεγονός"] || row["Γεγονος"] || Object.values(row)[0] || "";
-                  const dateStr = row["Ημερομηνία"] || row["Ημερομηνια"] || "";
-                  const registeredBy = row["Καταχωρίσθηκε από"] || row["Καταχωρίσθηκε απο"] || "";
-                  if (!reason) continue;
-                  await addPetHistoryEntry(petId, {
-                    reason: `[Μητρώο] ${reason}`,
-                    result: registeredBy ? `Καταχωρίσθηκε από: ${registeredBy}` : "",
-                    date: parseGreekDate(dateStr) || undefined,
-                  });
-                } catch {}
-              }
-              medicalTimelineRef.current = null;
-              console.log(`[RegistryLookup] Αποθηκεύτηκαν ${timeline.length} εγγραφές ιστορικού.`);
+
+            if (!petId) {
+              console.warn("[RegistryLookup] Δεν βρέθηκε petId στο savedPet:", savedPet);
+              return;
             }
+
+            if (!Array.isArray(timeline) || timeline.length === 0) {
+              console.log("[RegistryLookup] Δεν υπάρχει timeline για αποθήκευση.");
+              return;
+            }
+
+            let saved = 0;
+            for (const row of timeline) {
+              try {
+                const reason = row["Γεγονός"] || row["Γεγονος"] || Object.values(row)[0] || "";
+                const dateStr = row["Ημερομηνία"] || row["Ημερομηνια"] || "";
+                const registeredBy = row["Καταχωρίσθηκε από"] || row["Καταχωρίσθηκε απο"] || "";
+                if (!reason) continue;
+                await addPetHistoryEntry(petId, {
+                  reason: `[Μητρώο] ${reason}`,
+                  result: registeredBy ? `Καταχωρίσθηκε από: ${registeredBy}` : "",
+                  date: parseGreekDate(dateStr) || undefined,
+                });
+                saved++;
+              } catch (err) {
+                console.warn("[RegistryLookup] addPetHistoryEntry error:", err?.message);
+              }
+            }
+            medicalTimelineRef.current = null;
+            console.log(`[RegistryLookup] Αποθηκεύτηκαν ${saved}/${timeline.length} εγγραφές ιστορικού.`);
           }}
           onCancel={() => {
             setShowPetModal(false);
