@@ -1,6 +1,6 @@
 // src/components/registry/RegistryLookup.jsx
 import React, { useMemo, useState, useCallback, useRef } from "react";
-import { lookupMicrochip, fetchMedicalEvents } from "../../api/registryApi.js";
+import { lookupMicrochip } from "../../api/registryApi.js";
 import { addPetHistoryEntry } from "../../api/petsApi.js";
 import MicrochipResultCard from "./MicrochipResultCard.jsx";
 import PetDetailsModal from "./PetDetailsModal.jsx";
@@ -42,9 +42,8 @@ export default function RegistryLookup({
   const [petFormInitialData, setPetFormInitialData] = useState(null);
   const [petOwner, setPetOwner] = useState(null);
 
-  // 🔹 Medical events (background fetch)
-  const medicalTimelineRef = useRef(null);   // αποθηκεύει timeline
-  const medicalPromiseRef  = useRef(null);   // αποθηκεύει το promise για να το await-άρουμε
+  // 🔹 Medical timeline (από το lookup result)
+  const medicalTimelineRef = useRef(null);
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -170,19 +169,13 @@ export default function RegistryLookup({
         console.log("[RegistryLookup] modalPayload", modalPayload);
       }
 
+      // 🔹 Αποθηκεύουμε το timeline που ήρθε μαζί με το lookup
+      medicalTimelineRef.current = Array.isArray(data.timeline) && data.timeline.length > 0
+        ? data.timeline : null;
+      console.log(`[RegistryLookup] Timeline από lookup: ${data.timeline?.length ?? 0} εγγραφές`);
+
       setPetModalData(modalPayload);
       setPetModalOpen(true);
-
-      // 🔹 Background fetch ιατρικού ιστορικού — αποθηκεύουμε το promise
-      medicalTimelineRef.current = null;
-      medicalPromiseRef.current = fetchMedicalEvents(trimmed)
-        .then(res => {
-          if (res?.ok && res?.data?.timeline?.length > 0) {
-            medicalTimelineRef.current = res.data.timeline;
-            console.log(`[RegistryLookup] Medical timeline: ${res.data.timeline.length} εγγραφές`);
-          }
-        })
-        .catch(() => {}); // silent fail
     } catch (err) {
       if (isDev) {
         // eslint-disable-next-line no-console
@@ -352,12 +345,6 @@ export default function RegistryLookup({
             setShowPetModal(false);
             setPetFormInitialData(null);
             setPetOwner(null);
-
-            // 🔹 Περιμένουμε το medical events fetch (αν ακόμα τρέχει)
-            if (medicalPromiseRef.current) {
-              await medicalPromiseRef.current.catch(() => {});
-              medicalPromiseRef.current = null;
-            }
 
             // 🔹 Αποθήκευση ιατρικού ιστορικού από μητρώο
             const petId = savedPet?._id || savedPet?.id;

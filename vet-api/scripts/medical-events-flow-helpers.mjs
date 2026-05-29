@@ -167,8 +167,9 @@ async function searchAndOpenBooklet(page, microchip) {
 /**
  * Κλικ στο "Ψηφιακό Χρονολόγιο" tab.
  * Είναι συνήθως το πρώτο/default tab — αν όχι το κάνουμε κλικ.
+ * Export για χρήση και από άλλους flows.
  */
-async function clickChronologyTab(page) {
+export async function clickChronologyTab(page) {
   const tabTexts = [
     /Ψηφιακό\s*Χρονολόγιο/i,
     /Χρονολόγιο/i,
@@ -197,8 +198,9 @@ async function clickChronologyTab(page) {
 /**
  * Εξάγει τον πίνακα του Ψηφιακού Χρονολογίου.
  * Στήλες: Γεγονός | Ημερομηνία | Όνομα Κατόχου | Καταχωρίσθηκε από
+ * Export για χρήση και από άλλους flows.
  */
-async function extractChronologyTable(page) {
+export async function extractChronologyTable(page) {
   // Περιμένουμε να φορτώσει ο πίνακας
   await page.waitForTimeout(1200);
 

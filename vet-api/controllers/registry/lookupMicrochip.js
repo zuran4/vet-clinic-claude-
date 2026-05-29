@@ -111,6 +111,7 @@ export async function lookupMicrochipHandler(req, res, next) {
 
         sterilizationData,
         isSterilized,
+        timeline: lookupResult.timeline || [],
       };
 
       if (includeSnippets) {

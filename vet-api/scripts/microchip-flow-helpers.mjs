@@ -7,6 +7,10 @@ import {
   extractSterilizationData,
   waitSterilizationWidgets,
 } from "./zk-helpers.mjs";
+import {
+  clickChronologyTab,
+  extractChronologyTable,
+} from "./medical-events-flow-helpers.mjs";
 
 /**
  * Πλήρης ροή lookup microchip:
@@ -148,7 +152,17 @@ export async function runMicrochipLookupFlow(page, microchip) {
     sterilization = await extractSterilizationData(page);
     console.log("ℹ️ [runMicrochipLookupFlow] sterilization keys:", keys(sterilization));
 
-    // 7) Back to search page
+    // 7) Εξαγωγή Ψηφιακού Χρονολογίου (ενώ το booklet είναι ακόμα ανοιχτό)
+    let timeline = [];
+    try {
+      await clickChronologyTab(page);
+      timeline = await extractChronologyTable(page);
+      console.log(`ℹ️ [runMicrochipLookupFlow] timeline: ${timeline.length} εγγραφές`);
+    } catch (err) {
+      console.warn("⚠️ [runMicrochipLookupFlow] Timeline extract failed:", err?.message);
+    }
+
+    // 8) Back to search page
     await goToAnimalSearchPage(page);
 
     return result({
@@ -158,6 +172,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
       pet,
       owner,
       sterilization,
+      timeline,
     });
   } catch (err) {
     console.error("❌ [runMicrochipLookupFlow] Fatal error:", err);
