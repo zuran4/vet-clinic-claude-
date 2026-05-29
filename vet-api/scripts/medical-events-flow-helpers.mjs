@@ -181,74 +181,67 @@ async function clickMedicalEventsTab(page) {
 }
 
 /**
- * Κάνει κλικ σε sidebar section και εξάγει τον πίνακα.
- * Περιμένει να αλλάξει το content πριν κάνει extract.
+ * Κάνει κλικ σε sidebar section χρησιμοποιώντας ZK events + DOM click.
+ * Στρατηγική: βρίσκει το element με το label που βρίσκεται αριστερά στη σελίδα.
  */
 async function extractSection(page, sectionLabel) {
   try {
-    // Παίρνουμε snapshot του τρέχοντος content για να ξέρουμε πότε άλλαξε
-    const beforeSnapshot = await page.evaluate(() => {
-      const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
-      return content ? (content.innerText || content.textContent || "").trim().slice(0, 200) : "";
-    });
+    // Κλικ στο σωστό sidebar item
+    await page.evaluate((label) => {
+      // Βρίσκουμε όλα τα elements με αυτό το κείμενο
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_ELEMENT,
+        null
+      );
 
-    // Κλικ μέσα στη sidebar (αριστερό panel) — αποφεύγουμε matches στο content
-    const clicked = await page.evaluate((label) => {
-      // Ψάχνουμε στο αριστερό panel / sidebar
-      const sidebarCandidates = [
-        document.querySelector(".z-west"),
-        document.querySelector(".z-west-body"),
-        document.querySelector("[class*='sidebar']"),
-        document.querySelector("[class*='west']"),
-        document.querySelector("[class*='nav']"),
-      ].filter(Boolean);
-
-      const sidebar = sidebarCandidates[0];
-
-      // Αν βρήκαμε sidebar, ψάχνουμε μόνο εκεί
-      const container = sidebar || document;
-
-      const allEls = Array.from(container.querySelectorAll("*"));
-      const match = allEls.find(el => {
-        const text = (el.innerText || el.textContent || "").trim();
-        return text === label && !el.querySelector("*[class*='listhead'], *[class*='column']");
-      });
-
-      if (match) {
-        match.click();
-        return true;
+      const matches = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        const text = (node.innerText || "").trim();
+        if (text === label && node.children.length === 0) {
+          matches.push(node);
+        }
       }
-      return false;
+
+      if (!matches.length) return;
+
+      // Προτιμάμε το element που βρίσκεται στο αριστερό μισό της σελίδας
+      const pageWidth = window.innerWidth;
+      const leftEl = matches.find(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.left < pageWidth / 2 && rect.width > 0;
+      }) || matches[0];
+
+      if (!leftEl) return;
+
+      // Δοκιμάζουμε ZK event πρώτα
+      if (window.zk && window.zAu) {
+        try {
+          const w = zk.Widget.$(leftEl);
+          if (w) {
+            window.zAu.send(new zk.Event(w, "onClick"));
+            return;
+          }
+          // Ανεβαίνουμε στο parent για να βρούμε το ZK widget
+          let parent = leftEl.parentElement;
+          for (let i = 0; i < 5 && parent; i++) {
+            const pw = zk.Widget.$(parent);
+            if (pw) {
+              window.zAu.send(new zk.Event(pw, "onClick"));
+              return;
+            }
+            parent = parent.parentElement;
+          }
+        } catch {}
+      }
+
+      // Fallback: απλό DOM click
+      leftEl.click();
     }, sectionLabel);
 
-    if (!clicked) {
-      // Fallback: Playwright getByText περιορισμένο αριστερά
-      try {
-        const el = page.getByText(sectionLabel, { exact: true }).first();
-        if (await el.isVisible().catch(() => false)) {
-          await el.click({ timeout: 5000 });
-        }
-      } catch {}
-    }
-
-    // Περιμένουμε να αλλάξει το content (max 3 δευτ.)
-    let changed = false;
-    for (let i = 0; i < 6; i++) {
-      await page.waitForTimeout(500);
-      const afterSnapshot = await page.evaluate(() => {
-        const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
-        return content ? (content.innerText || content.textContent || "").trim().slice(0, 200) : "";
-      });
-      if (afterSnapshot !== beforeSnapshot) {
-        changed = true;
-        break;
-      }
-    }
-
-    if (!changed) {
-      // Μάλλον ήταν ήδη επιλεγμένο ή δεν άλλαξε — extract ό,τι έχει
-      console.log(`   ℹ️ Content δεν άλλαξε για: ${sectionLabel}`);
-    }
+    // Περιμένουμε να φορτώσει το content (1.5 δευτ.)
+    await page.waitForTimeout(1500);
 
     return await extractContentTable(page);
   } catch (err) {
@@ -258,80 +251,97 @@ async function extractSection(page, sectionLabel) {
 }
 
 /**
- * Εξάγει δεδομένα από τον πίνακα του ΚΕΝΤΡΙΚΟΥ content area.
- * Αποφεύγει τη sidebar (αριστερό panel).
+ * Εξάγει δεδομένα από τον πίνακα δεδομένων.
+ * Βρίσκει το σωστό listbox εξετάζοντας τα headers του:
+ * - Sidebar listbox: έχει section ονόματα ως items (Εμβολιασμοί, Στείρωση κλπ)
+ * - Content listbox: έχει data columns (Ημερομηνία, κλπ)
  */
 async function extractContentTable(page) {
   return await page.evaluate(() => {
     const rows = [];
+    const SECTION_NAMES = [
+      "Εμβολιασμοί", "Διαγνωστικές εξετάσεις", "Νοσήματα",
+      "Κληρονομικές", "Στείρωση", "Γενετικό", "Αντιπαρασιτικές",
+      "Κλινική", "Θεραπείες", "Επεμβάσεις", "Νοσηλεία",
+    ];
+
+    const isSidebarListbox = (lb) => {
+      // Αν τα items του είναι section ονόματα → είναι sidebar
+      const items = lb.querySelectorAll(".z-listitem, .z-treeitem");
+      let sectionCount = 0;
+      items.forEach(item => {
+        const text = (item.innerText || "").trim();
+        if (SECTION_NAMES.some(s => text.startsWith(s))) sectionCount++;
+      });
+      return sectionCount > 2;
+    };
+
+    const extractFromListbox = (listbox) => {
+      const result = [];
+      const headerCells = listbox.querySelectorAll(".z-listheader");
+      const headers = Array.from(headerCells)
+        .map(h => (h.innerText || h.textContent || "").trim())
+        .filter(h => h && h !== "Ενέργειες" && h !== "#" && h.length > 0);
+
+      const listItems = listbox.querySelectorAll(".z-listitem");
+      listItems.forEach(item => {
+        const cells = Array.from(item.querySelectorAll(".z-listcell"));
+        if (!cells.length) return;
+        const values = cells.map(c => (c.innerText || c.textContent || "").trim());
+        const meaningful = values.filter(v => v && v !== "×" && v !== "✎" && v !== "");
+        if (!meaningful.length) return;
+
+        if (headers.length >= 2) {
+          const obj = {};
+          // Skip πρώτο cell αν είναι αριθμός (index #)
+          const offset = /^\d+$/.test(values[0]) ? 1 : 0;
+          headers.forEach((h, i) => {
+            const cell = cells[i + offset];
+            obj[h] = cell ? (cell.innerText || cell.textContent || "").trim() : "";
+          });
+          result.push(obj);
+        } else {
+          result.push({ value: meaningful.join(" | ") });
+        }
+      });
+      return result;
+    };
 
     try {
-      const content = document.querySelector(".z-center, .z-center-body, [class*='center'], main") || document.body;
-      if (!content) return rows;
+      // Βρίσκουμε όλα τα listboxes
+      const allListboxes = Array.from(document.querySelectorAll(".z-listbox"));
 
-      // ZK Listbox μέσα στο content area
-      const listboxes = content.querySelectorAll(".z-listbox");
-      // Παίρνουμε το τελευταίο/μεγαλύτερο (συνήθως ο πίνακας δεδομένων)
-      const listbox = Array.from(listboxes).sort(
-        (a, b) => b.querySelectorAll(".z-listitem").length - a.querySelectorAll(".z-listitem").length
+      // Φιλτράρουμε — κρατάμε μόνο αυτά που ΔΕΝ είναι sidebar
+      const contentListboxes = allListboxes.filter(lb => !isSidebarListbox(lb));
+
+      // Παίρνουμε αυτό με τα περισσότερα headers (πίνακας δεδομένων)
+      const best = contentListboxes.sort(
+        (a, b) =>
+          b.querySelectorAll(".z-listheader").length -
+          a.querySelectorAll(".z-listheader").length
       )[0];
 
-      if (listbox) {
-        const headerCells = listbox.querySelectorAll(".z-listheader");
-        const headers = Array.from(headerCells)
-          .map(h => (h.innerText || h.textContent || "").trim())
-          .filter(h => h && h !== "Ενέργειες" && h !== "#");
-
-        const listItems = listbox.querySelectorAll(".z-listitem");
-        listItems.forEach(item => {
-          const cells = Array.from(item.querySelectorAll(".z-listcell"));
-          if (!cells.length) return;
-
-          const values = cells.map(c => (c.innerText || c.textContent || "").trim());
-          const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
-          if (!meaningful.length) return;
-
-          if (headers.length > 0) {
-            const obj = {};
-            // Βρίσκουμε το index του πρώτου non-# header για offset
-            const startIdx = values.findIndex((v, i) => {
-              const h = headers[0];
-              return (cells[i]?.innerText || "").trim().includes(h) || i > 0;
-            });
-            const offset = startIdx > 0 ? startIdx : 1;
-
-            headers.forEach((h, i) => {
-              const cell = cells[i + offset];
-              obj[h] = cell ? (cell.innerText || cell.textContent || "").trim() : "";
-            });
-            rows.push(obj);
-          } else {
-            rows.push({ value: meaningful.join(" | ") });
-          }
-        });
-
-        if (rows.length > 0) return rows;
+      if (best) {
+        const result = extractFromListbox(best);
+        if (result.length > 0 || best.querySelectorAll(".z-listheader").length >= 2) {
+          return result;
+        }
       }
 
-      // ZK Grid fallback
-      const grid = content.querySelector(".z-grid");
+      // Fallback: grid
+      const grid = document.querySelector(".z-grid");
       if (grid) {
-        const headerCells = grid.querySelectorAll(".z-columns .z-column");
-        const headers = Array.from(headerCells)
-          .map(h => (h.innerText || h.textContent || "").trim())
+        const headers = Array.from(grid.querySelectorAll(".z-column"))
+          .map(h => (h.innerText || "").trim())
           .filter(h => h && h !== "Ενέργειες" && h !== "#");
 
-        grid.querySelectorAll(".z-rows .z-row").forEach(row => {
+        grid.querySelectorAll(".z-row").forEach(row => {
           const cells = Array.from(row.querySelectorAll(".z-cell"));
-          const values = cells.map(c => (c.innerText || c.textContent || "").trim());
-          const meaningful = values.filter(v => v && v !== "×" && v !== "✎");
+          const meaningful = cells.map(c => (c.innerText || "").trim()).filter(v => v && v !== "×");
           if (!meaningful.length) return;
-
-          if (headers.length > 0) {
+          if (headers.length >= 2) {
             const obj = {};
-            headers.forEach((h, i) => {
-              obj[h] = cells[i] ? (cells[i].innerText || cells[i].textContent || "").trim() : "";
-            });
+            headers.forEach((h, i) => { obj[h] = cells[i] ? (cells[i].innerText || "").trim() : ""; });
             rows.push(obj);
           } else {
             rows.push({ value: meaningful.join(" | ") });
