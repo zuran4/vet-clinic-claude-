@@ -46,7 +46,8 @@ export default function RegistryLookup({
   const [medicalConfirm, setMedicalConfirm]       = useState(null); // { petId, microchip }
   const [savingMedical, setSavingMedical]          = useState(false);
   const [medicalSavedCount, setMedicalSavedCount] = useState(null);
-  const pendingMicrochipRef = useRef(null); // κρατάμε το microchip μέχρι να σωθεί το pet
+  // state (όχι ref) ώστε να επιβιώνει ανεξάρτητα από re-renders
+  const [pendingMicrochip, setPendingMicrochip]   = useState(null);
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -356,7 +357,7 @@ export default function RegistryLookup({
                 name:  savedCustomer.name,
                 phone: savedCustomer.phone || "",
               };
-              pendingMicrochipRef.current = chipDataForPet?.microchip || null;
+              setPendingMicrochip(chipDataForPet?.microchip || null);
               setPetFormInitialData({ ...mapChipToPet(chipDataForPet), owner });
               setPetOwner(owner);
               setChipDataForPet(null);
@@ -380,13 +381,17 @@ export default function RegistryLookup({
             setPetFormInitialData(null);
             setPetOwner(null);
 
-            // 🔹 Ρώτα αν να αποθηκευτεί ο ιατρικός φάκελος
             const petId = savedPet?._id || savedPet?.id;
-            const microchip = pendingMicrochipRef.current;
-            pendingMicrochipRef.current = null;
+            const microchip = pendingMicrochip;
+            setPendingMicrochip(null);
+
+            // Χρησιμοποιούμε setTimeout για να εμφανιστεί το dialog
+            // αφού κλείσει το PetModal
             if (petId && microchip) {
-              setMedicalConfirm({ petId, microchip });
-              setMedicalSavedCount(null);
+              setTimeout(() => {
+                setMedicalSavedCount(null);
+                setMedicalConfirm({ petId, microchip });
+              }, 200);
             }
           }}
           onCancel={() => {
