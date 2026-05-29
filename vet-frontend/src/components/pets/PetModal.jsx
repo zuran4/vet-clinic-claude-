@@ -25,10 +25,10 @@ const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
             </div>
             <div>
               <p className="text-white font-bold text-base leading-tight">
-                {initialData ? "Επεξεργασία Κατοικιδίου" : "Νέο Κατοικίδιο"}
+                {initialData?._id ? "Επεξεργασία Κατοικιδίου" : "Νέο Κατοικίδιο"}
               </p>
               <p className="text-white/70 text-xs mt-0.5">
-                {initialData ? "Τροποποίηση στοιχείων" : "Συμπλήρωσε τα στοιχεία"}
+                {initialData?._id ? "Τροποποίηση στοιχείων" : initialData ? "Προ-συμπλήρωση από chip — έλεγξε τα στοιχεία" : "Συμπλήρωσε τα στοιχεία"}
               </p>
             </div>
           </div>

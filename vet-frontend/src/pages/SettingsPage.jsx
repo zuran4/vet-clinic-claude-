@@ -152,7 +152,29 @@ const SettingsPage = ({ onClose }) => {
       setSaving(true);
       setSaveError(null);
       const data = await updateSettings(form);
-      if (data) setSettings(data);
+      if (data) {
+        setSettings(data);
+
+        // Sync localStorage so AppointmentSlots picks up grooming/clinic hours
+        const defaultHours = () => ({
+          monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+          tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+          wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+          thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+          friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+          saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
+          sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
+        });
+        localStorage.setItem("clinicWorkingHours",   JSON.stringify(data.clinicWorkingHours   || defaultHours()));
+        localStorage.setItem("groomingWorkingHours", JSON.stringify(data.groomingWorkingHours || defaultHours()));
+
+        window.dispatchEvent(new CustomEvent("settings:workingHoursChanged", {
+          detail: {
+            clinicWorkingHours:   data.clinicWorkingHours,
+            groomingWorkingHours: data.groomingWorkingHours,
+          },
+        }));
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {

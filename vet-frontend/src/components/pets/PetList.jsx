@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Edit, Trash2, Eye, PawPrint, User } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Edit, Trash2, Eye, PawPrint, User, Search, X, Cpu } from "lucide-react";
 import PetModal from "./PetModal.jsx";
 import PetProfileModal from "./PetProfileModal.jsx";
 import { usePetList } from "../../hooks/usePetList.jsx";
@@ -21,6 +21,18 @@ const PetList = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingPet, setEditingPet] = useState(null);
   const [viewingPet, setViewingPet] = useState(null);
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return pets;
+    return pets.filter((p) =>
+      p.name?.toLowerCase().includes(q) ||
+      p.microchip?.toLowerCase().includes(q) ||
+      p.owner?.name?.toLowerCase().includes(q) ||
+      p.owner?.phone?.includes(q)
+    );
+  }, [pets, query]);
 
   useEffect(() => {
     const open = () => { setEditingPet(null); setShowModal(true); };
@@ -41,11 +53,33 @@ const PetList = () => {
 
   return (
     <>
+      {/* Search bar */}
+      <div className="mb-3 relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Αναζήτηση με όνομα, microchip ή ιδιοκτήτη..."
+          className="w-full pl-9 pr-9 py-2.5 rounded-2xl border border-gray-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       <div className="overflow-x-auto bg-white rounded-2xl shadow-sm border border-gray-100">
-        {pets.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-14 text-center">
             <PawPrint className="w-10 h-10 text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">Δεν υπάρχουν καταχωρημένα κατοικίδια.</p>
+            <p className="text-sm text-gray-400">
+              {query ? `Δεν βρέθηκαν αποτελέσματα για "${query}".` : "Δεν υπάρχουν καταχωρημένα κατοικίδια."}
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm border-collapse">
@@ -55,13 +89,16 @@ const PetList = () => {
                 <th className="px-4 py-3 text-xs font-semibold text-sky-700 uppercase tracking-wide">Είδος</th>
                 <th className="px-4 py-3 text-xs font-semibold text-sky-700 uppercase tracking-wide">Φύλο</th>
                 <th className="px-4 py-3 text-xs font-semibold text-sky-700 uppercase tracking-wide">
+                  <span className="flex items-center gap-1"><Cpu className="w-3.5 h-3.5" />Chip</span>
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-sky-700 uppercase tracking-wide">
                   <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" />Ιδιοκτήτης</span>
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-sky-700 uppercase tracking-wide">Ενέργειες</th>
               </tr>
             </thead>
             <tbody>
-              {pets.map((pet) => (
+              {filtered.map((pet) => (
                 <tr key={pet._id} className="border-b border-gray-50 hover:bg-sky-50/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-gray-800">{pet.name}</td>
                   <td className="px-4 py-3">
@@ -73,6 +110,12 @@ const PetList = () => {
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${GENDER_STYLE[pet.gender] ?? "bg-gray-100 text-gray-600"}`}>
                       {pet.gender}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {pet.microchip
+                      ? <span className="font-mono text-xs text-gray-600 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-lg">{pet.microchip}</span>
+                      : <span className="text-gray-300 text-xs">—</span>
+                    }
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-sm">
                     {pet.owner

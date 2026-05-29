@@ -16,7 +16,7 @@ const petSchema = new mongoose.Schema({
   species: {
     type: String,
     required: true,
-    enum: ["Σκύλος", "Γάτα", "Άλλο"],
+    enum: ["Σκύλος", "Γάτα", "Κουνέλι", "Πτηνό", "Άλλο"],
     default: "Σκύλος",
   },
   gender: {

@@ -3,7 +3,7 @@
 // Περιγραφή: Επιλογή ή αναζήτηση ιδιοκτήτη κατοικιδίου
 // ===============================================
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -15,15 +15,19 @@ const PetOwnerSelector = ({ owner, selectedOwnerId, onSelect }) => {
   const [filtered, setFiltered] = useState([]);
   const [selectedName, setSelectedName] = useState("");
 
+  // Ref για να αποφύγουμε infinite loop από inline onSelect
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+
   // -------------------------------------
   // 1️⃣ Prefill όταν υπάρχει owner
   // -------------------------------------
   useEffect(() => {
     if (owner && owner._id) {
       setSelectedName(`${owner.name} (${owner.phone || "-"})`);
-      onSelect(owner._id);
+      onSelectRef.current(owner._id);
     }
-  }, [owner, onSelect]);
+  }, [owner]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -------------------------------------
   // 2️⃣ Φόρτωση λίστας πελατών (αν δεν υπάρχει owner)

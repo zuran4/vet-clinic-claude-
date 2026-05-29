@@ -80,15 +80,18 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
       try {
         setLoading(true);
 
-        const isEdit = !!initialData;
+        const isEdit = !!(initialData?._id);
         const url = isEdit
           ? `${API_URL}/customers/${initialData._id}`
           : `${API_URL}/customers`;
 
+        const payload = { ...formData };
+        delete payload._id; // _id in URL for edits, auto-generated for creates
+
         const res = await fetch(url, {
           method: isEdit ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) throw new Error("Αποτυχία αποθήκευσης");

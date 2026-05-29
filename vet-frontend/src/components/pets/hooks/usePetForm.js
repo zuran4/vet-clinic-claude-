@@ -12,14 +12,14 @@ export function usePetForm(initialData, owner, onSaved, onCancel) {
   // 1️⃣ State
   // -------------------------------------
   const [formData, setFormData] = useState({
-    owner: owner?._id || "",
-    name: "",
-    species: "",
-    gender: "",
-    birthDate: "",
-    microchip: "",
-    neutered: false,
-    vaccinated: false,
+    owner: initialData?.owner?._id || owner?._id || "",
+    name: initialData?.name || "",
+    species: initialData?.species || "",
+    gender: initialData?.gender || "",
+    birthDate: initialData?.birthDate ? initialData.birthDate.split("T")[0] : "",
+    microchip: initialData?.microchip || "",
+    neutered: initialData?.neutered || false,
+    vaccinated: initialData?.vaccinated || false,
   });
 
   const [loading, setLoading] = useState(false); // ✅ νέο loading state
@@ -66,8 +66,11 @@ export function usePetForm(initialData, owner, onSaved, onCancel) {
     async (e) => {
       e.preventDefault();
 
+      // Fallback: αν formData.owner δεν set (π.χ. pre-fill από chip), χρησιμοποίησε owner prop
+      const resolvedOwner = formData.owner || owner?._id || owner?.id || "";
+
       // ✏️ Validation
-      if (!formData.owner) {
+      if (!resolvedOwner) {
         toast.error("⚠️ Ο ιδιοκτήτης είναι υποχρεωτικός.");
         return;
       }
@@ -85,19 +88,38 @@ export function usePetForm(initialData, owner, onSaved, onCancel) {
       }
 
       try {
-        setLoading(true); // ✅ ενεργοποίηση loading
-        const isEdit = !!initialData;
+        setLoading(true);
+        const isEdit = !!(initialData?._id);
         const url = isEdit
           ? `${API_URL}/pets/${initialData._id}`
           : `${API_URL}/pets`;
 
+        const payload = { ...formData, owner: resolvedOwner };
+        // sparse unique index αγνοεί null/undefined αλλά ΟΧΙ ""
+        if (!payload.microchip) delete payload.microchip;
+
         const res = await fetch(url, {
           method: isEdit ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
 
-        if (!res.ok) throw new Error("Αποτυχία αποθήκευσης");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          // API επιστρέφει { error: { code, message } }
+          const apiCode = errData.error?.code;
+          const apiMsg  = errData.error?.message || errData.message;
+
+          if (res.status === 409 && apiCode === "DUPLICATE_KEY") {
+            const dupField = Object.keys(errData.details || {})[0];
+            const dupMsg = dupField === "microchip"
+              ? `Το microchip ήδη υπάρχει στη βάση. Πιθανώς το κατοικίδιο έχει ήδη καταχωρηθεί. Βρες το στη λίστα κατοικιδίων και ενημέρωσε τον ιδιοκτήτη αν χρειαστεί.`
+              : (apiMsg || "Υπάρχει ήδη εγγραφή με τα ίδια στοιχεία.");
+            throw new Error(dupMsg);
+          }
+
+          throw new Error(apiMsg || `Σφάλμα ${res.status}`);
+        }
         const saved = await res.json();
 
         toast.success(
@@ -110,12 +132,12 @@ export function usePetForm(initialData, owner, onSaved, onCancel) {
         onCancel();
       } catch (err) {
         console.error("❌ Σφάλμα αποθήκευσης κατοικιδίου:", err);
-        toast.error("❌ Αποτυχία αποθήκευσης κατοικιδίου.");
+        toast.error(`❌ ${err.message || "Αποτυχία αποθήκευσης κατοικιδίου."}`);
       } finally {
         setLoading(false); // ✅ απενεργοποίηση loading
       }
     },
-    [formData, initialData, onSaved, onCancel]
+    [formData, initialData, owner, onSaved, onCancel]
   );
 
   // -------------------------------------

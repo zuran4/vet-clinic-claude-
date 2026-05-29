@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import PetDetailsModal from "./PetDetailsModal.jsx";
+import CustomerModal from "../customers/CustomerModal.jsx";
+import PetModal from "../pets/PetModal.jsx";
 import SearchHistoryList from "./parts/SearchHistoryList.jsx";
 import MicrochipSearchForm from "./parts/MicrochipSearchForm.jsx";
 import RegistryLookupLoadingNotice from "./parts/RegistryLookupLoadingNotice.jsx";
@@ -23,6 +25,59 @@ export default function RegistryMicrochipSearchBlock() {
   } = useRegistryMicrochipSearch();
 
   const [workerRunning, setWorkerRunning] = useState(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerInitialData, setCustomerInitialData] = useState(null);
+  const [chipDataForPet, setChipDataForPet] = useState(null);
+
+  // State για pet modal (ανοίγει αφού αποθηκευτεί ο πελάτης)
+  const [showPetModal, setShowPetModal] = useState(false);
+  const [petInitialData, setPetInitialData] = useState(null);
+  const [petOwner, setPetOwner] = useState(null);
+
+  // Chip data → pet form fields
+  const mapChipToPet = useCallback((d) => {
+    const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const normalizeSpecies = (s) => {
+      if (!s) return "";
+      const l = strip(s);
+      if (l.includes("σκυλ")) return "Σκύλος";
+      if (l.includes("γατ")) return "Γάτα";
+      if (l.includes("κουν")) return "Κουνέλι";
+      if (l.includes("πτην") || l.includes("πουλ")) return "Πτηνό";
+      return "Άλλο";
+    };
+    const normalizeGender = (g) => {
+      if (!g) return "";
+      const l = strip(g);
+      if (l.includes("αρσ")) return "Αρσενικό";
+      if (l.includes("θηλ")) return "Θηλυκό";
+      return "";
+    };
+    return {
+      name:       d?.petName    || "",
+      species:    normalizeSpecies(d?.species),
+      gender:     normalizeGender(d?.sex),
+      microchip:  d?.microchip  || "",
+      neutered:   Boolean(d?.sterilizationData?.isSterilized ?? d?.isSterilized),
+      vaccinated: Boolean(d?.isVaccinated),
+    };
+  }, []);
+
+  const handleAction = useCallback(({ type, data }) => {
+    if (type === "createCustomer") {
+      const addressParts = [data?.ownerAddress, data?.ownerCity].filter(Boolean);
+      setCustomerInitialData({
+        name:    data?.ownerName  || "",
+        phone:   data?.ownerPhone || "",
+        email:   data?.ownerEmail || "",
+        address: addressParts.join(", "),
+        notes:   "",
+      });
+      setChipDataForPet(data);
+      closeModal();
+      setShowCustomerModal(true);
+    }
+  }, [closeModal]);
 
   const fetchWorkerState = useCallback(async () => {
     try {
@@ -161,7 +216,56 @@ export default function RegistryMicrochipSearchBlock() {
         )}
       </div>
 
-      <PetDetailsModal open={isModalOpen} onClose={closeModal} data={cardData} />
+      <PetDetailsModal
+        open={isModalOpen}
+        onClose={closeModal}
+        data={cardData}
+        onAction={handleAction}
+      />
+
+      {showCustomerModal && (
+        <CustomerModal
+          initialData={customerInitialData}
+          onSaved={(savedCustomer) => {
+            setShowCustomerModal(false);
+            setCustomerInitialData(null);
+            if (chipDataForPet) {
+              // Normalize owner — Mongoose μπορεί να επιστρέφει id ή _id
+              const owner = {
+                _id:   savedCustomer._id || savedCustomer.id,
+                name:  savedCustomer.name,
+                phone: savedCustomer.phone || "",
+              };
+              setPetInitialData({ ...mapChipToPet(chipDataForPet), owner });
+              setPetOwner(owner);
+              setChipDataForPet(null);
+              setShowPetModal(true);
+            }
+          }}
+          onCancel={() => {
+            setShowCustomerModal(false);
+            setCustomerInitialData(null);
+            setChipDataForPet(null);
+          }}
+        />
+      )}
+
+      {showPetModal && (
+        <PetModal
+          initialData={petInitialData}
+          owner={petOwner}
+          onSaved={() => {
+            setShowPetModal(false);
+            setPetInitialData(null);
+            setPetOwner(null);
+          }}
+          onCancel={() => {
+            setShowPetModal(false);
+            setPetInitialData(null);
+            setPetOwner(null);
+          }}
+        />
+      )}
     </section>
   );
 }
