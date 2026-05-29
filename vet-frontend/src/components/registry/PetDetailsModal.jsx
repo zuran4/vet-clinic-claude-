@@ -3,8 +3,9 @@ import {
   Cpu, Phone, Mail, MapPin, User, Calendar,
   Heart, Shield, Scissors, FileText, X,
   PawPrint, Home, Stethoscope, ClipboardList,
-  UserPlus, FolderOpen, BadgeCheck, AlertCircle,
+  UserPlus, FolderOpen, BadgeCheck, AlertCircle, HeartPulse,
 } from "lucide-react";
+import MedicalEventsTab from "../pets/MedicalEventsTab";
 
 const SPECIES_EMOJI = {
   "Σκύλος": "🐕",
@@ -66,12 +67,13 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
   const displayBool = (v) => v === true ? "Ναι" : v === false ? "Όχι" : "—";
 
   const tabs = useMemo(() => [
-    { key: "summary",  label: "Σύνοψη",     icon: ClipboardList,  enabled: true },
-    { key: "pet",      label: "Ζώο",         icon: PawPrint,       enabled: true },
-    { key: "owner",    label: "Ιδιοκτήτης",  icon: User,           enabled: hasOwner },
-    { key: "health",   label: "Υγεία",       icon: Heart,          enabled: true },
-    { key: "admin",    label: "Διαχείριση",  icon: Stethoscope,    enabled: true },
-  ], [hasOwner]);
+    { key: "summary",  label: "Σύνοψη",          icon: ClipboardList,  enabled: true },
+    { key: "pet",      label: "Ζώο",              icon: PawPrint,       enabled: true },
+    { key: "owner",    label: "Ιδιοκτήτης",       icon: User,           enabled: hasOwner },
+    { key: "health",   label: "Υγεία",            icon: Heart,          enabled: true },
+    { key: "admin",    label: "Διαχείριση",       icon: Stethoscope,    enabled: true },
+    { key: "medical",  label: "Ιατρικός Φάκελος", icon: HeartPulse,     enabled: !!microchip },
+  ], [hasOwner, microchip]);
 
   const dialogId = "pet-details-modal-title";
   const descId   = "pet-details-modal-desc";
@@ -230,11 +232,13 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
                 <IconField icon={FileText}  label="Διαβατήριο"     value={display(passportNumber)} />
               </Card>
             </div>
-          ) : (
+          ) : tab === "admin" ? (
             <Card title="Διαχείριση / Κτηνίατρος" icon={Stethoscope}>
               <IconField icon={Stethoscope} label="Διαχείριση από" value={display(managedBy)} />
             </Card>
-          )}
+          ) : tab === "medical" ? (
+            <MedicalEventsTab microchip={microchip} />
+          ) : null}
         </div>
 
         {/* ── FOOTER ── */}

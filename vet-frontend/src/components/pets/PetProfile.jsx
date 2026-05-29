@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone } from "lucide-react";
+import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse } from "lucide-react";
 import PetHistory from "./PetHistory";
+import MedicalEventsTab from "./MedicalEventsTab";
 import ChangeOwnerModal from "./ChangeOwnerModal";
 import request from "../../api/apiClient.js";
 import dayjs from "dayjs";
@@ -101,6 +102,7 @@ const PetProfile = ({ petId }) => {
         {[
           { key: "details", label: "Στοιχεία", icon: Info },
           { key: "history", label: "Ιστορικό", icon: Clock },
+          { key: "medical", label: "Ιατρικός Φάκελος", icon: HeartPulse },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -175,6 +177,13 @@ const PetProfile = ({ petId }) => {
       {activeTab === "history" && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <PetHistory petId={pet._id} />
+        </div>
+      )}
+
+      {/* Ιατρικός Φάκελος Tab */}
+      {activeTab === "medical" && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <MedicalEventsTab microchip={pet.microchip} />
         </div>
       )}
 
