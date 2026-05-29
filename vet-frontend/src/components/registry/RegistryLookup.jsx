@@ -1,5 +1,5 @@
 // src/components/registry/RegistryLookup.jsx
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef } from "react";
 import { lookupMicrochip, fetchMedicalEvents } from "../../api/registryApi.js";
 import { addPetHistoryEntry } from "../../api/petsApi.js";
 import MicrochipResultCard from "./MicrochipResultCard.jsx";
@@ -43,9 +43,10 @@ export default function RegistryLookup({
   const [petOwner, setPetOwner] = useState(null);
 
   // 🔹 Medical confirm dialog
-  const [medicalConfirm, setMedicalConfirm]   = useState(null); // { petId, microchip }
-  const [savingMedical, setSavingMedical]      = useState(false);
+  const [medicalConfirm, setMedicalConfirm]       = useState(null); // { petId, microchip }
+  const [savingMedical, setSavingMedical]          = useState(false);
   const [medicalSavedCount, setMedicalSavedCount] = useState(null);
+  const pendingMicrochipRef = useRef(null); // κρατάμε το microchip μέχρι να σωθεί το pet
 
   const mapChipToPet = useCallback((d) => {
     const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -355,6 +356,7 @@ export default function RegistryLookup({
                 name:  savedCustomer.name,
                 phone: savedCustomer.phone || "",
               };
+              pendingMicrochipRef.current = chipDataForPet?.microchip || null;
               setPetFormInitialData({ ...mapChipToPet(chipDataForPet), owner });
               setPetOwner(owner);
               setChipDataForPet(null);
@@ -380,7 +382,8 @@ export default function RegistryLookup({
 
             // 🔹 Ρώτα αν να αποθηκευτεί ο ιατρικός φάκελος
             const petId = savedPet?._id || savedPet?.id;
-            const microchip = chipDataForPet?.microchip;
+            const microchip = pendingMicrochipRef.current;
+            pendingMicrochipRef.current = null;
             if (petId && microchip) {
               setMedicalConfirm({ petId, microchip });
               setMedicalSavedCount(null);
