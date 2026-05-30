@@ -5,6 +5,7 @@ import {
   extractBookletData,
   extractOwnerData,
   extractSterilizationData,
+  extractVaccinationFromBooklet,
   waitSterilizationWidgets,
 } from "./zk-helpers.mjs";
 
@@ -39,6 +40,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
     pet: null,
     owner: null,
     sterilization: null,
+    vaccination: null,
     ...overrides,
   });
 
@@ -65,9 +67,12 @@ export async function runMicrochipLookupFlow(page, microchip) {
       });
     }
 
-    // 3) Extract pet (booklet)
+    // 3) Extract pet (booklet) + vaccination (ενώ είμαστε στη σελίδα του booklet)
     const pet = await extractBookletData(page);
     console.log("ℹ️ [runMicrochipLookupFlow] pet keys:", keys(pet));
+
+    const vaccination = await extractVaccinationFromBooklet(page);
+    console.log("ℹ️ [runMicrochipLookupFlow] vaccination:", vaccination);
 
     // Αν δεν έχουμε managedBy, σταματάμε εδώ (booklet άνοιξε, απλώς δεν έχουμε owner flow)
     if (!pet?.managedBy) {
@@ -81,6 +86,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
         pet,
         owner: null,
         sterilization: null,
+        vaccination,
       });
     }
 
@@ -158,6 +164,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
       pet,
       owner,
       sterilization,
+      vaccination,
     });
   } catch (err) {
     console.error("❌ [runMicrochipLookupFlow] Fatal error:", err);

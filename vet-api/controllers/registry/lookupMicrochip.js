@@ -101,6 +101,9 @@ export async function lookupMicrochipHandler(req, res, next) {
       const sterilizationData = lookupResult?.raw?.sterilization ?? null;
       const isSterilized = sterilizationData?.isSterilized ?? null;
 
+      const vaccinationData = lookupResult?.raw?.vaccination ?? null;
+      const isVaccinated = vaccinationData?.isVaccinated ?? null;
+
       const body = {
         ok: Boolean(lookupResult.ok),
         microchip: lookupResult.microchip || microchip,
@@ -111,6 +114,9 @@ export async function lookupMicrochipHandler(req, res, next) {
 
         sterilizationData,
         isSterilized,
+
+        vaccinationData,
+        isVaccinated,
       };
 
       if (includeSnippets) {

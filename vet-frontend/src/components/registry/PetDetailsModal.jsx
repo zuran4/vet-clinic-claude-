@@ -38,6 +38,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
     managedBy, ownerName, ownerPhone, ownerEmail,
     ownerAddress, ownerCity, ownerAfm,
     isSterilized, isVaccinated, sterilizationData,
+    lastVacDate, vacBrand, vacType,
   } = data || {};
 
   const s = sterilizationData || null;
@@ -60,7 +61,15 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
   };
   const displayDateTime = (v) => {
     if (!v) return "—";
-    const d = new Date(v);
+    let d = new Date(v);
+    if (Number.isNaN(d.getTime())) {
+      // Χειρισμός DD/MM/YY ή DD/MM/YYYY (μορφή gov site)
+      const m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{2,4})/);
+      if (m) {
+        const year = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
+        d = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+      }
+    }
     if (Number.isNaN(d.getTime())) return "—";
     return new Intl.DateTimeFormat("el-GR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
   };
@@ -132,7 +141,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
               {display(microchip)}
             </div>
             <StatusPill active={sterilizedActive} activeLabel="Στειρωμένο" inactiveLabel="Στείρωση: —" />
-            <StatusPill active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Εμβολιασμός: —" />
+            <StatusPill active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Ανεμβολίαστο" danger={!vaccinatedActive} />
           </div>
 
           {/* Tabs */}
@@ -184,7 +193,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
                   <IconField icon={Calendar}     label="Ημ. σήμανσης"    value={displayDateTime(markingDate)} />
                   <IconField icon={FileText}     label="Διαβατήριο"      value={display(passportNumber)} />
                   <IconField icon={Scissors}     label="Στείρωση"        value={sterilizedActive ? "Στειρωμένο" : "—"} highlight={sterilizedActive} />
-                  <IconField icon={Shield}       label="Εμβολιασμός"     value={vaccinatedActive ? "Εμβολιασμένο" : "—"} highlight={vaccinatedActive} />
+                  <IconField icon={Shield}       label="Εμβολιασμός"     value={vaccinatedActive ? "Εμβολιασμένο" : "Ανεμβολίαστο"} highlight={vaccinatedActive} danger={!vaccinatedActive} />
                 </Card>
               </div>
               {/* Ιδιοκτήτης (full-width) */}
@@ -222,8 +231,8 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
                   <IconField icon={FileText}  label="Διαγν. τεχνική"       value={display(s?.sterilizationDiagnosticTechnique)} />
                 </HealthCard>
                 <HealthCard title="Εμβολιασμός" active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Μη καταχωρημένος" icon={Shield}>
-                  <IconField icon={Calendar}  label="Τελευταίος"   value="—" />
-                  <IconField icon={FileText}  label="Σημειώσεις"   value="—" />
+                  <IconField icon={Calendar}  label="Τελευταίος"              value={displayDateTime(lastVacDate)} />
+                  <IconField icon={FileText}  label="Σκεύασμα / Τύπος"       value={[vacBrand, vacType].filter(Boolean).join(" / ") || "—"} />
                 </HealthCard>
               </div>
               <Card title="Σήμανση Microchip" icon={Cpu}>
@@ -308,7 +317,7 @@ function HealthCard({ title, active, activeLabel, inactiveLabel, icon: Icon, chi
   );
 }
 
-function IconField({ icon: Icon, label, value, mono = false, highlight = false }) {
+function IconField({ icon: Icon, label, value, mono = false, highlight = false, danger = false }) {
   const isEmpty = !value || value === "—";
   return (
     <div className="flex items-start gap-3">
@@ -319,7 +328,7 @@ function IconField({ icon: Icon, label, value, mono = false, highlight = false }
         <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
         <p className={[
           "text-sm font-semibold leading-snug",
-          isEmpty ? "text-gray-300" : highlight ? "text-emerald-600" : "text-gray-800",
+          isEmpty ? "text-gray-300" : highlight ? "text-emerald-600" : danger ? "text-red-500" : "text-gray-800",
           mono ? "font-mono text-xs" : "",
         ].join(" ")}>
           {value || "—"}
@@ -357,11 +366,18 @@ function OwnerCard({ ownerName, ownerPhone, ownerEmail, ownerAddress, ownerCity,
   );
 }
 
-function StatusPill({ active, activeLabel, inactiveLabel }) {
+function StatusPill({ active, activeLabel, inactiveLabel, danger = false }) {
   if (active) {
     return (
       <span className="inline-flex items-center gap-1 bg-emerald-400/30 text-white rounded-full px-2.5 py-0.5 text-[11px] font-bold">
         <BadgeCheck className="w-3 h-3" />{activeLabel}
+      </span>
+    );
+  }
+  if (danger) {
+    return (
+      <span className="inline-flex items-center gap-1 bg-red-500/30 text-red-200 rounded-full px-2.5 py-0.5 text-[11px] font-bold">
+        <AlertCircle className="w-3 h-3" />{inactiveLabel}
       </span>
     );
   }

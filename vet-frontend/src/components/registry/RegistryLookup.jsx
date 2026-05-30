@@ -197,6 +197,11 @@ export default function RegistryLookup({
         sterilizationData: sterilization,
         isSterilized: sterilization?.isSterilized ?? data.isSterilized ?? null,
 
+        isVaccinated: data.isVaccinated ?? data.vaccinationData?.isVaccinated ?? null,
+        lastVacDate: data.vaccinationData?.lastVacDate ?? null,
+        vacBrand: data.vaccinationData?.vacBrand ?? null,
+        vacType: data.vaccinationData?.vacType ?? null,
+
         // 🔹 Ιδιοκτήτης
         ownerName: owner.fullName ?? null,
         ownerPhone: owner.phone ?? null,

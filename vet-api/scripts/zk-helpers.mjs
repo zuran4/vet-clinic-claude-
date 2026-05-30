@@ -24,6 +24,17 @@ export const STERILIZATION_WIDGET_IDS = {
   diagnosticTechnique: "diagnosticTechnique",
 };
 
+// Πιθανά ZK widget IDs για τον εμβολιασμό στη σελίδα βιβλιαρίου
+const VACCINATION_WIDGET_CANDIDATES = [
+  "isVaccinated",
+  "vaccination",
+  "vaccinated",
+  "animalVaccinated",
+  "vaccinationStatus",
+  "vaccineStatus",
+  "animalVaccination",
+];
+
 // ZK widget IDs για τη σελίδα στοιχείων ΙΔΙΟΚΤΗΤΗ
 export const OWNER_WIDGET_IDS = {
   firstName: "firstname",
@@ -106,7 +117,6 @@ export async function extractBookletData(page) {
       };
 
       const rawMicrochip = readWidget(widgetIds.microchip);
-      const rawChipDate = readWidget(widgetIds.chipDate);
       const rawName = readWidget(widgetIds.petName);
       const rawGender = readWidget(widgetIds.gender);
       const rawAge = readWidget(widgetIds.age);
@@ -115,6 +125,21 @@ export async function extractBookletData(page) {
       const rawSmall = readWidget(widgetIds.small);
       const rawColor = readWidget(widgetIds.color);
       const rawManagedBy = readWidget(widgetIds.managedBy);
+
+      // Chip date: δοκίμασε ZK widget, fallback σε span.z-label με date pattern (DD/MM/YY HH:mm)
+      let rawChipDate = readWidget(widgetIds.chipDate);
+      if (!rawChipDate) {
+        try {
+          const labelSpans = Array.from(document.querySelectorAll("span.z-label"));
+          for (const span of labelSpans) {
+            const txt = (span.innerText || span.textContent || "").trim();
+            if (/^\d{2}\/\d{2}\/\d{2,4}(\s+\d{2}:\d{2})?$/.test(txt)) {
+              rawChipDate = txt;
+              break;
+            }
+          }
+        } catch {}
+      }
 
       const normalizeAge = (v) => (v == null ? null : String(v).trim() || null);
 
@@ -325,6 +350,192 @@ export async function extractOwnerData(page) {
   } catch (error) {
     console.error("❌ Σφάλμα στο extractOwnerData:", error);
     return {};
+  }
+}
+
+/**
+ * Εξάγει την κατάσταση εμβολιασμού από τη σελίδα βιβλιαρίου.
+ * Δοκιμάζει πιθανά ZK widget IDs και κάνει fallback σε DOM text search.
+ * Καλείται ενώ η σελίδα βιβλιαρίου είναι ανοιχτή (χωρίς πλοήγηση).
+ */
+export async function extractVaccinationFromBooklet(page) {
+  try {
+    // Phase 1: Εξαγωγή status από span.z-label (κύρια σελίδα booklet)
+    const statusRaw = await page.evaluate((candidates) => {
+      const readWidget = (id) => {
+        try {
+          if (!window.zk || !zk.Widget) return null;
+          const w = zk.Widget.$("$" + id);
+          if (!w) return null;
+          if (typeof w.getValue === "function") return w.getValue();
+          if (typeof w.getLabel === "function") return w.getLabel();
+          try {
+            const n = typeof w.$n === "function" ? w.$n() : null;
+            if (n) return (n.innerText || n.textContent || "").trim() || null;
+          } catch {}
+          return null;
+        } catch { return null; }
+      };
+
+      for (const id of candidates) {
+        const v = readWidget(id);
+        if (v != null && String(v).trim() !== "") return String(v).trim();
+      }
+
+      // DOM fallback: span.z-label
+      try {
+        for (const span of document.querySelectorAll("span.z-label")) {
+          const txt = (span.innerText || span.textContent || "").trim();
+          if (/^εμβολιασμένο$/i.test(txt) || /^ανεμβολίαστο$/i.test(txt)) return txt;
+        }
+      } catch {}
+
+      return null;
+    }, VACCINATION_WIDGET_CANDIDATES);
+
+    const statusLower = (statusRaw || "").toLowerCase();
+    const isVaccinated = statusRaw
+      ? statusLower.includes("εμβολιασμένο") || statusLower === "true" || statusLower === "ναι"
+      : null;
+
+    // Phase 2: Κλικ στο "Γεγονότα Ιατρικού Φακέλου" tab → εξαγωγή λεπτομερειών
+    let lastVacDate = null;
+    let vacBrand = null;
+    let vacType = null;
+
+    try {
+      // Κλικ στο tab
+      const tabClicked = await _clickMedicalEventsTab(page);
+      if (tabClicked) {
+        // Περιμένουμε να φορτώσει το content του tab
+        await page.waitForTimeout(2000);
+
+        const details = await page.evaluate(() => {
+          const getText = (el) => (el.innerText || el.textContent || "").trim();
+          let lastVacDate = null;
+          let vacBrand = null;
+          let vacType = null;
+
+          // Χρησιμοποιούμε .z-listitem (όχι tr.) για συμβατότητα με li/tr/div
+          const allRows = Array.from(document.querySelectorAll(".z-listitem"));
+
+          // STEP 1: Βρες summary vaccination rows → πιο πρόσφατη ημερομηνία
+          let bestTs = 0;
+          for (const row of allRows) {
+            const cells = Array.from(row.querySelectorAll("div.z-listcell-content")).map(getText).filter(Boolean);
+            if (!cells.some(c => /εμβολιασμ/i.test(c))) continue;
+            const dc = cells.find(c => /^\d{2}\/\d{2}\/\d{4}$/.test(c));
+            if (!dc) continue;
+            const [d, m, y] = dc.split("/").map(Number);
+            const ts = new Date(y, m - 1, d).getTime();
+            if (ts > bestTs) { bestTs = ts; lastVacDate = dc; }
+          }
+
+          // STEP 2: Βρες detail row που έχει ΚΑΙ Latin brand ΚΑΙ Greek type (πεζά)
+          for (const row of allRows) {
+            const cells = Array.from(row.querySelectorAll("div.z-listcell-content")).map(getText).filter(Boolean);
+            const lb = cells.find(c => /[A-Z]{2,}/.test(c) && !/[α-ωΑ-Ω]/.test(c) && !/\*/.test(c) && !/^\d/.test(c));
+            const gt = cells.find(c => /[α-ω]/.test(c) && !/\*/.test(c) && !/εμβολιασμ/i.test(c) && !/ζώου/i.test(c));
+            if (lb && gt) { vacBrand = lb; vacType = gt; break; }
+          }
+
+          return { lastVacDate, vacBrand, vacType };
+        });
+
+        console.log("🔬 [VAC] details:", details);
+        lastVacDate = details.lastVacDate;
+        vacBrand = details.vacBrand;
+        vacType = details.vacType;
+
+        // Επιστροφή στο πρώτο tab (summary/booklet)
+        await _returnToBookletSummaryTab(page);
+      }
+    } catch (detailErr) {
+      console.warn("⚠️ [extractVaccinationFromBooklet] Αποτυχία εξαγωγής details:", detailErr?.message);
+    }
+
+    return { isVaccinated, vaccinationRaw: statusRaw, lastVacDate, vacBrand, vacType };
+  } catch (err) {
+    console.error("❌ Σφάλμα στο extractVaccinationFromBooklet:", err);
+    return { isVaccinated: null };
+  }
+}
+
+async function _clickMedicalEventsTab(page) {
+  // 1) Μέσω z-tab-text span (hospital icon + text)
+  try {
+    const tabSpan = page.locator("span.z-tab-text").filter({ hasText: /Ιατρικ/i }).first();
+    if (await tabSpan.isVisible().catch(() => false)) {
+      await tabSpan.click({ timeout: 5000 });
+      console.log("✅ [_clickMedicalEventsTab] Click via span.z-tab-text Ιατρικ.");
+      return true;
+    }
+  } catch {}
+
+  // 2) Μέσω parent .z-tab element
+  try {
+    const tab = page.locator(".z-tab").filter({ hasText: /Ιατρικ/i }).first();
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click({ timeout: 5000 });
+      console.log("✅ [_clickMedicalEventsTab] Click via .z-tab Ιατρικ.");
+      return true;
+    }
+  } catch {}
+
+  // 3) Μέσω img src (hospital SVG)
+  try {
+    const img = page.locator('img[src*="local_hospital"]').first();
+    if (await img.isVisible().catch(() => false)) {
+      const parent = img.locator("..").locator("..");
+      await parent.click({ timeout: 5000 });
+      console.log("✅ [_clickMedicalEventsTab] Click via hospital img parent.");
+      return true;
+    }
+  } catch {}
+
+  // 4) getByRole tab
+  try {
+    const roleTab = page.getByRole("tab", { name: /Ιατρικ/i }).first();
+    if (await roleTab.isVisible().catch(() => false)) {
+      await roleTab.click({ timeout: 5000 });
+      console.log("✅ [_clickMedicalEventsTab] Click via getByRole tab.");
+      return true;
+    }
+  } catch {}
+
+  // 5) getByText fallback
+  const textPatterns = [
+    /Γεγονότα\s*Ιατρικού\s*Φακέλου/i,
+    /Ιατρικού\s*Φακέλου/i,
+    /Ιατρικου\s*Φακελου/i,
+  ];
+  for (const re of textPatterns) {
+    try {
+      const el = page.getByText(re, { exact: false }).first();
+      if (await el.isVisible().catch(() => false)) {
+        await el.click({ timeout: 5000 });
+        console.log("✅ [_clickMedicalEventsTab] Click via getByText:", re);
+        return true;
+      }
+    } catch {}
+  }
+
+  console.warn("⚠️ [_clickMedicalEventsTab] Δεν βρέθηκε το 'Γεγονότα Ιατρικού Φακέλου' tab.");
+  return false;
+}
+
+async function _returnToBookletSummaryTab(page) {
+  // Κλικ στο πρώτο tab (summary / booklet)
+  const patterns = [/Ψηφιακό\s*Χρονολόγιο/i, /Χρονολόγιο/i, /Παρακολούθηση/i, /Παρακολουθηση/i];
+  for (const re of patterns) {
+    try {
+      const el = page.getByText(re, { exact: false }).first();
+      if (await el.isVisible().catch(() => false)) {
+        await el.click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        return;
+      }
+    } catch {}
   }
 }
 

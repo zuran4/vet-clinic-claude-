@@ -28,6 +28,9 @@ const EMPTY_CARD_DATA = {
   sterilizationData: null,
   isSterilized: null,
   isVaccinated: null,
+  lastVacDate: null,
+  vacBrand: null,
+  vacType: null,
 };
 
 function buildBaseCardData(microchip) {
@@ -58,6 +61,8 @@ function buildCardDataFromApi(data, fallbackMicrochip) {
   const isSterilized = data?.isSterilized ?? sterilizationData?.isSterilized ?? null;
   const isVaccinated = data?.isVaccinated ?? null;
 
+  const vaccinationData = data?.vaccinationData ?? null;
+
   return {
     microchip: data?.microchip || fallbackMicrochip || null,
     markingDate: booklet.markingDate ?? booklet.chipDate ?? null,
@@ -81,6 +86,9 @@ function buildCardDataFromApi(data, fallbackMicrochip) {
     sterilizationData,
     isSterilized,
     isVaccinated,
+    lastVacDate: vaccinationData?.lastVacDate ?? null,
+    vacBrand:    vaccinationData?.vacBrand    ?? null,
+    vacType:     vaccinationData?.vacType     ?? null,
   };
 }
 

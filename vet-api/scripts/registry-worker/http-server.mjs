@@ -203,6 +203,7 @@ if (req.method === "GET" && path === "/lookup") {
       bookletData,
       owner: flowResult?.owner ?? null,
       sterilization: flowResult?.sterilization ?? null,
+      vaccination: flowResult?.vaccination ?? null,
       textSnippet,
       htmlSnippet,
     });
