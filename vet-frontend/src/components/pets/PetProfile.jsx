@@ -29,9 +29,9 @@ const InfoRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const PetProfile = ({ petId }) => {
+const PetProfile = ({ petId, initialTab }) => {
   const [pet, setPet] = useState(null);
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState(initialTab || "details");
   const [loading, setLoading] = useState(false);
   const [showChangeOwner, setShowChangeOwner] = useState(false);
   const [ownerChanged, setOwnerChanged] = useState(false);
@@ -183,7 +183,7 @@ const PetProfile = ({ petId }) => {
       {/* Ιατρικός Φάκελος Tab */}
       {activeTab === "medical" && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <MedicalEventsTab microchip={pet.microchip} />
+          <MedicalEventsTab microchip={pet.microchip} petId={pet._id} />
         </div>
       )}
 

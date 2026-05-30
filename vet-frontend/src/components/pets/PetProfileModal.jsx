@@ -2,7 +2,7 @@ import React from "react";
 import { X, PawPrint } from "lucide-react";
 import PetProfile from "./PetProfile";
 
-const PetProfileModal = ({ petId, onClose }) => {
+const PetProfileModal = ({ petId, onClose, initialTab }) => {
   if (!petId) return null;
 
   return (
@@ -31,7 +31,7 @@ const PetProfileModal = ({ petId, onClose }) => {
 
         {/* Content */}
         <div className="bg-gray-50 overflow-y-auto flex-1">
-          <PetProfile petId={petId} onClose={onClose} />
+          <PetProfile petId={petId} onClose={onClose} initialTab={initialTab} />
         </div>
       </div>
     </div>

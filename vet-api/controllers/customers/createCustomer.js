@@ -14,6 +14,19 @@ import { sendSMS } from "../../utils/smsService.js";
 // ===============================
 export const createCustomer = async (req, res, next) => {
   try {
+    const { name, phone } = req.body;
+
+    // 🔹 Έλεγχος διπλότυπου: ίδιο όνομα ΚΑΙ τηλέφωνο
+    if (name && phone) {
+      const existing = await Customer.findOne({
+        name:  { $regex: `^${name.trim()}$`, $options: "i" },
+        phone: phone.trim(),
+      });
+      if (existing) {
+        return next(new ApiError(409, `Υπάρχει ήδη πελάτης με το όνομα "${existing.name}" και τηλέφωνο ${existing.phone}.`));
+      }
+    }
+
     // 🔹 Δημιουργία και αποθήκευση πελάτη
     const c = new Customer(req.body);
     const saved = await c.save();

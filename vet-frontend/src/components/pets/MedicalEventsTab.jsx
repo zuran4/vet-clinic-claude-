@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { RefreshCw, ChevronDown, ChevronRight, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronRight, AlertCircle, Wifi, WifiOff, Save, Check } from "lucide-react";
+import request from "../../api/apiClient.js";
 import { fetchMedicalEvents } from "../../api/registryApi.js";
 
 const SECTION_LABELS = {
@@ -94,10 +95,12 @@ const Section = ({ sectionKey, rows }) => {
   );
 };
 
-const MedicalEventsTab = ({ microchip }) => {
+const MedicalEventsTab = ({ microchip, petId }) => {
   const [state, setState] = useState("idle"); // idle | loading | success | error | no_microchip | not_logged_in
   const [data, setData] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedOk, setSavedOk] = useState(false);
 
   const load = async () => {
     setState("loading");
@@ -122,6 +125,58 @@ const MedicalEventsTab = ({ microchip }) => {
         setErrorMsg(err?.message || "Σφάλμα σύνδεσης.");
         setState("error");
       }
+    }
+  };
+
+  const parseDate = (raw) => {
+    if (!raw) return null;
+    // DD/MM/YYYY → YYYY-MM-DD
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw.trim())) {
+      return raw.trim().split("/").reverse().join("-");
+    }
+    return raw;
+  };
+
+  const saveToHistory = async () => {
+    if (!petId || !data?.timeline?.length) return;
+    setSaving(true);
+    try {
+      // 1️⃣ Αποθήκευση χρονολογίου στο ιστορικό
+      const entries = data.timeline.map((row) => {
+        const cols = Object.keys(row);
+        const dateCol  = cols.find(c => c.toLowerCase().includes("ημερ") || c.toLowerCase().includes("date"));
+        const eventCol = cols.find(c => c.toLowerCase().includes("γεγον") || c.toLowerCase().includes("event") || c.toLowerCase().includes("τύπος"));
+        const byCol    = cols.find(c => c.toLowerCase().includes("κατα") || c.toLowerCase().includes("by") || c.toLowerCase().includes("όνομα"));
+
+        return {
+          reason: eventCol ? row[eventCol] : cols.map(c => row[c]).filter(Boolean).join(" | "),
+          result: byCol ? `Καταχωρήθηκε από: ${row[byCol]}` : "",
+          date:   parseDate(dateCol ? row[dateCol] : null) || new Date().toISOString(),
+        };
+      });
+
+      for (const entry of entries) {
+        await request(`/pets/${petId}/history`, { method: "POST", body: entry });
+      }
+
+      // 2️⃣ Αν υπάρχει ημερομηνία γέννησης, ενημέρωσε το pet record
+      const birthRows = data?.birth ?? [];
+      if (birthRows.length > 0) {
+        const birthRow = birthRows[0];
+        const cols = Object.keys(birthRow);
+        const dateCol = cols.find(c => c.toLowerCase().includes("ημερ") || c.toLowerCase().includes("date"));
+        const rawBirth = dateCol ? birthRow[dateCol] : null;
+        const birthDate = parseDate(rawBirth);
+        if (birthDate) {
+          await request(`/pets/${petId}`, { method: "PUT", body: { birthDate } });
+        }
+      }
+
+      setSavedOk(true);
+    } catch (err) {
+      alert("❌ " + (err.message || "Σφάλμα αποθήκευσης"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -195,16 +250,36 @@ const MedicalEventsTab = ({ microchip }) => {
 
   return (
     <div className="p-4 space-y-2">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <p className="text-xs text-gray-400">
           {totalRecords} εγγραφές συνολικά
         </p>
-        <button
-          onClick={load}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 transition-colors"
-        >
-          <RefreshCw className="w-3 h-3" /> Ανανέωση
-        </button>
+        <div className="flex gap-2">
+          {petId && (
+            <button
+              onClick={saveToHistory}
+              disabled={saving || savedOk}
+              className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors ${
+                savedOk
+                  ? "bg-green-50 text-green-600 cursor-default"
+                  : "bg-indigo-50 hover:bg-indigo-100 text-indigo-600"
+              }`}
+            >
+              {savedOk
+                ? <><Check className="w-3 h-3" /> Αποθηκεύτηκε</>
+                : saving
+                  ? <><RefreshCw className="w-3 h-3 animate-spin" /> Αποθήκευση...</>
+                  : <><Save className="w-3 h-3" /> Αποθήκευση στον Φάκελο</>
+              }
+            </button>
+          )}
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" /> Ανανέωση
+          </button>
+        </div>
       </div>
 
       {/* Timeline πρώτα */}

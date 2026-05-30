@@ -4,6 +4,7 @@
 // ===============================================
 
 import Customer from "../../models/Customer.js";
+import Pet from "../../models/Pet.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
@@ -22,7 +23,9 @@ export const deleteCustomer = async (req, res, next) => {
       throw new ApiError(404, "Ο πελάτης δεν βρέθηκε");
     }
 
-    logger.info(`🗑️ Διαγράφηκε πελάτης: ${deleted.name}`);
+    // 🔹 Cascade: διαγραφή όλων των κατοικιδίων του πελάτη
+    const { deletedCount } = await Pet.deleteMany({ owner: req.params.id });
+    logger.info(`🗑️ Διαγράφηκαν ${deletedCount} κατοικίδια του πελάτη: ${deleted.name}`);
     res.json({ message: "✅ Ο πελάτης διαγράφηκε επιτυχώς" });
   } catch (err) {
     logger.error("❌ Σφάλμα κατά τη διαγραφή πελάτη", { stack: err.stack });

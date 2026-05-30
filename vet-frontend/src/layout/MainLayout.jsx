@@ -44,6 +44,7 @@ function MainLayout({
   // ✅ Single source of truth για navigation/panels
   // "dashboard" | "appointments" | "products" | "customers" | "pets" | "prescriptions" | "export" | "settings"
   const [activePanel, setActivePanel] = useState("dashboard");
+  const [petsCount, setPetsCount] = useState(0);
 
   // ✅ Settings state
   const [settings, setSettings] = useState(null);
@@ -60,6 +61,14 @@ function MainLayout({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activePanel]);
+
+  // 🔹 Φόρτωση αριθμού κατοικιδίων για Dashboard
+  useEffect(() => {
+    fetch(`${API_URL}/pets`)
+      .then((r) => r.json())
+      .then((data) => setPetsCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {});
+  }, []);
 
   // 🔹 Φόρτωση settings από backend (με API_URL)
   useEffect(() => {
@@ -240,7 +249,7 @@ function MainLayout({
           <div className="space-y-6">
             <Dashboard
               appointments={appointments}
-              pets={[]} // TODO: σύνδεση pets
+              pets={Array(petsCount).fill(null)}
               clients={[]} // TODO: σύνδεση clients
               products={productsWithExpDate}
               onShowAppointments={() => openPanel("appointments")}

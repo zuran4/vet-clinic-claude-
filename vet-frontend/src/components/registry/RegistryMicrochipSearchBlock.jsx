@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import PetDetailsModal from "./PetDetailsModal.jsx";
 import CustomerModal from "../customers/CustomerModal.jsx";
 import PetModal from "../pets/PetModal.jsx";
+import PetProfileModal from "../pets/PetProfileModal.jsx";
 import SearchHistoryList from "./parts/SearchHistoryList.jsx";
 import MicrochipSearchForm from "./parts/MicrochipSearchForm.jsx";
 import RegistryLookupLoadingNotice from "./parts/RegistryLookupLoadingNotice.jsx";
@@ -33,6 +34,9 @@ export default function RegistryMicrochipSearchBlock() {
   const [showPetModal, setShowPetModal] = useState(false);
   const [petInitialData, setPetInitialData] = useState(null);
   const [petOwner, setPetOwner] = useState(null);
+
+  // State για pet profile modal (ανοίγει αφού αποθηκευτεί το κατοικίδιο)
+  const [savedPetId, setSavedPetId] = useState(null);
 
   // Chip data → pet form fields
   const mapChipToPet = useCallback((d) => {
@@ -91,6 +95,8 @@ export default function RegistryMicrochipSearchBlock() {
 
   useEffect(() => {
     fetchWorkerState();
+    const interval = setInterval(fetchWorkerState, 15000);
+    return () => clearInterval(interval);
   }, [fetchWorkerState]);
 
   const lastResult = useMemo(() => {
@@ -254,16 +260,26 @@ export default function RegistryMicrochipSearchBlock() {
         <PetModal
           initialData={petInitialData}
           owner={petOwner}
-          onSaved={() => {
+          onSaved={(saved) => {
             setShowPetModal(false);
             setPetInitialData(null);
             setPetOwner(null);
+            // Άνοιγμα ιατρικού φακέλου αμέσως μετά την αποθήκευση
+            if (saved?._id) setSavedPetId(saved._id);
           }}
           onCancel={() => {
             setShowPetModal(false);
             setPetInitialData(null);
             setPetOwner(null);
           }}
+        />
+      )}
+
+      {savedPetId && (
+        <PetProfileModal
+          petId={savedPetId}
+          initialTab="medical"
+          onClose={() => setSavedPetId(null)}
         />
       )}
     </section>

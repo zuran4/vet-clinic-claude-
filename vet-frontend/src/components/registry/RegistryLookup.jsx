@@ -6,6 +6,7 @@ import MicrochipResultCard from "./MicrochipResultCard.jsx";
 import PetDetailsModal from "./PetDetailsModal.jsx";
 import CustomerModal from "../customers/CustomerModal.jsx";
 import PetModal from "../pets/PetModal.jsx";
+import PetProfileModal from "../pets/PetProfileModal.jsx";
 import { Loader2 } from "lucide-react";
 
 function parseGreekDate(dateStr) {
@@ -41,6 +42,9 @@ export default function RegistryLookup({
   const [showPetModal, setShowPetModal] = useState(false);
   const [petFormInitialData, setPetFormInitialData] = useState(null);
   const [petOwner, setPetOwner] = useState(null);
+
+  // 🔹 State για pet profile modal (ανοίγει αμέσως μετά αποθήκευση κατοικιδίου)
+  const [savedPetId, setSavedPetId] = useState(null);
 
   // 🔹 Medical confirm dialog
   const [medicalConfirm, setMedicalConfirm]       = useState(null); // { petId, microchip }
