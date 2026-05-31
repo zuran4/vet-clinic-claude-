@@ -19,6 +19,9 @@ router.get("/", pets.getAllPets);
 // 📋 Λήψη κατοικιδίων για συγκεκριμένο πελάτη
 router.get("/by-owner/:ownerId", pets.getPetsByOwner);
 
+// 💾 Αποθήκευση registry snapshot (by microchip)
+router.patch("/snapshot/:microchip", pets.updateRegistrySnapshot);
+
 // 📋 Λήψη κατοικιδίου με ID
 router.get("/:id", validateObjectId, pets.getPetById);
 

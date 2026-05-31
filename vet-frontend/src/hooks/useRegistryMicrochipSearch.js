@@ -145,6 +145,16 @@ export function useRegistryMicrochipSearch() {
       setIsLoading(false);
       setCardData(cached);
       if (openModalOnSuccess) setIsModalOpen(true);
+      // Αποθήκευση snapshot και από cache (για νέα pets με ίδιο microchip)
+      const token = localStorage.getItem("token");
+      fetch(`/api/pets/snapshot/${encodeURIComponent(key)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ snapshot: cached }),
+      }).catch(() => {});
       return;
     }
 
@@ -183,6 +193,17 @@ export function useRegistryMicrochipSearch() {
       cacheRef.current.set(key, nextData); // ✅ cache
 
       saveToHistory(nextData);
+
+      // Αποθήκευση registry snapshot στη βάση (fire & forget)
+      const token = localStorage.getItem("token");
+      fetch(`/api/pets/snapshot/${encodeURIComponent(key)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ snapshot: nextData }),
+      }).catch(() => {});
 
       setStatus("success");
       if (openModalOnSuccess && (nextData.microchip || nextData.petName)) {

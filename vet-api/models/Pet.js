@@ -55,6 +55,15 @@ const petSchema = new mongoose.Schema({
     },
   ],
 
+  registrySnapshot: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
+  registrySnapshotAt: {
+    type: Date,
+    default: null,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse } from "lucide-react";
+import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse, ClipboardList } from "lucide-react";
 import PetHistory from "./PetHistory";
 import MedicalEventsTab from "./MedicalEventsTab";
 import ChangeOwnerModal from "./ChangeOwnerModal";
+import PetDetailsModal from "../registry/PetDetailsModal.jsx";
 import request from "../../api/apiClient.js";
 import dayjs from "dayjs";
 
@@ -35,6 +36,7 @@ const PetProfile = ({ petId, initialTab }) => {
   const [loading, setLoading] = useState(false);
   const [showChangeOwner, setShowChangeOwner] = useState(false);
   const [ownerChanged, setOwnerChanged] = useState(false);
+  const [showRegistryCard, setShowRegistryCard] = useState(false);
 
   useEffect(() => {
     if (!petId) return;
@@ -95,6 +97,14 @@ const PetProfile = ({ petId, initialTab }) => {
             )}
           </div>
         </div>
+        {pet.registrySnapshot && (
+          <button
+            onClick={() => setShowRegistryCard(true)}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors flex-shrink-0"
+          >
+            <ClipboardList className="w-4 h-4" /> Κάρτα
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -197,6 +207,12 @@ const PetProfile = ({ petId, initialTab }) => {
           }}
         />
       )}
+
+      <PetDetailsModal
+        open={showRegistryCard}
+        onClose={() => setShowRegistryCard(false)}
+        data={pet.registrySnapshot}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Edit, Trash2, Eye, PawPrint, User, Search, X, Cpu } from "lucide-react";
 import PetModal from "./PetModal.jsx";
 import PetProfileModal from "./PetProfileModal.jsx";
+import PetDetailsModal from "../registry/PetDetailsModal.jsx";
 import { usePetList } from "../../hooks/usePetList.jsx";
 
 const SPECIES_STYLE = {
@@ -20,6 +21,7 @@ const PetList = () => {
   const { pets, loading, error, deletePet, savePet } = usePetList();
   const [showModal, setShowModal] = useState(false);
   const [editingPet, setEditingPet] = useState(null);
+  const [viewingSnapshot, setViewingSnapshot] = useState(null); // για PetDetailsModal
   const [viewingPet, setViewingPet] = useState(null);
   const [query, setQuery] = useState("");
 
@@ -127,7 +129,10 @@ const PetList = () => {
                     <div className="flex gap-1.5 justify-end">
                       <button
                         title="Προβολή"
-                        onClick={() => setViewingPet(pet._id)}
+                        onClick={() => pet.registrySnapshot
+                          ? setViewingSnapshot(pet.registrySnapshot)
+                          : setViewingPet(pet._id)
+                        }
                         className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 transition-colors"
                       >
                         <Eye className="w-4 h-4" />
@@ -169,6 +174,12 @@ const PetList = () => {
           onClose={() => setViewingPet(null)}
         />
       )}
+
+      <PetDetailsModal
+        open={Boolean(viewingSnapshot)}
+        onClose={() => setViewingSnapshot(null)}
+        data={viewingSnapshot}
+      />
     </>
   );
 };
