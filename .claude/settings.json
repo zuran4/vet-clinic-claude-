@@ -37,7 +37,11 @@
       "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cd /opt/vet-clinic/repo/vet-api && node monitor.mjs 2>&1\" 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"curl -s --max-time 5 -o /dev/null -w '%{http_code}' http://localhost:5000/api/health 2>&1\" 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"sed -i 's|curl -sf --max-time 5 http://localhost:5000/api/health 2>&1 || curl -sf --max-time 5 http://localhost:5000/api/ 2>&1|curl -s --max-time 5 -o /dev/null -w \\\\\"%{http_code}\\\\\" http://localhost:5000/api/health 2>/dev/null|' /opt/vet-clinic/repo/vet-api/monitor.mjs\" 2>&1)",
-      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"rm -f /opt/vet-clinic/monitor-last-alert.txt && cd /opt/vet-clinic/repo/vet-api && node monitor.mjs 2>&1\" 2>&1)"
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"rm -f /opt/vet-clinic/monitor-last-alert.txt && cd /opt/vet-clinic/repo/vet-api && node monitor.mjs 2>&1\" 2>&1)",
+      "Bash(curl -s http://localhost:5000/health)",
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')",
+      "Bash(curl -s -i -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')",
+      "Bash(curl -s -i -X POST http://localhost:5000/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')"
     ]
   }
 }

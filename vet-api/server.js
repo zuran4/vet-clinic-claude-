@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -93,6 +94,9 @@ app.use((req, res, next) => {
   // Header και σε lowercase και σε canonical μορφή (enterprise friendly)
   res.setHeader("x-request-id", requestId);
   res.setHeader("X-Request-Id", requestId);
+
+  // Συνδέει το requestId με τυχόν Sentry event που θα προκύψει σε αυτό το request
+  Sentry.getCurrentScope().setTag("requestId", requestId);
 
   next();
 });
@@ -217,6 +221,12 @@ app.use((req, res) => {
     },
   });
 });
+
+// ==============================
+// 🛰️ Sentry — στέλνει στο dashboard κάθε unhandled / 5xx error
+// (πρέπει να μπει ΠΡΙΝ από το δικό μας errorHandler)
+// ==============================
+Sentry.setupExpressErrorHandler(app);
 
 // ==============================
 // 🧰 Error Handler (τελευταίος πάντα)
