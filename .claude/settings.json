@@ -1,7 +1,43 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cp /opt/vet-clinic/api/.env /opt/vet-clinic/repo/vet-api/.env && cd /opt/vet-clinic/repo/vet-api && npm install --omit=dev 2>&1 | tail -3\" 2>&1)"
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cp /opt/vet-clinic/api/.env /opt/vet-clinic/repo/vet-api/.env && cd /opt/vet-clinic/repo/vet-api && npm install --omit=dev 2>&1 | tail -3\" 2>&1)",
+      "Bash(python3 -c ' *)",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import paramiko; print\\('paramiko ok'\\)\" 2>&1)",
+      "Bash(SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password -o PasswordAuthentication=yes -o BatchMode=no admin@192.168.50.1 'echo CONNECTED; uname -a')",
+      "Bash(SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -vvv -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password admin@192.168.50.1 exit)",
+      "Bash(SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password zuran@192.168.50.1 'echo CONNECTED; uname -a')",
+      "Bash(SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password root@192.168.50.1 'echo CONNECTED; uname -a')",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"sed -i 's|git pull|git checkout -- . \\\\&\\\\& git pull|' /opt/vet-clinic/deploy.sh && grep 'git' /opt/vet-clinic/deploy.sh\" 2>&1)",
+      "Bash(/tmp/askpass.sh)",
+      "Bash(echo \"Exit: $?\")",
+      "Read(//tmp/**)",
+      "Bash(cat)",
+      "Bash(chmod +x /tmp/askpass_log.sh)",
+      "Bash(SSH_ASKPASS=/tmp/askpass_log.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password admin@192.168.50.1 'echo ok')",
+      "Bash(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -o PreferredAuthentications=none admin@192.168.50.1)",
+      "Bash(xxd /tmp/askpass.sh)",
+      "Bash(chmod +x /tmp/askpass2.sh)",
+      "Bash(xxd /tmp/askpass2.sh)",
+      "Bash(/tmp/askpass2.sh)",
+      "Bash(echo \"Output: $\\(/tmp/askpass2.sh\\)\")",
+      "Bash(SSH_ASKPASS=/tmp/askpass2.sh SSH_ASKPASS_REQUIRE=force DISPLAY=:0 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o PreferredAuthentications=password admin@192.168.50.1 'echo CONNECTED')",
+      "Bash(ip route *)",
+      "Bash(ip addr *)",
+      "Read(//c/Users/zuran/.ssh/**)",
+      "Bash(ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_router -N \"\" -C \"claude-agent@router\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"ls ~/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/ 2>&1\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"pm2 restart vet-api && sleep 5 && pm2 logs vet-api --lines 20 --nostream\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"grep -n 'registry\\\\|worker\\\\|spawn\\\\|fork\\\\|child' /opt/vet-clinic/repo/vet-api/server.js | head -20\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"/opt/vet-clinic/auto-update.sh && sleep 3 && cat /opt/vet-clinic/auto-update.log\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"grep -E 'nodemailer|axios' /opt/vet-clinic/repo/vet-api/package.json\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cd /opt/vet-clinic/repo/vet-api && node /opt/vet-clinic/monitor.mjs 2>&1\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"mv /opt/vet-clinic/monitor.mjs /opt/vet-clinic/repo/vet-api/monitor.mjs && echo 'Moved OK'\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"cd /opt/vet-clinic/repo/vet-api && node monitor.mjs 2>&1\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"curl -s --max-time 5 -o /dev/null -w '%{http_code}' http://localhost:5000/api/health 2>&1\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"sed -i 's|curl -sf --max-time 5 http://localhost:5000/api/health 2>&1 || curl -sf --max-time 5 http://localhost:5000/api/ 2>&1|curl -s --max-time 5 -o /dev/null -w \\\\\"%{http_code}\\\\\" http://localhost:5000/api/health 2>/dev/null|' /opt/vet-clinic/repo/vet-api/monitor.mjs\" 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"ZUr6957599421!\" root@192.168.50.17 \"rm -f /opt/vet-clinic/monitor-last-alert.txt && cd /opt/vet-clinic/repo/vet-api && node monitor.mjs 2>&1\" 2>&1)"
     ]
   }
 }
