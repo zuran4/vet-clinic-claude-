@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Trash2, Pencil, PawPrint, ShoppingBag, ChevronRight, Phone, Mail, MapPin, StickyNote } from "lucide-react";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
 
-const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases }) => {
+const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onView }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -20,15 +20,19 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases }) => 
           <ChevronRight className="w-4 h-4 text-gray-300 hover:text-indigo-400 transition-colors" />
         </button>
 
-        {/* Avatar */}
-        <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-bold text-indigo-500">
-            {customer.name?.charAt(0)?.toUpperCase() || "?"}
-          </span>
-        </div>
+        {/* Avatar + Info — πατώντας ανοίγει το πλήρες προφίλ */}
+        <div
+          className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+          onClick={() => onView(customer)}
+          title="Προβολή προφίλ"
+        >
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-bold text-indigo-500">
+              {customer.name?.charAt(0)?.toUpperCase() || "?"}
+            </span>
+          </div>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-800 text-sm truncate">{customer.name}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
             {customer.phone && (
@@ -52,6 +56,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases }) => 
               <StickyNote className="w-3 h-3" />{customer.notes}
             </p>
           )}
+          </div>
         </div>
 
         {/* Actions */}

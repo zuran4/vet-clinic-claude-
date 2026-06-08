@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { Plus, Upload } from "lucide-react";
 import { Button } from "../ui/button";
 import CustomerCard from "./CustomerCard.jsx";
+import CustomerProfileModal from "./CustomerProfileModal.jsx";
 import CustomerModal from "./CustomerModal.jsx";
 import CustomerImportModal from "./CustomerImportModal.jsx";
 import CustomerPurchasesModal from "./CustomerPurchasesModal.jsx";
@@ -43,6 +44,7 @@ const CustomerList = () => {
   const [showPetModal, setShowPetModal]           = useState(false);
   const [selectedCustomer, setSelectedCustomer]   = useState(null);
   const [showImportModal, setShowImportModal]     = useState(false);
+  const [viewingCustomer, setViewingCustomer]     = useState(null);
 
   // -------------------------------------
   // 3️⃣ Οι πελάτες έρχονται ήδη φιλτραρισμένοι από το backend
@@ -124,6 +126,7 @@ const CustomerList = () => {
           setSelectedCustomer(cust);
           setShowPetModal(true);
         }}
+        onView={(cust) => setViewingCustomer(cust)}
       />
     ))
   )}
@@ -156,6 +159,24 @@ const CustomerList = () => {
       {/* ----------------------------
            Modals
       ---------------------------- */}
+
+      {/* Προφίλ Πελάτη */}
+      {viewingCustomer && (
+        <CustomerProfileModal
+          customer={viewingCustomer}
+          onClose={() => setViewingCustomer(null)}
+          onEdit={(cust) => {
+            setViewingCustomer(null);
+            setEditingCustomer(cust);
+            setShowCustomerModal(true);
+          }}
+          onPurchases={(id) => {
+            setViewingCustomer(null);
+            setSelectedCustomerId(id);
+            setShowPurchasesModal(true);
+          }}
+        />
+      )}
 
       {/* Modal Πελάτη */}
       {showCustomerModal && (

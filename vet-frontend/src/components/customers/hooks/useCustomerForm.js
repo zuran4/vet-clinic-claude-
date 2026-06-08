@@ -16,6 +16,8 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
     phone: "",
     email: "",
     address: "",
+    city: "",
+    afm: "",
     notes: "",
     notifications: {
       email: true,
@@ -38,6 +40,8 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
         phone: initialData.phone || "",
         email: initialData.email || "",
         address: initialData.address || "",
+        city: initialData.city || "",
+        afm: initialData.afm || "",
         notes: initialData.notes || "",
         notifications: initialData.notifications || {
           email: true,

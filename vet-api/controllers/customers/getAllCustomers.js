@@ -42,7 +42,7 @@ export const getAllCustomers = async (req, res, next) => {
       Customer.countDocuments({}),
       Customer.find(
         {},
-        { name: 1, phone: 1, email: 1, address: 1, createdAt: 1 }
+        { name: 1, phone: 1, email: 1, address: 1, city: 1, afm: 1, notes: 1, notifications: 1, createdAt: 1 }
       )
         // .sort({ createdAt: -1 }) // αν το schema έχει timestamps
         .sort({ _id: -1 }) // ασφαλής ταξινόμηση χωρίς timestamps

@@ -34,6 +34,14 @@ const customerSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    city: {
+      type: String,
+      trim: true,
+    },
+    afm: {
+      type: String,
+      trim: true,
+    },
     notes: {
       type: String,
       trim: true,

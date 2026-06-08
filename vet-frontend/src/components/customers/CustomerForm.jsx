@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Phone, Mail, MapPin, StickyNote, Bell, Save, X } from "lucide-react";
+import { User, Phone, Mail, MapPin, Home, FileText, StickyNote, Bell, Save, X } from "lucide-react";
 import { useCustomerForm } from "./hooks/useCustomerForm.js";
 
 const INPUT = "w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400";
@@ -81,6 +81,36 @@ const CustomerForm = ({ initialData, onSaved, onCancel, onDirty }) => {
                 name="address"
                 placeholder="π.χ. Εγνατία 10, Θεσσαλονίκη"
                 value={formData.address}
+                onChange={wrapChange(handleChange)}
+                className={INPUT}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={LABEL}>Πόλη</label>
+            <div className="relative">
+              <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <input
+                type="text"
+                name="city"
+                placeholder="π.χ. Θεσσαλονίκη"
+                value={formData.city}
+                onChange={wrapChange(handleChange)}
+                className={INPUT}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={LABEL}>ΑΦΜ</label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <input
+                type="text"
+                name="afm"
+                placeholder="π.χ. 123456789"
+                value={formData.afm}
                 onChange={wrapChange(handleChange)}
                 className={INPUT}
               />

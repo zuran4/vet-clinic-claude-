@@ -41,7 +41,15 @@
       "Bash(curl -s http://localhost:5000/health)",
       "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')",
       "Bash(curl -s -i -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')",
-      "Bash(curl -s -i -X POST http://localhost:5000/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')"
+      "Bash(curl -s -i -X POST http://localhost:5000/auth/login -H \"Content-Type: application/json\" -d '{\"pin\":\"0000\"}')",
+      "Bash(node -e \"const p=require\\('./vet-api/package.json'\\); console.log\\('scripts:', JSON.stringify\\(p.scripts,null,2\\)\\); console.log\\('deps:', Object.keys\\(p.dependencies||{}\\).join\\(', '\\)\\); console.log\\('devDeps:', Object.keys\\(p.devDependencies||{}\\).join\\(', '\\)\\)\")",
+      "Bash(find .github -type f)",
+      "Bash(ls vet-api/.env vet-frontend/.env)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.jest||{}, null, 2\\)\\)\")",
+      "Bash(cat routes/customers/index.js)",
+      "Bash(powershell -c \"Get-Content routes/customers/index.js\")",
+      "Bash(powershell -c \"Get-Content routes/products/index.js\")",
+      "Bash(powershell -c \"Get-ChildItem routes/products/\")"
     ]
   }
 }

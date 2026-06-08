@@ -69,12 +69,13 @@ export default function RegistryMicrochipSearchBlock() {
 
   const handleAction = useCallback(({ type, data }) => {
     if (type === "createCustomer") {
-      const addressParts = [data?.ownerAddress, data?.ownerCity].filter(Boolean);
       setCustomerInitialData({
-        name:    data?.ownerName  || "",
-        phone:   data?.ownerPhone || "",
-        email:   data?.ownerEmail || "",
-        address: addressParts.join(", "),
+        name:    data?.ownerName    || "",
+        phone:   data?.ownerPhone   || "",
+        email:   data?.ownerEmail   || "",
+        address: data?.ownerAddress || "",
+        city:    data?.ownerCity    || "",
+        afm:     data?.ownerAfm     || "",
         notes:   "",
       });
       setChipDataForPet(data);
