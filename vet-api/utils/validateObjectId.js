@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
-// ✅ Middleware έλεγχος για ObjectId
-function validateObjectId(req, res, next) {
+import ApiError from "./apiError.js";
+
+function validateObjectId(req, _res, next) {
   const id =
     req.params.id ||
     req.params.customerId ||
@@ -9,10 +10,10 @@ function validateObjectId(req, res, next) {
     req.params.purchaseId;
 
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: "❌ Μη έγκυρο ID" });
+    return next(ApiError.badRequest("Μη έγκυρο ID"));
   }
 
-  next(); // προχωράει στο επόμενο middleware ή route handler
+  next();
 }
 
 export default validateObjectId;

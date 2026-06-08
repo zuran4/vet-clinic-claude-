@@ -4,6 +4,8 @@ import { fileURLToPath } from "url";
 
 import { createLogger, format, transports } from "winston";
 
+import { getRequestId } from "./requestContext.js";
+
 // ✅ Αντικατάσταση __dirname σε ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +21,9 @@ const logger = createLogger({
   format: format.combine(
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     format.printf(({ timestamp, level, message, ...meta }) => {
-      const extras = Object.keys(meta).length ? JSON.stringify(meta) : "";
+      const rid = getRequestId();
+      const merged = rid ? { requestId: rid, ...meta } : meta;
+      const extras = Object.keys(merged).length ? JSON.stringify(merged) : "";
       return `[${timestamp}] ${level.toUpperCase()}: ${message} ${extras}`;
     })
   ),

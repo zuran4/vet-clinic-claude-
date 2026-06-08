@@ -11,6 +11,7 @@ import purchaseRoutes from "../../routes/purchases.js";
 import prescriptionRoutes from "../../routes/prescriptionRoutes.js";
 import auditRoutes from "../../routes/audit/index.js";
 import healthRoutes from "../../routes/health.js";
+import attachRequestId from "../../middlewares/requestId.js";
 import auditLog from "../../middlewares/auditLog.js";
 import errorHandler from "../../middlewares/errorHandler.js";
 
@@ -22,6 +23,7 @@ export function buildTestApp({ user = { userId: "tester", role: "admin", name: "
   const app = express();
 
   app.use(express.json({ limit: "1mb" }));
+  app.use(attachRequestId);
 
   app.use((req, _res, next) => {
     req.user = user;
