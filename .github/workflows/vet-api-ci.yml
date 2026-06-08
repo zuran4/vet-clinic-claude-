@@ -1,0 +1,42 @@
+name: vet-api CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "vet-api/**"
+      - ".github/workflows/vet-api-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "vet-api/**"
+      - ".github/workflows/vet-api-ci.yml"
+
+defaults:
+  run:
+    working-directory: vet-api
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URI: mongodb://localhost:27017/vet-ci-placeholder
+      JWT_SECRET: ci-test-secret-do-not-use-in-production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: vet-api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test

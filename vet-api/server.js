@@ -16,6 +16,8 @@ import config from "./config/index.js";
 import logger from "./utils/logger.js";
 
 import requireAuth from "./middlewares/auth/requireAuth.js";
+import auditLog from "./middlewares/auditLog.js";
+import auditRoutes from "./routes/audit/index.js";
 import authRoutes from "./routes/authRoutes.js";
 import appointmentRoutes from "./routes/appointments/index.js";
 import productRoutes from "./routes/products/index.js";
@@ -173,9 +175,19 @@ app.use("/api", (req, res, next) => {
 });
 
 // ==============================
+// 📜 Audit Log — καταγράφει αυτόματα CREATE/UPDATE/DELETE σε /api/* (εκτός /auth,
+// που καταγράφεται ξεχωριστά μέσα στο login controller)
+// ==============================
+app.use("/api", (req, res, next) => {
+  if (req.path.startsWith("/auth")) return next();
+  return auditLog(req, res, next);
+});
+
+// ==============================
 // 🧭 Routes
 // ==============================
 app.use("/api/settings", settingsRoutes);
+app.use("/api/audit", auditRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/products", productRoutes);

@@ -1,18 +1,24 @@
 import Joi from "joi";
 
+const batchSchema = Joi.object({
+  batchNumber: Joi.string().trim().allow(""),
+  quantity: Joi.number().integer().min(0).default(0),
+  purchaseDate: Joi.date().optional(),
+  expirationDate: Joi.date().optional(),
+  invoiceNumber: Joi.string().trim().allow(""),
+});
+
 export default Joi.object({
   name: Joi.string().trim().min(2),
-  sku: Joi.string().trim(),
-  category: Joi.string().valid("Φάρμακο","Τροφή","Αξεσουάρ","Παιχνίδι","Άλλο"),
-  price: Joi.number().min(0),
-  taxRate: Joi.number().min(0).max(1),
-  trackStock: Joi.boolean(),
+  category: Joi.string().valid("Φάρμακο", "Τροφή", "Αξεσουάρ", "Παιχνίδι", "Άλλο"),
+  barcode: Joi.string().trim().allow(""),
   quantity: Joi.number().integer().min(0),
-  batches: Joi.array().items(
-    Joi.object({
-      lot: Joi.string().allow(""),
-      qty: Joi.number().integer().min(0).required(),
-      expiry: Joi.date().optional(),
-    })
-  ),
+  threshold: Joi.number().integer().min(0),
+  unit: Joi.string().trim().allow(""),
+  expirationDate: Joi.date().optional(),
+  expirationWarningDays: Joi.number().integer().min(0),
+  retailPrice: Joi.number().min(0).allow(null),
+  notes: Joi.string().trim().allow(""),
+  supplier: Joi.string().trim().allow(""),
+  batches: Joi.array().items(batchSchema),
 }).min(1);

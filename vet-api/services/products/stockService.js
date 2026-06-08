@@ -2,7 +2,7 @@ export function getProductQuantity(product) {
   if (product?.batches?.length > 0) {
     return product.batches.reduce((sum, b) => sum + Number(b.quantity || 0), 0);
   }
-  return Number(product?.quantity || 0);
+  return Number(product?.quantity) || 0;
 }
 
 export function applyFIFO(product, takeQty) {
