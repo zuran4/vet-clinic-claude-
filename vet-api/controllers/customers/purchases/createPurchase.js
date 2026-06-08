@@ -57,7 +57,10 @@ export const createPurchase = async (req, res, next) => {
       }
 
       // 🔹 Ενημέρωση αποθέματος (FIFO ή απλό)
-      if (product.category === "Τροφή" && product.batches?.length > 0) {
+      // Σημ.: ο έλεγχος είναι στα batches, όχι στην κατηγορία — το pre("save")
+      // hook του Product συγχρονίζει πάντα το quantity από τα batches όταν
+      // υπάρχουν, οπότε η απευθείας μείωση του quantity θα ακυρωνόταν.
+      if (product.batches?.length > 0) {
         applyFIFO(product, quantity);
       } else {
         product.quantity = (product.quantity || 0) - quantity;

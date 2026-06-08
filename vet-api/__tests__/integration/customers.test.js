@@ -5,6 +5,7 @@ import request from "supertest";
 import { connectTestDb, disconnectTestDb, clearCollections } from "../helpers/testDb.js";
 import { buildTestApp } from "../helpers/testApp.js";
 import Customer from "../../models/Customer.js";
+import Product from "../../models/Product.js";
 
 let app;
 
@@ -109,5 +110,48 @@ describe("GET /api/customers/:id", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.name).toBe("Δημήτρης Άλφα");
+  });
+});
+
+describe("POST /api/customers/:id/purchases", () => {
+  it("consumes batches via FIFO regardless of product category (not just 'Τροφή')", async () => {
+    // Regression: η λογική παλαιότερα εφάρμοζε FIFO μόνο για κατηγορία "Τροφή",
+    // αλλιώς μείωνε απευθείας το product.quantity — τιμή που το pre("save") hook
+    // του Product την αντικαθιστά πάντα με το άθροισμα των batches, αν υπάρχουν.
+    // Αποτέλεσμα: για προϊόντα άλλης κατηγορίας με batches, το απόθεμα ποτέ δεν μειωνόταν.
+    const customer = await Customer.create({ name: "Αγοραστής Δ.", phone: "6900009999" });
+    const product = await Product.create({
+      name: "Αντιβιοτικό Σκύλου",
+      category: "Φάρμακο",
+      batches: [
+        { batchNumber: "B1", quantity: 10, expirationDate: new Date("2026-01-01") },
+        { batchNumber: "B2", quantity: 10, expirationDate: new Date("2026-06-01") },
+      ],
+    });
+
+    const res = await request(app)
+      .post(`/api/customers/${customer._id.toString()}/purchases`)
+      .send({ products: [{ product: product._id.toString(), quantity: 6 }] });
+
+    expect(res.status).toBe(201);
+
+    const reloaded = await Product.findById(product._id);
+    expect(reloaded.quantity).toBe(14);
+    expect(reloaded.batches[0].quantity).toBe(4);
+    expect(reloaded.batches[1].quantity).toBe(10);
+  });
+
+  it("rejects the purchase when stock is insufficient", async () => {
+    const customer = await Customer.create({ name: "Αγοραστής Ε.", phone: "6900001212" });
+    const product = await Product.create({ name: "Σπάνιο Φάρμακο", category: "Φάρμακο", quantity: 2 });
+
+    const res = await request(app)
+      .post(`/api/customers/${customer._id.toString()}/purchases`)
+      .send({ products: [{ product: product._id.toString(), quantity: 5 }] });
+
+    expect(res.status).toBe(409);
+
+    const reloaded = await Product.findById(product._id);
+    expect(reloaded.quantity).toBe(2);
   });
 });
