@@ -27,12 +27,6 @@ const FOOTER_STYLE = `
   border-top: 1px solid #e2e8f0;
 `;
 
-const BTN_STYLE = (color = "#4f46e5") => `
-  display: inline-block; background: ${color}; color: #ffffff;
-  padding: 12px 28px; border-radius: 8px; text-decoration: none;
-  font-weight: 600; font-size: 15px; margin-top: 20px;
-`;
-
 // ────────────────────────────────────────────────────────────────────────────
 // 🧪 Δοκιμαστικό email
 // ────────────────────────────────────────────────────────────────────────────
@@ -191,7 +185,7 @@ export function purchaseReminderHtml({
           Αγαπητέ/ή <strong>${clientName}</strong>,
         </p>
         <p style="color:#475569; line-height:1.6;">
-          Θέλαμε να σας υπενθυμίσουμε για τα παρακάτω προϊόντα του κατοικιδίου σας:
+          Θέλαμε να σας υπενθυμίσουμε${reminderDate ? ` για τις <strong>${reminderDate}</strong>` : ""} για τα παρακάτω προϊόντα του κατοικιδίου σας:
         </p>
         <div style="background:#f5f3ff; border-radius:8px; padding:14px 18px; margin:16px 0;">
           <ul style="margin:0; padding:0; list-style:none;">
