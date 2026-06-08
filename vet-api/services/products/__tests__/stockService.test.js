@@ -18,6 +18,27 @@ describe("getProductQuantity", () => {
     expect(getProductQuantity({})).toBe(0);
     expect(getProductQuantity({ quantity: "abc" })).toBe(0);
   });
+
+  it("does not return NaN when a batch quantity is a non-numeric string", () => {
+    // Regression: Number(b.quantity || 0) would evaluate the || before Number(),
+    // so a truthy non-numeric string like "abc" passed straight to Number() → NaN.
+    // Fix: (Number(b.quantity) || 0) converts first, then falls back.
+    const product = { batches: [{ quantity: "abc" }, { quantity: 5 }] };
+
+    const result = getProductQuantity(product);
+
+    expect(result).not.toBeNaN();
+    expect(result).toBe(5);
+  });
+
+  it("does not return NaN when a batch quantity is null or undefined", () => {
+    const product = { batches: [{ quantity: null }, { quantity: undefined }, { quantity: 8 }] };
+
+    const result = getProductQuantity(product);
+
+    expect(result).not.toBeNaN();
+    expect(result).toBe(8);
+  });
 });
 
 describe("applyFIFO", () => {
