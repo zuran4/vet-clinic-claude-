@@ -28,6 +28,7 @@ import supplierRoutes from "./routes/supplierRoutes.js";
 import purchaseRoutes from "./routes/purchases.js";
 import reminderRoutes from "./routes/reminders.js";
 import registryRoutes from "./routes/registry/index.js";
+import healthRoutes from "./routes/health.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
@@ -164,10 +165,15 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // ==============================
-// 🔐 Auth Guard — προστατεύει όλα τα /api/* εκτός από /api/auth
+// 🏥 Health check — unauthenticated, before the auth guard
+// ==============================
+app.use("/api/health", healthRoutes);
+
+// ==============================
+// 🔐 Auth Guard — προστατεύει όλα τα /api/* εκτός από /api/auth και /api/health
 // ==============================
 app.use("/api", (req, res, next) => {
-  if (req.path.startsWith("/auth")) return next();
+  if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
   return requireAuth(req, res, next);
 });
 
@@ -176,7 +182,7 @@ app.use("/api", (req, res, next) => {
 // που καταγράφεται ξεχωριστά μέσα στο login controller)
 // ==============================
 app.use("/api", (req, res, next) => {
-  if (req.path.startsWith("/auth")) return next();
+  if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
   return auditLog(req, res, next);
 });
 
