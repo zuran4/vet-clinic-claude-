@@ -1,4 +1,5 @@
 import * as petService from "../../../services/petService.js";
+import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
 
 export default async function addHistoryEntry(req, res, next) {
@@ -8,7 +9,7 @@ export default async function addHistoryEntry(req, res, next) {
 
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για προσθήκη ιστορικού (id: ${id})`);
-      return next(new Error("❌ Κατοικίδιο δεν βρέθηκε"));
+      return next(ApiError.notFound("Το κατοικίδιο δεν βρέθηκε"));
     }
 
     logger.info(`🩺 Προστέθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);

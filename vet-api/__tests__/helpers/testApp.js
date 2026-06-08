@@ -4,6 +4,11 @@ import customerRoutes from "../../routes/customers/index.js";
 import authRoutes from "../../routes/authRoutes.js";
 import appointmentRoutes from "../../routes/appointments/index.js";
 import productRoutes from "../../routes/products/index.js";
+import petRoutes from "../../routes/pets/index.js";
+import supplierRoutes from "../../routes/supplierRoutes.js";
+import reminderRoutes from "../../routes/reminders.js";
+import purchaseRoutes from "../../routes/purchases.js";
+import prescriptionRoutes from "../../routes/prescriptionRoutes.js";
 import auditRoutes from "../../routes/audit/index.js";
 import auditLog from "../../middlewares/auditLog.js";
 import errorHandler from "../../middlewares/errorHandler.js";
@@ -27,6 +32,11 @@ export function buildTestApp({ user = { userId: "tester", role: "admin", name: "
   app.use("/api/customers", customerRoutes);
   app.use("/api/appointments", appointmentRoutes);
   app.use("/api/products", productRoutes);
+  app.use("/api/pets", petRoutes);
+  app.use("/api/suppliers", supplierRoutes);
+  app.use("/api/reminders", reminderRoutes);
+  app.use("/api/purchases", purchaseRoutes);
+  app.use("/api/prescriptions", prescriptionRoutes);
   app.use("/api/audit", auditRoutes);
 
   app.use(errorHandler);

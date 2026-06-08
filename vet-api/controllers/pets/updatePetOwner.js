@@ -1,4 +1,5 @@
 import * as petService from "../../services/petService.js";
+import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
 export default async function updatePetOwner(req, res, next) {
@@ -11,7 +12,7 @@ export default async function updatePetOwner(req, res, next) {
       logger.warn(
         `⚠️ Αποτυχία ενημέρωσης ιδιοκτήτη (petId: ${id}, newOwnerId: ${newOwnerId})`
       );
-      return next(new Error("❌ Κατοικίδιο ή νέος ιδιοκτήτης δεν βρέθηκαν"));
+      return next(ApiError.notFound("Το κατοικίδιο ή ο νέος ιδιοκτήτης δεν βρέθηκαν"));
     }
 
     logger.info(`👥 Αλλαγή ιδιοκτήτη για κατοικίδιο: ${updated.name}`);

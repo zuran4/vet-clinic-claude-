@@ -1,4 +1,5 @@
 import * as petService from "../../../services/petService.js";
+import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
 
 export default async function deleteHistoryEntry(req, res, next) {
@@ -8,7 +9,7 @@ export default async function deleteHistoryEntry(req, res, next) {
 
     if (!history) {
       logger.warn(`⚠️ Απόπειρα διαγραφής εγγραφής ιστορικού μη υπαρκτού κατοικιδίου (id: ${id})`);
-      return next(new Error("❌ Κατοικίδιο δεν βρέθηκε"));
+      return next(ApiError.notFound("Το κατοικίδιο δεν βρέθηκε"));
     }
 
     logger.info(`🗑️ Διαγράφηκε εγγραφή ιστορικού για κατοικίδιο ${id}`);
