@@ -1,6 +1,7 @@
 // vet-api/controllers/registry/getMedicalEvents.js
 
 import { randomUUID } from "node:crypto";
+
 import logger from "../../utils/logger.js";
 import ApiError from "../../utils/apiError.js";
 import { getRegistrySession, fetchMedicalEvents } from "../../services/registryWorkerClient.js";

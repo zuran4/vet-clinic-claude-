@@ -1,10 +1,10 @@
 // vet-api/routes/registry/index.js
 
-import express from "express";
 import crypto from "crypto";
 
-import ApiError from "../../utils/apiError.js";
+import express from "express";
 
+import ApiError from "../../utils/apiError.js";
 import { getSession } from "../../controllers/registry/getSession.js";
 import { startWorker } from "../../controllers/registry/startWorker.js";
 import { stopWorker } from "../../controllers/registry/stopWorker.js";

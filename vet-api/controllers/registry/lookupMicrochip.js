@@ -1,6 +1,7 @@
 // vet-api/controllers/registry/lookupMicrochip.js
 
 import { randomUUID } from "node:crypto";
+
 import logger from "../../utils/logger.js";
 import ApiError from "../../utils/apiError.js";
 import {

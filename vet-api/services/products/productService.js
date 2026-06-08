@@ -1,7 +1,8 @@
+import mongoose from "mongoose";
+
 import Product from "../../models/Product.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
-import mongoose from "mongoose";
 
 import { getProductQuantity, applyFIFO } from "./stockService.js";
 

@@ -1,8 +1,10 @@
 // scripts/sync-indexes.js (ESM)
-import mongoose from "mongoose";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
 import User from "../models/User.js";
 
 // Optional: αν θέλεις να δεις καθαρό error όταν λείπει index

@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+
 import Settings from "../models/Settings.js";
 import logger from "../utils/logger.js";
 

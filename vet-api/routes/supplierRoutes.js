@@ -1,4 +1,5 @@
 import express from "express";
+
 import Supplier from "../models/Supplier.js";
 
 const router = express.Router();

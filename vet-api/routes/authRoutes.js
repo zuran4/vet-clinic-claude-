@@ -1,6 +1,6 @@
 // vet-api/routes/authRoutes.js
 import express from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 import validateBody from "../validators/validateBody.js";
 import loginSchema from "../validators/auth/loginSchema.js";

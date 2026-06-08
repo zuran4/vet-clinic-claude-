@@ -1,20 +1,19 @@
-import * as Sentry from "@sentry/node";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import settingsRoutes from "./routes/settings.js";
 import crypto from "crypto";
 
+import * as Sentry from "@sentry/node";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import { Server } from "socket.io";
 
+import settingsRoutes from "./routes/settings.js";
 import config from "./config/index.js";
 import logger from "./utils/logger.js";
-
 import requireAuth from "./middlewares/auth/requireAuth.js";
 import auditLog from "./middlewares/auditLog.js";
 import auditRoutes from "./routes/audit/index.js";
@@ -29,9 +28,7 @@ import supplierRoutes from "./routes/supplierRoutes.js";
 import purchaseRoutes from "./routes/purchases.js";
 import reminderRoutes from "./routes/reminders.js";
 import registryRoutes from "./routes/registry/index.js";
-
 import errorHandler from "./middlewares/errorHandler.js";
-
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";

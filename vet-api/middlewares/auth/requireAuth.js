@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+
 import { verifyToken } from "../../utils/jwt.js";
 
 export default function requireAuth(req, res, next) {
