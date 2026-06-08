@@ -156,7 +156,7 @@ export async function exportStock({ productId, quantity }) {
     applyFIFO(product, quantity);
   } else {
     // Χωρίς παρτίδες -> άμεση αφαίρεση ποσότητας
-    product.quantity = Number(product.quantity || 0) - quantity;
+    product.quantity = (Number(product.quantity) || 0) - quantity;
   }
 
   await product.save();
