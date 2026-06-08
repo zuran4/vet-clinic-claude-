@@ -1,7 +1,6 @@
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import crypto from "crypto";
 
 import * as Sentry from "@sentry/node";
 import express from "express";
@@ -81,26 +80,6 @@ global.emitAlert = (data) => io.emit("alert", data);
 // ==============================
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
-
-
-// ✅ Global request id middleware (enterprise tracing)
-app.use((req, res, next) => {
-  const requestId =
-    (req.headers["x-request-id"] || "").toString().trim() ||
-    (req.headers["x-correlation-id"] || "").toString().trim() ||
-    crypto.randomUUID();
-
-  req.requestId = requestId;
-
-  // Header και σε lowercase και σε canonical μορφή (enterprise friendly)
-  res.setHeader("x-request-id", requestId);
-  res.setHeader("X-Request-Id", requestId);
-
-  // Συνδέει το requestId με τυχόν Sentry event που θα προκύψει σε αυτό το request
-  Sentry.getCurrentScope().setTag("requestId", requestId);
-
-  next();
-});
 
 // ✅ Security headers (API-friendly)
 app.use(
