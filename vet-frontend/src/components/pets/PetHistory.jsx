@@ -59,8 +59,8 @@ const PetHistory = ({ petId }) => {
     <div className="p-4 space-y-4">
 
       {/* Φόρμα νέας εγγραφής */}
-      <form onSubmit={handleAdd} className="bg-sky-50 rounded-2xl border border-sky-100 p-4 space-y-3">
-        <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide">Νέα Εγγραφή</p>
+      <form onSubmit={handleAdd} className="bg-sky-50 dark:bg-sky-900/20 rounded-2xl border border-sky-100 dark:border-sky-700/50 p-4 space-y-3">
+        <p className="text-xs font-semibold text-sky-700 dark:text-sky-400 uppercase tracking-wide">Νέα Εγγραφή</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <input
             type="text"
@@ -68,14 +68,14 @@ const PetHistory = ({ petId }) => {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             required
-            className="border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+            className="border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
           <input
             type="text"
             placeholder="Αποτέλεσμα / Σχόλια"
             value={result}
             onChange={(e) => setResult(e.target.value)}
-            className="border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+            className="border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
         </div>
         <div className="flex justify-end">
@@ -92,27 +92,27 @@ const PetHistory = ({ petId }) => {
 
       {/* Λίστα */}
       {loading ? (
-        <div className="py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
+        <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
       ) : history.length === 0 ? (
         <div className="py-8 text-center">
-          <Clock className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">Δεν υπάρχουν εγγραφές ιστορικού.</p>
+          <Clock className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
+          <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν εγγραφές ιστορικού.</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {history.map((entry) => (
-            <li key={entry._id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 transition-colors">
+            <li key={entry._id} className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors">
               <div className="flex gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <CalendarDays className="w-4 h-4 text-sky-500" />
+                <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CalendarDays className="w-4 h-4 text-sky-500 dark:text-sky-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-400 font-medium">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">
                     {dayjs(entry.date).format("DD/MM/YYYY")}
                   </p>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{entry.reason}</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{entry.reason}</p>
                   {entry.result && (
-                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                       <FileText className="w-3 h-3" />{entry.result}
                     </p>
                   )}

@@ -30,18 +30,18 @@ const CustomerPetsExpanded = ({ ownerId }) => {
 
   return (
     <>
-      <ul className="mt-2 ml-4 pl-2 border-l-2 border-gray-100 text-sm text-gray-700 space-y-1">
+      <ul className="mt-2 ml-4 pl-2 border-l-2 border-gray-100 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 space-y-1">
         {pets.map((p) => (
           <li
             key={p._id}
             onClick={() => setViewingPetId(p._id)}
-            className="flex items-center gap-2 px-2 py-1 rounded-xl cursor-pointer hover:bg-sky-50 hover:text-sky-700 transition-colors group"
+            className="flex items-center gap-2 px-2 py-1 rounded-xl cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-700 dark:hover:text-sky-300 transition-colors group"
           >
-            <PawPrint className="w-4 h-4 text-gray-400 group-hover:text-sky-500 transition-colors" />
+            <PawPrint className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors" />
             <span className="font-medium">{p.name}</span>
-            <span className="text-gray-400">— {p.species} ({p.gender})</span>
+            <span className="text-gray-400 dark:text-gray-500">— {p.species} ({p.gender})</span>
             {p.microchip && (
-              <span className="ml-auto font-mono text-[11px] text-gray-400 group-hover:text-sky-400">
+              <span className="ml-auto font-mono text-[11px] text-gray-400 dark:text-gray-500 group-hover:text-sky-400 dark:group-hover:text-sky-400">
                 {p.microchip}
               </span>
             )}

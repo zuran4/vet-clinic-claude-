@@ -30,7 +30,7 @@ const PetProfileModal = ({ petId, onClose, initialTab }) => {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-50 overflow-y-auto flex-1">
+        <div className="bg-gray-50 dark:bg-gray-800/50 overflow-y-auto flex-1">
           <PetProfile petId={petId} onClose={onClose} initialTab={initialTab} />
         </div>
       </div>
