@@ -1,15 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 
 import AppointmentSlots from "../components/appointments/AppointmentSlots";
 import AppointmentDetailsForm from "../components/appointments/AppointmentDetailsForm";
+import AppointmentHistoryPanel from "../components/appointments/AppointmentHistoryPanel";
 import Modal from "../components/ui/Modal";
 import PageHeader from "../components/ui/PageHeader";
 
-// se
 import { Button } from "../components/ui/button";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
-import { useAppointmentsFilters } from "../hooks/useAppointmentsFilters"; // ✅ custom hook
+import { ChevronLeft, ChevronRight, CalendarDays, History } from "lucide-react";
+import { useAppointmentsFilters } from "../hooks/useAppointmentsFilters";
 
 function AppointmentsPage({
   appointments,
@@ -27,10 +27,8 @@ function AppointmentsPage({
   onEditAppointment,
   onClose,
 }) {
-  const { filteredAppointments } = useAppointmentsFilters(
-    appointments,
-    selectedDate
-  );
+  const { filteredAppointments } = useAppointmentsFilters(appointments, selectedDate);
+  const [tab, setTab] = useState("calendar");
 
   return (
     <>
@@ -45,6 +43,40 @@ function AppointmentsPage({
         onClose={onClose}
       />
 
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-700/50 rounded-2xl w-fit mb-4">
+        <button
+          type="button"
+          onClick={() => setTab("calendar")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            tab === "calendar"
+              ? "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          Ημερολόγιο
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("history")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            tab === "history"
+              ? "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          }`}
+        >
+          <History className="w-4 h-4" />
+          Ιστορικό
+        </button>
+      </div>
+
+      {/* History panel */}
+      {tab === "history" && <AppointmentHistoryPanel />}
+
+      {/* Calendar view */}
+      {tab === "calendar" && (
+      <>
       {/* Date Navigator */}
       <div className="bg-gradient-to-r from-indigo-500 to-violet-400 rounded-2xl px-5 py-4 mb-5 flex items-center justify-between">
         <Button
@@ -109,6 +141,8 @@ function AppointmentsPage({
           }}
         />
       </Modal>
+      </>
+      )}
     </>
   );
 }

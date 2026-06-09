@@ -4,7 +4,28 @@ import {
   create as createOne,
   update as updateOne,
   remove as removeOne,
+  search as searchAppointments,
 } from "../../services/appointments/service.js";
+
+/**
+ * 🔍 Αναζήτηση ραντεβού με φίλτρα
+ */
+export const searchAppointmentsHandler = async (req, res, next) => {
+  try {
+    const { q, from, to, doctor, page = 1, limit = 15 } = req.query;
+    const data = await searchAppointments({
+      q,
+      from,
+      to,
+      doctor,
+      page: Number(page),
+      limit: Number(limit),
+    });
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * 📅 Λήψη όλων των ραντεβού

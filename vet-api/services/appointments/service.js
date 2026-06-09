@@ -105,3 +105,28 @@ export async function update(id, data) {
 export async function remove(id) {
   return Appointment.findByIdAndDelete(id);
 }
+
+export async function search({ q, from, to, doctor, page = 1, limit = 15 }) {
+  const filter = {};
+
+  if (q && q.trim()) {
+    const rx = new RegExp(q.trim(), "i");
+    filter.$or = [{ clientName: rx }, { animalName: rx }];
+  }
+
+  if (from || to) {
+    filter.date = {};
+    if (from) filter.date.$gte = from;
+    if (to) filter.date.$lte = to;
+  }
+
+  if (doctor) filter.doctor = doctor;
+
+  const skip = (page - 1) * limit;
+  const [results, total] = await Promise.all([
+    Appointment.find(filter).sort({ date: -1, time: 1 }).skip(skip).limit(limit).lean(),
+    Appointment.countDocuments(filter),
+  ]);
+
+  return { results, total, page, pages: Math.ceil(total / limit) };
+}

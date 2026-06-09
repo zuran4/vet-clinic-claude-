@@ -6,14 +6,17 @@ import validateBody from "../../validators/appointments/validateBody.js";
 import checkOverlap from "../../middlewares/appointments/checkOverlap.js";
 // 3) Λεπτός controller
 import {
-
   getAllAppointments,
   createAppointment,
   updateAppointment,
   deleteAppointment,
+  searchAppointmentsHandler,
 } from "../../controllers/appointments/base.js";
 
 const router = express.Router();
+
+// 🔍 Αναζήτηση ιστορικού (πριν το "/:id")
+router.get("/search", searchAppointmentsHandler);
 
 // 📅 Όλα τα ραντεβού
 router.get("/", getAllAppointments);
