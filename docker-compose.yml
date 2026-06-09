@@ -1,0 +1,21 @@
+services:
+  vet-api:
+    build: ./vet-api
+    container_name: vet-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./vet-api/uploads:/app/uploads
+      - playwright-profile:/app/playwright-registry-worker
+    env_file:
+      - ./vet-api/.env
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  playwright-profile:

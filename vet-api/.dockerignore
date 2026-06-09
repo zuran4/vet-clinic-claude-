@@ -1,0 +1,11 @@
+node_modules
+.env
+logs
+playwright-registry-worker
+uploads
+*.log
+__tests__
+*.test.js
+jest.config.js
+.eslintrc*
+docs
