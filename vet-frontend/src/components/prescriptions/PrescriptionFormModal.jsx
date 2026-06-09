@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 import request from "@/api/apiClient.js";
 
-const INPUT = "w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 placeholder-gray-400";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 /* ── Customer search με portal dropdown ── */
 const CustomerSearch = ({ value, onSelect, onClear }) => {
@@ -47,13 +47,13 @@ const CustomerSearch = ({ value, onSelect, onClear }) => {
 
   if (value) {
     return (
-      <div className="flex items-center gap-2 border border-indigo-200 bg-indigo-50 rounded-2xl px-3 py-2">
-        <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-bold text-indigo-600">{value.name?.charAt(0)?.toUpperCase()}</span>
+      <div className="flex items-center gap-2 border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl px-3 py-2">
+        <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">{value.name?.charAt(0)?.toUpperCase()}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-indigo-700 truncate">{value.name}</p>
-          {value.phone && <p className="text-xs text-indigo-400">{value.phone}</p>}
+          <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300 truncate">{value.name}</p>
+          {value.phone && <p className="text-xs text-indigo-400 dark:text-indigo-500">{value.phone}</p>}
         </div>
         <button type="button" onClick={onClear} className="text-indigo-400 hover:text-red-400 transition-colors">
           <X className="w-4 h-4" />
@@ -82,29 +82,29 @@ const CustomerSearch = ({ value, onSelect, onClear }) => {
 
       {showDropdown && createPortal(
         <div style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
-          className="bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
+          className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
           {loading ? (
-            <div className="p-3 text-xs text-gray-400 text-center">Αναζήτηση...</div>
+            <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
           ) : results.length > 0 ? (
-            <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50">
+            <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
               {results.map((c) => (
                 <li key={c._id}>
                   <button type="button"
                     onMouseDown={(e) => { e.preventDefault(); handleSelect(c); }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 transition-colors flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-indigo-500">{c.name?.charAt(0)?.toUpperCase()}</span>
+                    className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-indigo-500 dark:text-indigo-300">{c.name?.charAt(0)?.toUpperCase()}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{c.name}</p>
-                      <p className="text-xs text-gray-400">{c.phone}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{c.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{c.phone}</p>
                     </div>
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="p-3 text-xs text-gray-400 text-center">Δεν βρέθηκαν πελάτες.</div>
+            <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Δεν βρέθηκαν πελάτες.</div>
           )}
         </div>,
         document.body
@@ -151,13 +151,13 @@ const PetSelector = ({ customerId, selectedPet, onSelect }) => {
   );
 
   if (selectedPet) return (
-    <div className="flex items-center gap-2 border border-violet-200 bg-violet-50 rounded-2xl px-3 py-2">
-      <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
-        <PawPrint className="w-3.5 h-3.5 text-violet-600" />
+    <div className="flex items-center gap-2 border border-violet-200 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/30 rounded-2xl px-3 py-2">
+      <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center flex-shrink-0">
+        <PawPrint className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-violet-700 truncate">{selectedPet.name}</p>
-        {selectedPet.species && <p className="text-xs text-violet-400">{selectedPet.species}</p>}
+        <p className="text-sm font-medium text-violet-700 dark:text-violet-300 truncate">{selectedPet.name}</p>
+        {selectedPet.species && <p className="text-xs text-violet-400 dark:text-violet-500">{selectedPet.species}</p>}
       </div>
       <button type="button" onClick={() => onSelect(null)} className="text-violet-400 hover:text-red-400 transition-colors">
         <X className="w-4 h-4" />
@@ -173,7 +173,7 @@ const PetSelector = ({ customerId, selectedPet, onSelect }) => {
         onClick={openDropdown}
         onBlur={() => setTimeout(() => { setOpen(false); setDropdownPos(null); }, 200)}
         disabled={loading || pets.length === 0}
-        className="w-full flex items-center gap-2 border border-gray-200 rounded-2xl px-3 py-2 text-sm text-gray-400 hover:border-violet-300 hover:text-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+        className="w-full flex items-center gap-2 border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm text-gray-400 dark:text-gray-500 hover:border-violet-300 hover:text-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-700"
       >
         <PawPrint className="w-4 h-4 flex-shrink-0" />
         <span className="flex-1 text-left">
@@ -184,19 +184,19 @@ const PetSelector = ({ customerId, selectedPet, onSelect }) => {
 
       {open && dropdownPos && createPortal(
         <div style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
-          className="bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
-          <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50">
+          className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
+          <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
             {pets.map((pet) => (
               <li key={pet._id}>
                 <button type="button"
                   onMouseDown={(e) => { e.preventDefault(); handleSelect(pet); }}
-                  className="w-full text-left px-4 py-2.5 hover:bg-violet-50 transition-colors flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-                    <PawPrint className="w-3.5 h-3.5 text-violet-500" />
+                  className="w-full text-left px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/40 flex items-center justify-center flex-shrink-0">
+                    <PawPrint className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{pet.name}</p>
-                    {pet.species && <p className="text-xs text-gray-400">{pet.species}</p>}
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{pet.name}</p>
+                    {pet.species && <p className="text-xs text-gray-400 dark:text-gray-500">{pet.species}</p>}
                   </div>
                 </button>
               </li>
@@ -290,10 +290,10 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gray-50 p-5 space-y-3 rounded-b-2xl max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-800/50 p-5 space-y-3 rounded-b-2xl max-h-[80vh] overflow-y-auto">
 
           {/* Πελάτης & Κατοικίδιο */}
-          <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+          <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
             <p className={LABEL + " mb-3"}>Πελάτης & Κατοικίδιο</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -316,7 +316,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
           </div>
 
           {/* Συνταγή */}
-          <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+          <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
             <p className={LABEL + " mb-3"}>Συνταγή</p>
             <div className="space-y-3">
               <div>
@@ -387,7 +387,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
                   <textarea value={form.notes}
                     onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
                     rows={2} placeholder="Επιπλέον οδηγίες..."
-                    className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 placeholder-gray-400 resize-none" />
+                    className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 placeholder-gray-400 dark:placeholder-gray-500 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
                 </div>
               </div>
             </div>
@@ -395,7 +395,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
 
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" onClick={onClose}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <X className="w-4 h-4" /> Ακύρωση
             </button>
             <button type="submit"

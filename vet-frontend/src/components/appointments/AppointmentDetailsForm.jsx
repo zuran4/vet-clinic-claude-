@@ -75,8 +75,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Αλλαγή ώρας (μόνο σε επεξεργασία) */}
         {existingData && (
-          <div className="bg-gray-50 rounded-2xl px-4 py-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
               Ώρα & Ημερομηνία
             </p>
             <TimeSelector
@@ -90,8 +90,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         )}
 
         {/* Πελάτης */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3 space-y-2">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">
             Πελάτης
           </p>
           <CustomerSearchBox
@@ -103,21 +103,21 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
             }}
           />
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               name="phone"
               placeholder="Τηλέφωνο"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full border border-gray-200 pl-9 pr-3 py-2 rounded-2xl shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="w-full border border-gray-200 dark:border-gray-600 pl-9 pr-3 py-2 rounded-2xl shadow-sm text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             />
           </div>
         </div>
 
         {/* Κατοικίδιο */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
             Κατοικίδιο
           </p>
           <PetSelector
@@ -136,8 +136,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Τύπος, Διάρκεια, Σημειώσεις */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3">
             Λεπτομέρειες
           </p>
           <AppointmentFormFields

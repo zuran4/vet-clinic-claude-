@@ -92,20 +92,20 @@ const CustomerList = () => {
     Array.from({ length: 4 }).map((_, i) => (
       <li
   key={i}
-  className="p-4 bg-gray-100 rounded-2xl animate-pulse h-[110px]"
+  className="p-4 bg-gray-100 dark:bg-gray-700 rounded-2xl animate-pulse h-[110px]"
 >
   <div className="flex items-center justify-between gap-3 h-full">
     <div className="flex flex-col gap-2 w-full">
-      <div className="h-4 bg-gray-300 rounded w-1/3"></div>
-      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-600/70 rounded w-2/3"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-600/70 rounded w-1/4"></div>
     </div>
-    <div className="h-6 w-6 bg-gray-300 rounded-full"></div>
+    <div className="h-6 w-6 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
   </div>
 </li>
     ))
   ) : filteredCustomers.length === 0 ? (
-    <p className="text-sm text-gray-500 text-center py-4">
+    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
       Δεν βρέθηκαν πελάτες.
     </p>
   ) : (
@@ -135,7 +135,7 @@ const CustomerList = () => {
 
       {/* Pagination */}
       {total > 9 && (
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <Button
             variant="ghost"
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
@@ -143,8 +143,8 @@ const CustomerList = () => {
           >
             ← Προηγούμενη
           </Button>
-          <span className="text-xs text-gray-400">
-            Σελίδα <span className="font-semibold text-gray-600">{page}</span> από {Math.ceil(total / 9)}
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            Σελίδα <span className="font-semibold text-gray-600 dark:text-gray-300">{page}</span> από {Math.ceil(total / 9)}
           </span>
           <Button
             variant="ghost"

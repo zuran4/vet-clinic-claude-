@@ -82,42 +82,42 @@ const PrescriptionList = () => {
   return (
     <>
       {prescriptions.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-14 text-center">
-          <Pill className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-sm text-gray-400">Δεν υπάρχουν καταχωρημένες συνταγές.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm py-14 text-center">
+          <Pill className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+          <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν καταχωρημένες συνταγές.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {prescriptions.map((p) => (
             <div
               key={p._id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
               <div className="flex items-center gap-4 px-4 py-3">
                 {/* Violet accent */}
                 <div className="w-1 self-stretch rounded-full bg-gradient-to-b from-violet-400 to-purple-500 flex-shrink-0" />
 
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
-                  <PawPrint className="w-5 h-5 text-violet-500" />
+                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                  <PawPrint className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-800 text-sm">
+                  <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
                     {p.animalId?.name || p.animalName}
-                    <span className="text-gray-400 font-normal mx-1.5">—</span>
-                    <span className="text-gray-600">{p.clientName}</span>
+                    <span className="text-gray-400 dark:text-gray-500 font-normal mx-1.5">—</span>
+                    <span className="text-gray-600 dark:text-gray-300">{p.clientName}</span>
                   </p>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                       <Calendar className="w-3 h-3" />{dayjs(p.date).format("DD/MM/YYYY")}
                     </span>
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                       <Stethoscope className="w-3 h-3" />{p.doctor}
                     </span>
                     {Array.isArray(p.medicines) && p.medicines.length > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-violet-600">
+                      <span className="flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400">
                         <Pill className="w-3 h-3" />
                         {p.medicines.slice(0, 2).join(", ")}
                         {p.medicines.length > 2 && ` +${p.medicines.length - 2}`}

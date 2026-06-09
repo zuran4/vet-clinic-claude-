@@ -115,12 +115,12 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] my-10"
+        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] my-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-primary" />
             Ιστορικό Αγορών
           </h2>
@@ -130,33 +130,33 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
         </div>
 
         {/* Πελάτης */}
-        <p className="text-gray-600 mb-4">
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
           Πελάτης:{" "}
-          <span className="font-medium text-gray-800">{customerName}</span>
+          <span className="font-medium text-gray-800 dark:text-gray-100">{customerName}</span>
         </p>
 
         {/* Περιεχόμενο */}
         {loading ? (
-          <p className="text-gray-500 text-center py-8">Φόρτωση...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">Φόρτωση...</p>
         ) : purchases.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
             Δεν βρέθηκαν αγορές για αυτόν τον πελάτη.
           </p>
         ) : (
-          <div className="divide-y rounded-xl border bg-gray-50">
+          <div className="divide-y dark:divide-gray-700 rounded-xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
             {purchases.map((p) => (
               <div
                 key={p._id}
-                className="flex items-center justify-between p-3 hover:bg-white transition"
+                className="flex items-center justify-between p-3 hover:bg-white dark:hover:bg-gray-700 transition"
               >
                 <div className="flex items-center gap-3">
-                  <Package className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-800">
+                  <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
                     {p.product?.name || "Άγνωστο προϊόν"}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <CalendarDays className="w-4 h-4" />
                     {p.date

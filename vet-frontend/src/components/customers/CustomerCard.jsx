@@ -6,7 +6,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <li className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <li className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Main row */}
       <div className="flex items-center gap-3 px-4 py-3">
 
@@ -17,7 +17,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
           style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}
           title="Κατοικίδια"
         >
-          <ChevronRight className="w-4 h-4 text-gray-300 hover:text-indigo-400 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 hover:text-indigo-400 transition-colors" />
         </button>
 
         {/* Avatar + Info — πατώντας ανοίγει το πλήρες προφίλ */}
@@ -26,27 +26,27 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
           onClick={() => onView(customer)}
           title="Προβολή προφίλ"
         >
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-bold text-indigo-500">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-bold text-indigo-500 dark:text-indigo-400">
               {customer.name?.charAt(0)?.toUpperCase() || "?"}
             </span>
           </div>
 
           <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-800 text-sm truncate">{customer.name}</p>
+          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{customer.name}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
             {customer.phone && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                 <Phone className="w-3 h-3" />{customer.phone}
               </span>
             )}
             {customer.email && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                 <Mail className="w-3 h-3" />{customer.email}
               </span>
             )}
             {customer.address && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                 <MapPin className="w-3 h-3" />{customer.address}
               </span>
             )}
@@ -94,7 +94,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
 
       {/* Expanded pets */}
       {expanded && (
-        <div className="border-t border-gray-50 px-4 py-3 bg-indigo-50/30">
+        <div className="border-t border-gray-50 dark:border-gray-700 px-4 py-3 bg-indigo-50/30 dark:bg-indigo-900/10">
           <CustomerPetsExpanded ownerId={customer._id} />
         </div>
       )}

@@ -107,7 +107,7 @@ const InlinePrescriptions = ({ petId, pet, customer }) => {
     <div className="space-y-3">
       {/* Τίτλος + κουμπί */}
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
           Συνταγές κατοικιδίου
         </p>
         <button
@@ -123,41 +123,41 @@ const InlinePrescriptions = ({ petId, pet, customer }) => {
       {loading ? (
         <div className="py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
       ) : prescriptions.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 py-10 text-center">
-          <Pill className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">Δεν υπάρχουν συνταγές ακόμα.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 py-10 text-center">
+          <Pill className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
+          <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν συνταγές ακόμα.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {prescriptions.map((rx) => (
-            <div key={rx._id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3">
+            <div key={rx._id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 px-4 py-3">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Pill className="w-4 h-4 text-violet-500" />
+                <div className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Pill className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {rx.date ? dayjs(rx.date).format("DD/MM/YYYY") : "—"}
                     </span>
                     {rx.doctor && (
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                         <Stethoscope className="w-3 h-3" />
                         {rx.doctor}
                       </span>
                     )}
                   </div>
                   {Array.isArray(rx.medicines) && rx.medicines.length > 0 && (
-                    <p className="text-sm font-medium text-violet-700">
+                    <p className="text-sm font-medium text-violet-700 dark:text-violet-300">
                       {rx.medicines.slice(0, 3).join(", ")}
                       {rx.medicines.length > 3 && (
-                        <span className="text-violet-400 font-normal"> +{rx.medicines.length - 3}</span>
+                        <span className="text-violet-400 dark:text-violet-500 font-normal"> +{rx.medicines.length - 3}</span>
                       )}
                     </p>
                   )}
                   {rx.dosage && (
-                    <p className="text-xs text-gray-500 mt-0.5">{rx.dosage}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{rx.dosage}</p>
                   )}
                 </div>
                 <button

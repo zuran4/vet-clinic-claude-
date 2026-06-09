@@ -27,7 +27,7 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
   }, [timeZone]);
 
   return (
-    <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 border-b border-indigo-100 shadow-sm mb-6">
+    <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 border-b border-indigo-100 dark:border-gray-700 shadow-sm mb-6">
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
         {/* Αριστερά: Logo + Όνομα */}
@@ -47,19 +47,19 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
 
         {/* Κέντρο: Ημερομηνία & Ώρα */}
         <div className="text-center flex-1">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">
+          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             {now.locale("el").format("dddd D MMMM YYYY")}
           </p>
-          <p className="text-2xl font-bold text-indigo-600 tracking-wide leading-tight">
+          <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tracking-wide leading-tight">
             {now.format("HH:mm:ss")}
-            <span className="ml-2 text-xs font-normal text-gray-400">({timeZone})</span>
+            <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">({timeZone})</span>
           </p>
         </div>
 
         {/* Δεξιά: User + Κουμπιά */}
         <div className="flex items-center gap-3">
           {user && (
-            <span className="text-sm font-medium text-gray-600 hidden sm:block">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300 hidden sm:block">
               {user.name}
             </span>
           )}

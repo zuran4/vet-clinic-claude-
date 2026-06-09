@@ -110,7 +110,7 @@ const ProductList = () => {
   return (
     <>
       {/* 🔹 Search + Filters + Quick Actions */}
-      <div className="bg-white rounded-2xl shadow p-4 mb-3 flex flex-wrap items-center gap-3 justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 mb-3 flex flex-wrap items-center gap-3 justify-between">
         {/* Αριστερά: Αναζήτηση + Φίλτρα */}
         <div className="flex flex-wrap items-center gap-3">
           <SearchBar
@@ -123,7 +123,7 @@ const ProductList = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border border-gray-200 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 min-w-[150px]"
+            className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 min-w-[150px]"
             aria-label="Φίλτρο κατηγορίας"
           >
             <option value="all">Όλες οι Κατηγορίες</option>
@@ -135,7 +135,7 @@ const ProductList = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border border-gray-200 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 min-w-[150px]"
+            className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 min-w-[150px]"
             aria-label="Φίλτρο κατάστασης αποθέματος"
           >
             <option value="all">Όλες οι Καταστάσεις</option>
@@ -170,9 +170,9 @@ const ProductList = () => {
             }}
             title="Λήψη CSV: Χαμηλά/Εξαντλημένα"
             aria-label="Λήψη CSV"
-            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 shadow-sm hover:bg-gray-100 active:scale-95 transition"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95 transition"
           >
-            <Download className="w-5 h-5 text-gray-700" />
+            <Download className="w-5 h-5 text-gray-700 dark:text-gray-300" />
           </button>
         </div>
 
@@ -180,16 +180,16 @@ const ProductList = () => {
 
     
       {/* 🔹 Πίνακας Προϊόντων */}
-      <div className="overflow-x-auto bg-white rounded-2xl shadow">
+      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-2xl shadow">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100 text-left">
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Όνομα</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Κατηγορία</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Barcode</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Ποσότητα</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 uppercase tracking-wide">Τιμή</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase tracking-wide">Ενέργειες</th>
+            <tr className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 text-left">
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Όνομα</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Κατηγορία</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Barcode</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ποσότητα</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Τιμή</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ενέργειες</th>
             </tr>
           </thead>
           <tbody>
@@ -198,8 +198,8 @@ const ProductList = () => {
                 const cfg = getThresholdForCategory(product?.category);
                 return (
                   <React.Fragment key={product._id}>
-                    <tr className="border-b border-gray-50 hover:bg-orange-50/30 transition">
-                      <td className="px-4 py-3 font-semibold text-gray-800 flex items-center gap-2">
+                    <tr className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-orange-50/30 dark:hover:bg-orange-900/10 transition">
+                      <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                         <button
                           onClick={() =>
                             setExpandedProduct(expandedProduct === product._id ? null : product._id)
@@ -213,15 +213,15 @@ const ProductList = () => {
 
                         {product.name}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{product.category}</td>
-                      <td className="px-4 py-3 text-sm text-gray-400 font-mono">{product.barcode || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
+                      <td className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
                       <td className="px-4 py-3">
                         <StockBadge qty={product.stockTotal ?? product.quantity ?? 0} config={cfg} />
                       </td>
                       <td className="px-4 py-3">
                         {product.retailPrice != null
                           ? <span className="text-sm font-semibold text-emerald-600">{Number(product.retailPrice).toFixed(2)} €</span>
-                          : <span className="text-xs text-gray-300">—</span>
+                          : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
                         }
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -261,7 +261,7 @@ const ProductList = () => {
 
                     {expandedProduct === product._id && (
                       <tr>
-                        <td colSpan="6" className="bg-gray-50 px-6 py-4">
+                        <td colSpan="6" className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4">
                           {BATCHED_CATEGORIES.includes(product.category) ? (
                             <BatchList
                               key={batchRefreshKeys[product._id] || 0}
@@ -289,7 +289,7 @@ const ProductList = () => {
               })
             ) : (
               <tr>
-                <td colSpan="6" className="p-4 text-center text-gray-500">
+                <td colSpan="6" className="p-4 text-center text-gray-500 dark:text-gray-400">
                   Δεν βρέθηκαν προϊόντα.
                 </td>
               </tr>

@@ -73,18 +73,18 @@ const LoginForm = ({ onLogin }) => {
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="bg-white/95 backdrop-blur-sm rounded-b-2xl px-8 py-8 flex flex-col gap-6"
+          className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-b-2xl px-8 py-8 flex flex-col gap-6"
         >
           {/* Header */}
           <div className="flex flex-col items-center gap-3">
-            <div className="bg-indigo-50 border border-indigo-100 p-3.5 rounded-2xl">
-              <Lock className="w-6 h-6 text-indigo-600" strokeWidth={2} />
+            <div className="bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-700 p-3.5 rounded-2xl">
+              <Lock className="w-6 h-6 text-indigo-600 dark:text-indigo-400" strokeWidth={2} />
             </div>
             <div className="text-center">
-              <p className="text-[11px] font-semibold tracking-widest text-indigo-400 uppercase">
+              <p className="text-[11px] font-semibold tracking-widest text-indigo-400 dark:text-indigo-300 uppercase">
                 Vet Clinic
               </p>
-              <h1 className="text-xl font-bold text-gray-800 mt-0.5">
+              <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-0.5">
                 Είσοδος
               </h1>
             </div>
@@ -94,7 +94,7 @@ const LoginForm = ({ onLogin }) => {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="pin-input"
-              className="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
             >
               PIN
             </label>
@@ -115,11 +115,12 @@ const LoginForm = ({ onLogin }) => {
                 className={`
                   w-full px-4 py-2.5 pr-10
                   border rounded-xl text-center text-xl font-mono tracking-[0.5em]
-                  bg-gray-50 focus:bg-white
+                  bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600
+                  text-gray-900 dark:text-gray-100
                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
                   disabled:opacity-50 disabled:cursor-not-allowed
                   transition-all duration-150
-                  ${error ? "border-red-400 focus:ring-red-400" : "border-gray-200"}
+                  ${error ? "border-red-400 focus:ring-red-400" : "border-gray-200 dark:border-gray-600"}
                 `}
               />
               <button
@@ -128,7 +129,7 @@ const LoginForm = ({ onLogin }) => {
                 disabled={loading}
                 tabIndex={-1}
                 aria-label={showPin ? "Απόκρυψη PIN" : "Εμφάνιση PIN"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-40 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-40 transition-colors"
               >
                 {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -137,7 +138,7 @@ const LoginForm = ({ onLogin }) => {
 
           {/* Error */}
           {error && (
-            <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2.5 text-sm">
+            <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded-xl px-3 py-2.5 text-sm">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>

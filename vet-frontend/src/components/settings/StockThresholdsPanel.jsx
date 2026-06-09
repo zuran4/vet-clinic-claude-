@@ -75,10 +75,10 @@ export default function StockThresholdsPanel({ categories = [] }) {
     <div className="space-y-6">
       {/* Global thresholds */}
       <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
-        <h3 className="text-sm font-semibold mb-3">Global thresholds</h3>
+        <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Global thresholds</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Low (≤)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Low (≤)</label>
             <input
               type="number"
               min={0}
@@ -89,7 +89,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
             <p className="mt-1 text-[11px] text-gray-500">Κάτω ή ίσο με αυτό το όριο θεωρείται χαμηλό.</p>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">OK (&gt;)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">OK (&gt;)</label>
             <input
               type="number"
               min={1}
@@ -117,12 +117,12 @@ export default function StockThresholdsPanel({ categories = [] }) {
 
       {/* Per-category overrides */}
       <section className="p-4 rounded-2xl border dark:border-gray-700">
-        <h3 className="text-sm font-semibold mb-3">Overrides ανά κατηγορία</h3>
+        <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Overrides ανά κατηγορία</h3>
 
         {/* Add new override */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end mb-4">
           <div className="sm:col-span-2">
-            <label className="block text-xs text-gray-600 mb-1">Κατηγορία</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Κατηγορία</label>
             <input
               list="known-categories"
               placeholder="π.χ. Φάρμακα"
@@ -137,7 +137,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
             </datalist>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Low (≤)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Low (≤)</label>
             <input
               type="number"
               min={0}
@@ -147,7 +147,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">OK (&gt;)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">OK (&gt;)</label>
             <input
               type="number"
               min={1}
@@ -185,7 +185,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
             <tbody>
               {Object.keys(thresholds?._byCategory || {}).length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-3 text-gray-500">
+                  <td colSpan={4} className="py-3 text-gray-500 dark:text-gray-400">
                     Δεν υπάρχουν overrides.
                   </td>
                 </tr>
@@ -219,13 +219,13 @@ export default function StockThresholdsPanel({ categories = [] }) {
 
       {/* Import / Export */}
       <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
-        <h3 className="text-sm font-semibold mb-3">Import / Export</h3>
+        <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Import / Export</h3>
         <div className="flex flex-wrap gap-2">
           <Button onClick={handleExport}>Export JSON</Button>
 
           <label className="inline-flex items-center gap-2">
             <input type="file" accept="application/json" className="hidden" onChange={handleImport} />
-            <span className="px-3 py-2 rounded-2xl border cursor-pointer dark:border-gray-700">
+            <span className="px-3 py-2 rounded-2xl border cursor-pointer dark:border-gray-700 dark:text-gray-200">
               Import JSON
             </span>
           </label>

@@ -11,15 +11,15 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Τύπος Ραντεβού */}
       <div className="flex flex-col gap-1">
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-          <ClipboardList className="w-4 h-4 text-gray-500" />
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300">
+          <ClipboardList className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           Τύπος
         </label>
         <select
           name="type"
           value={formData.type}
           onChange={onChange}
-          className="w-full border p-2 rounded-2xl text-sm shadow-sm focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
         >
           {optionsByDoctor[doctor]?.map((opt) => (
             <option key={opt} value={opt}>
@@ -32,14 +32,14 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
       {/* Διάρκεια */}
       <div className="flex flex-col gap-1">
         <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-          <Clock4 className="w-4 h-4 text-gray-500" />
+          <Clock4 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           Διάρκεια
         </label>
         <select
           name="duration"
           value={formData.duration}
           onChange={onChange}
-          className="w-full border p-2 rounded-2xl text-sm shadow-sm focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
         >
           <option value={30}>30 λεπτά</option>
           <option value={60}>1 ώρα</option>
@@ -59,7 +59,7 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
           placeholder="Σημειώσεις (προαιρετικό)"
           value={formData.notes}
           onChange={onChange}
-          className="w-full border p-2 rounded-2xl text-sm shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary"
           rows={3}
         />
       </div>

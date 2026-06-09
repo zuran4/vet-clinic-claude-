@@ -57,17 +57,17 @@ const getSupportedTimeZones = () => {
 
 /* ─── Section wrapper ─────────────────────────────────────── */
 const Section = ({ title, description, children, onSave, saving, saved, saveError }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-    <div className="px-6 py-4 border-b border-gray-100">
-      <h2 className="text-base font-bold text-gray-800">{title}</h2>
-      {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</h2>
+      {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{description}</p>}
     </div>
     <div className="px-6 py-5 space-y-5">{children}</div>
     {onSave && (
-      <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
         <div>
-          {saved && <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">✓ Αποθηκεύτηκε</span>}
-          {saveError && <span className="text-xs text-red-500">{saveError}</span>}
+          {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">✓ Αποθηκεύτηκε</span>}
+          {saveError && <span className="text-xs text-red-500 dark:text-red-400">{saveError}</span>}
         </div>
         <button
           onClick={onSave}
@@ -83,8 +83,8 @@ const Section = ({ title, description, children, onSave, saving, saved, saveErro
 );
 
 /* ─── Input helpers ───────────────────────────────────────── */
-const LABEL = "block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5";
-const INPUT = "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white";
+const LABEL = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5";
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 
 /* ─── Main component ──────────────────────────────────────── */
 const SettingsPage = ({ onClose }) => {
@@ -287,14 +287,14 @@ const SettingsPage = ({ onClose }) => {
             <Settings className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-gray-800">Ρυθμίσεις Συστήματος</h1>
-            <p className="text-xs text-gray-400">Διαχείριση κλινικής, προσωπικού και συστήματος</p>
+            <h1 className="text-base font-bold text-gray-800 dark:text-gray-100">Ρυθμίσεις Συστήματος</h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Διαχείριση κλινικής, προσωπικού και συστήματος</p>
           </div>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <X className="w-4 h-4" /> Κλείσιμο
           </button>
@@ -305,10 +305,10 @@ const SettingsPage = ({ onClose }) => {
       <div className="flex gap-6 items-start">
 
         {/* Sidebar */}
-        <div className="w-44 flex-shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden py-3">
+        <div className="w-44 flex-shrink-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden py-3">
           {NAV_GROUPS.map(({ group, items }) => (
             <div key={group} className="mb-4 last:mb-0">
-              <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-1 px-4">
+              <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-1 px-4">
                 {group}
               </p>
               {items.map(({ id, label, icon: Icon }) => (
@@ -317,8 +317,8 @@ const SettingsPage = ({ onClose }) => {
                   onClick={() => setActiveSection(id)}
                   className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm font-medium transition-colors text-left ${
                     activeSection === id
-                      ? "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                      ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-r-2 border-indigo-500"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
@@ -379,7 +379,7 @@ const SettingsPage = ({ onClose }) => {
                   <select
                     value={form.timezone || "Europe/Athens"}
                     onChange={(e) => patch("timezone", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+                    className="w-full border border-gray-200 dark:border-gray-600 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
                     {timeZones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                   </select>
@@ -395,13 +395,13 @@ const SettingsPage = ({ onClose }) => {
               description="Διαχείριση μελών ομάδας και ρόλων."
               {...saveProps}
             >
-              <div className="rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border-b border-gray-200 px-5 py-3 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-500" />
-                  <span className="text-sm font-semibold text-indigo-700">Μέλη Ομάδας</span>
+                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 border-b border-gray-200 dark:border-gray-700 px-5 py-3 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                  <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Μέλη Ομάδας</span>
                   {(form.staff || []).length > 0 && (
-                    <span className="ml-1 text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
+                    <span className="ml-1 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full">
                       {form.staff.length}
                     </span>
                   )}
@@ -409,24 +409,24 @@ const SettingsPage = ({ onClose }) => {
 
                 {/* List */}
                 {(form.staff || []).length > 0 ? (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {form.staff.map((member, i) => (
-                      <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors group">
+                      <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-sm">
                           <span className="text-sm font-bold text-white">
                             {member.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800">{member.name}</p>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{member.name}</p>
                         </div>
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 text-gray-600"}`}>
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"}`}>
                           {member.role}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeStaff(i)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all flex-shrink-0"
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-all flex-shrink-0"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -435,13 +435,13 @@ const SettingsPage = ({ onClose }) => {
                   </div>
                 ) : (
                   <div className="px-5 py-10 text-center">
-                    <Users className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">Δεν έχει καταχωρηθεί προσωπικό ακόμα.</p>
+                    <Users className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400 dark:text-gray-500">Δεν έχει καταχωρηθεί προσωπικό ακόμα.</p>
                   </div>
                 )}
 
                 {/* Add form */}
-                <div className="border-t border-gray-100 bg-gray-50 px-5 py-3">
+                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 px-5 py-3">
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -449,12 +449,12 @@ const SettingsPage = ({ onClose }) => {
                       onChange={(e) => setNewName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addStaff()}
                       placeholder="Όνομα μέλους..."
-                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     />
                     <select
                       value={newRole}
                       onChange={(e) => setNewRole(e.target.value)}
-                      className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     >
                       {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
@@ -504,7 +504,7 @@ const SettingsPage = ({ onClose }) => {
                   updateSettings={updateSettings}
                 />
               </div>
-              <div className="border-t border-gray-100 pt-5">
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
                 <p className={LABEL + " mb-3"}>Stock Thresholds</p>
                 <StockThresholdsPanel />
               </div>
@@ -520,9 +520,9 @@ const SettingsPage = ({ onClose }) => {
               {...saveProps}
             >
               {/* Info banner */}
-              <div className="flex gap-3 p-3 bg-sky-50 rounded-xl border border-sky-100">
-                <Mail className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-sky-600 leading-relaxed">
+              <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
+                <Mail className="w-4 h-4 text-sky-400 dark:text-sky-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
                   Για Gmail χρησιμοποίησε <strong>smtp.gmail.com</strong>, port <strong>587</strong>.
                   Πρέπει να δημιουργήσεις <strong>App Password</strong> από το Google Account σου
                   (Google Account → Security → 2-Step Verification → App Passwords).
@@ -571,12 +571,12 @@ const SettingsPage = ({ onClose }) => {
                       value={form.emailConfig?.password || ""}
                       onChange={(e) => patchEmail("password", e.target.value)}
                       placeholder="••••••••••••••••"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+                      className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -584,7 +584,7 @@ const SettingsPage = ({ onClose }) => {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={LABEL}>Όνομα αποστολέα</label>
                   <input
@@ -643,30 +643,30 @@ const SettingsPage = ({ onClose }) => {
                 {testEmailResult && (
                   <div className={`mt-2 px-4 py-2.5 rounded-xl text-sm font-medium ${
                     testEmailResult.ok
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                      : "bg-red-50 text-red-600 border border-red-100"
+                      ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-700/50"
+                      : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-700/50"
                   }`}>
                     {testEmailResult.msg}
                   </div>
                 )}
 
                 {/* Αυτόματες ειδοποιήσεις info */}
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Αυτόματες Ειδοποιήσεις</p>
+                <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Αυτόματες Ειδοποιήσεις</p>
                   <div className="space-y-2">
                     {[
                       { icon: "📅", label: "Υπενθύμιση ραντεβού",   desc: "Αποστολή 1 μέρα πριν — κάθε μέρα 08:00", active: true },
                       { icon: "💉", label: "Υπενθύμιση εμβολίου",   desc: "7 και 1 μέρα πριν — κάθε μέρα 09:00",   active: true },
                       { icon: "🎂", label: "Γενέθλια κατοικιδίου",  desc: "Την ημέρα των γενεθλίων",               active: false },
                     ].map((item) => (
-                      <div key={item.label} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div key={item.label} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                         <span className="text-lg flex-shrink-0">{item.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-700">{item.label}</p>
-                          <p className="text-xs text-gray-400">{item.desc}</p>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{item.label}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{item.desc}</p>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                          item.active ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400"
+                          item.active ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
                         }`}>
                           {item.active ? "ΕΝΕΡΓΟ" : "ΣΧΕΔΙΑΣΜΟΣ"}
                         </span>
@@ -681,14 +681,14 @@ const SettingsPage = ({ onClose }) => {
           {/* ── ADMIN ── */}
           <div className={activeSection !== "admin" ? "hidden" : ""}>
             <Section title="Admin" description="Ρυθμίσεις για τον Playwright registry worker (gov.gr).">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-4 h-4 text-gray-500" />
+                  <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">Headless Registry Worker</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Headless Registry Worker</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                       Όταν ενεργό, ο Chromium τρέχει χωρίς ορατό παράθυρο.
                     </p>
                   </div>
@@ -698,7 +698,7 @@ const SettingsPage = ({ onClose }) => {
                   onClick={handleToggleHeadless}
                   disabled={workerChanging}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                    form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300"
+                    form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"
                   } ${workerChanging ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
@@ -707,7 +707,7 @@ const SettingsPage = ({ onClose }) => {
                 </button>
               </div>
               {workerChanging && (
-                <p className="text-xs text-gray-400">Επανεκκίνηση worker με τη νέα ρύθμιση...</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Επανεκκίνηση worker με τη νέα ρύθμιση...</p>
               )}
               {workerError && (
                 <p className="text-xs text-red-500">{workerError}</p>

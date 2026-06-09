@@ -19,17 +19,17 @@ export function Button({
 
   const variants = {
     primary:
-      "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 focus:ring-indigo-300",
+      "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 focus:ring-indigo-300 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-700 dark:hover:bg-indigo-900/60",
     secondary:
-      "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300",
+      "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700 dark:hover:bg-emerald-900/60",
     success:
-      "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300",
+      "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700 dark:hover:bg-emerald-900/60",
     danger:
-      "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 focus:ring-red-300",
+      "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 focus:ring-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/60",
     warning:
-      "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 focus:ring-amber-300",
+      "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 focus:ring-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900/60",
     ghost:
-      "bg-transparent text-gray-700 hover:bg-gray-100 border border-transparent focus:ring-gray-300",
+      "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent focus:ring-gray-300",
   };
 
   return (

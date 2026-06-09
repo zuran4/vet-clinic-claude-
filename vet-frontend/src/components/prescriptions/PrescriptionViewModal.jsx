@@ -5,13 +5,13 @@ import dayjs from "dayjs";
 const InfoRow = ({ icon: Icon, label, value }) => {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon className="w-3.5 h-3.5 text-violet-500" />
+    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+      <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Icon className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
       </div>
       <div>
-        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{label}</p>
-        <p className="text-sm text-gray-800 font-medium mt-0.5">{value}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{label}</p>
+        <p className="text-sm text-gray-800 dark:text-gray-100 font-medium mt-0.5">{value}</p>
       </div>
     </div>
   );
@@ -109,8 +109,8 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-50 p-5 space-y-3">
-          <div className="bg-white rounded-2xl border border-gray-100 px-4 py-2">
+        <div className="bg-gray-50 dark:bg-gray-800/50 p-5 space-y-3">
+          <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-2">
             <InfoRow icon={Calendar}    label="Ημερομηνία" value={prescription.date ? dayjs(prescription.date).format("DD/MM/YYYY") : null} />
             <InfoRow icon={User}        label="Πελάτης"    value={prescription.clientName} />
             <InfoRow icon={PawPrint}    label="Ζώο"        value={prescription.animalId?.name || prescription.animalName} />
@@ -118,16 +118,16 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
           </div>
 
           {Array.isArray(prescription.medicines) && prescription.medicines.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3">
+            <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
-                  <Pill className="w-3.5 h-3.5 text-violet-500" />
+                <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
+                  <Pill className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
                 </div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Φάρμακα</p>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Φάρμακα</p>
               </div>
               <ul className="space-y-1">
                 {prescription.medicines.map((m, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-gray-800">
+                  <li key={i} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100">
                     <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
                     {m}
                   </li>
@@ -137,7 +137,7 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
           )}
 
           {(prescription.dosage || prescription.instructions || prescription.notes) && (
-            <div className="bg-white rounded-2xl border border-gray-100 px-4 py-2">
+            <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-2">
               <InfoRow icon={FlaskConical} label="Δοσολογία" value={prescription.dosage} />
               <InfoRow icon={StickyNote}   label="Οδηγίες"   value={prescription.instructions} />
               <InfoRow icon={StickyNote}   label="Σημειώσεις" value={prescription.notes} />
@@ -146,11 +146,11 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
 
           <div className="flex justify-end gap-2">
             <button onClick={handlePrint}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium transition-colors">
               <Printer className="w-4 h-4" /> Εκτύπωση
             </button>
             <button onClick={onClose}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <X className="w-4 h-4" /> Κλείσιμο
             </button>
           </div>

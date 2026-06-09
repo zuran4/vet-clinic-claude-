@@ -44,7 +44,7 @@ const DarkModeToggle = ({ settings, setSettings, updateSettings }) => {
   };
 
   return (
-    <div className="flex items-center justify-between max-w-sm p-4 bg-gray-50 rounded-2xl border border-gray-200">
+    <div className="flex items-center justify-between max-w-sm p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-600">
       <div className="flex items-center gap-3">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
           isDark ? "bg-slate-700" : "bg-amber-50"
@@ -55,10 +55,10 @@ const DarkModeToggle = ({ settings, setSettings, updateSettings }) => {
           }
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-800">
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
             {isDark ? "Dark Mode" : "Light Mode"}
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
             {isDark ? "Σκοτεινό θέμα ενεργό" : "Φωτεινό θέμα ενεργό"}
           </p>
         </div>
