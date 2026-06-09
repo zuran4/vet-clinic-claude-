@@ -3,7 +3,6 @@ import { Package, Truck, ShoppingCart, Plus, ArrowLeft } from "lucide-react";
 import ProductList from "../components/products/ProductList";
 import SupplierList from "../components/suppliers/SupplierList";
 import WishlistPanel from "../components/dashboard/WishlistPanel";
-import { Button } from "../components/ui/button";
 
 const TABS = [
   { key: "products",   label: "Προϊόντα",      icon: Package },
@@ -27,30 +26,30 @@ function ProductsPage({ onClose }) {
           </div>
           <div className="flex items-center gap-2">
             {activeTab === "products" && (
-              <Button
-                variant="ghost"
+              <button
+                type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent("openProductModal"))}
-                className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1.5 text-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" /> Νέο Προϊόν
-              </Button>
+              </button>
             )}
             {activeTab === "suppliers" && (
-              <Button
-                variant="ghost"
+              <button
+                type="button"
                 onClick={() => { setEditingSupplier(null); setShowSupplierForm(true); }}
-                className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1.5 text-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" /> Νέος Προμηθευτής
-              </Button>
+              </button>
             )}
-            <Button
-              variant="ghost"
+            <button
+              type="button"
               onClick={onClose}
-              className="bg-white/10 hover:bg-white/20 text-white border-0 gap-1.5 text-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-orange-600 text-sm font-medium transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Επιστροφή
-            </Button>
+            </button>
           </div>
         </div>
 

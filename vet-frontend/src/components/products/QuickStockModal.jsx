@@ -4,8 +4,8 @@ import Modal from "../ui/Modal.jsx";
 import { Button } from "../ui/button.jsx";
 import request from "../../api/apiClient.js";
 
-const INPUT = "mt-1 w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "mt-1 w-full border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 export default function QuickStockModal({ product, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -85,8 +85,8 @@ export default function QuickStockModal({ product, onSave, onClose }) {
         </div>
 
         {/* Form */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Στοιχεία Αγοράς</p>
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3 space-y-3">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Στοιχεία Αγοράς</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Ποσότητα *</label>
@@ -153,14 +153,14 @@ export default function QuickStockModal({ product, onSave, onClose }) {
       {/* Confirmation */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Μη αποθηκευμένες αλλαγές</p>
-                <p className="text-sm text-gray-500 mt-0.5">Αν κλείσεις τώρα, οι αλλαγές θα χαθούν.</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-100">Μη αποθηκευμένες αλλαγές</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Αν κλείσεις τώρα, οι αλλαγές θα χαθούν.</p>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">

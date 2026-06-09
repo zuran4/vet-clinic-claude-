@@ -12,6 +12,9 @@ import {
 } from '../ui/Select';
 import StockSection from './StockSection';
 
+const INPUT = "border border-gray-200 dark:border-gray-600 px-3 py-2 rounded w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400";
+const LABEL = "block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1";
+
 const CATEGORY_OPTIONS = ['Φάρμακα', 'Τροφή', 'Αξεσουάρ'];
 
 const ProductFormModal = ({ productId, onClose, onSave }) => {
@@ -36,7 +39,6 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
       try {
         const res = await fetch(`/api/products/${productId}`);
         const data = await res.json();
-        console.log('📡 Backend επέστρεψε:', data);
         setProduct({
           ...data,
           activeIngredient: data.activeIngredient || '',
@@ -69,7 +71,6 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
       const method = productId ? 'PUT' : 'POST';
       const url = productId ? `/api/products/${productId}` : `/api/products`;
 
-      // 🔹 Αντίγραφο state χωρίς άμεση μεταβολή
       const productToSave = {
         ...product,
         expirationDate: product.expirationDate
@@ -86,7 +87,6 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Σφάλμα αποθήκευσης.');
 
-      // ✅ Αποθήκευση batches (αν είναι "Τροφή")
       if (product.category === 'Τροφή' && result._id) {
         try {
           const resBatches = await fetch(`/api/products/${result._id}/batches`, {
@@ -114,34 +114,34 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
     }
   };
 
-  if (loading) return <div className="text-center mt-10">Φόρτωση...</div>;
+  if (loading) return <div className="text-center mt-10 text-gray-500 dark:text-gray-400">Φόρτωση...</div>;
 
   return (
     <Modal isOpen={true} onClose={onClose}>
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-gray-700 flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-100 flex items-center gap-2">
           <Package className="w-5 h-5 text-purple-500" />
           {productId ? 'Επεξεργασία Προϊόντος' : 'Νέο Προϊόν'}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Όνομα Προϊόντος *</label>
+            <label className={LABEL}>Όνομα Προϊόντος *</label>
             <input
               type="text"
               value={product.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className="border px-3 py-2 rounded w-full"
+              className={INPUT}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Κατηγορία *</label>
+            <label className={LABEL}>Κατηγορία *</label>
             <Select
               value={product.category}
               onValueChange={(value) => handleChange('category', value)}
             >
-              <SelectTrigger className="border rounded px-3 py-2 text-sm">
+              <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                 <SelectValue placeholder="Επιλέξτε Κατηγορία" />
               </SelectTrigger>
               <SelectContent>
@@ -154,12 +154,12 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
 
           {product.category === 'Φάρμακα' && (
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Δραστική Ουσία</label>
+              <label className={LABEL}>Δραστική Ουσία</label>
               <input
                 type="text"
                 value={product.activeIngredient}
                 onChange={(e) => handleChange('activeIngredient', e.target.value)}
-                className="border px-3 py-2 rounded w-full"
+                className={INPUT}
               />
             </div>
           )}
@@ -167,12 +167,12 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
           {['Τροφή', 'Φάρμακα'].includes(product.category) && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Ημέρες Προειδοποίησης Λήξης</label>
+                <label className={LABEL}>Ημέρες Προειδοποίησης Λήξης</label>
                 <Select
                   value={String(product.expirationWarningDays)}
                   onValueChange={(value) => handleChange('expirationWarningDays', parseInt(value, 10))}
                 >
-                  <SelectTrigger className="border rounded px-3 py-2 text-sm">
+                  <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Επιλέξτε..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -184,24 +184,24 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Ημερομηνία Λήξης</label>
+                <label className={LABEL}>Ημερομηνία Λήξης</label>
                 <input
                   type="date"
                   value={product.expirationDate ? product.expirationDate.split('T')[0] : ''}
                   onChange={(e) => handleChange('expirationDate', e.target.value)}
-                  className="border px-3 py-2 rounded w-full"
+                  className={INPUT}
                 />
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Μονάδα Μέτρησης *</label>
+            <label className={LABEL}>Μονάδα Μέτρησης *</label>
             <Select
               value={product.unit}
               onValueChange={(value) => handleChange('unit', value)}
             >
-              <SelectTrigger className="border rounded px-3 py-2 text-sm">
+              <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                 <SelectValue placeholder="Επιλέξτε Μονάδα" />
               </SelectTrigger>
               <SelectContent>
@@ -214,17 +214,17 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Απόθεμα</label>
+            <label className={LABEL}>Απόθεμα</label>
             <input
               type="number"
               value={product.quantity}
               onChange={(e) => handleChange('quantity', parseInt(e.target.value, 10))}
-              className="border px-3 py-2 rounded w-full"
+              className={INPUT}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Προμηθευτής</label>
+            <label className={LABEL}>Προμηθευτής</label>
             <SupplierSelect
               value={product.supplier}
               onChange={(value) => handleChange('supplier', value)}
@@ -232,19 +232,19 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Barcode</label>
+            <label className={LABEL}>Barcode</label>
             <input
               type="text"
               value={product.barcode}
               onChange={(e) => handleChange('barcode', e.target.value)}
-              className="border px-3 py-2 rounded w-full"
+              className={INPUT}
             />
           </div>
         </div>
 
         {product.category === 'Τροφή' && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Απόθεμα & Παρτίδες</h3>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-2">Απόθεμα & Παρτίδες</h3>
             <StockSection batches={batches} onChange={setBatches} />
           </div>
         )}

@@ -1,7 +1,7 @@
 import React from "react";
 
-const INPUT = "mt-1 w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "mt-1 w-full border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
   if (!productInfo) return null;
@@ -13,7 +13,7 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
   return (
     <div className="space-y-3">
       {/* Βασικά στοιχεία */}
-      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Βασικά Στοιχεία</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -72,7 +72,7 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
       </div>
 
       {/* Απόθεμα & Προμηθευτής */}
-      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Απόθεμα & Προμηθευτής</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -112,7 +112,7 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
       </div>
 
       {/* Τιμολόγηση */}
-      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Τιμολόγηση</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -126,7 +126,7 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
                 placeholder="0.00"
                 min="0"
                 step="0.01"
-                className="mt-1 w-full border border-gray-200 rounded-2xl pl-8 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400"
+                className="mt-1 w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-8 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
       </div>
 
       {/* Σημειώσεις */}
-      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
         <label className={LABEL}>Σημειώσεις</label>
         <textarea
           value={productInfo.notes || ""}

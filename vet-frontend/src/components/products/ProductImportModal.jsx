@@ -124,11 +124,11 @@ const ProductImportModal = ({ onClose, onImport }) => {
       <div className="space-y-4">
 
         {/* Βήμα 1: Template */}
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-xl px-4 py-3">
           <FileText className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-800">Βήμα 1: Κατέβασε το template</p>
-            <p className="text-xs text-amber-600 mt-0.5">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Βήμα 1: Κατέβασε το template</p>
+            <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5">
               Το <strong>όνομα</strong> είναι υποχρεωτικό. Τα υπόλοιπα πεδία είναι προαιρετικά.
             </p>
           </div>
@@ -139,31 +139,31 @@ const ProductImportModal = ({ onClose, onImport }) => {
         </div>
 
         {/* Έγκυρες κατηγορίες */}
-        <div className="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
-          <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5">
+          <Info className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-gray-500">Έγκυρες κατηγορίες:</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Έγκυρες κατηγορίες:</p>
             <div className="flex flex-wrap gap-1 mt-1">
               {VALID_CATEGORIES.map((c) => (
-                <span key={c} className="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                <span key={c} className="bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-xs px-2 py-0.5 rounded-full font-medium">
                   {c}
                 </span>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-1">Οτιδήποτε άλλο → "Άλλο" αυτόματα.</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Οτιδήποτε άλλο → "Άλλο" αυτόματα.</p>
           </div>
         </div>
 
         {/* Βήμα 2: Upload */}
         {!result && (
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
               Βήμα 2: Επίλεξε αρχείο CSV
             </p>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-full border-2 border-dashed border-gray-200 hover:border-orange-300 rounded-xl px-4 py-6 flex flex-col items-center gap-2 text-gray-400 hover:text-orange-500 transition-colors"
+              className="w-full border-2 border-dashed border-gray-200 dark:border-gray-600 hover:border-orange-300 dark:hover:border-orange-600 rounded-xl px-4 py-6 flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-orange-500 transition-colors"
             >
               <Upload className="w-6 h-6" />
               <span className="text-sm font-medium">
@@ -187,7 +187,7 @@ const ProductImportModal = ({ onClose, onImport }) => {
 
         {/* Parse error */}
         {parseError && (
-          <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2.5 text-sm">
+          <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50 text-red-700 dark:text-red-300 rounded-xl px-3 py-2.5 text-sm">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{parseError}</span>
           </div>
@@ -196,26 +196,26 @@ const ProductImportModal = ({ onClose, onImport }) => {
         {/* Preview */}
         {rows && rows.length > 0 && !result && (
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
               Προεπισκόπηση ({rows.length} {rows.length === 1 ? "προϊόν" : "προϊόντα"})
             </p>
-            <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
               <table className="min-w-full text-xs">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
                     {PREVIEW_COLS.map((c) => (
-                      <th key={c} className="px-3 py-2 text-left text-gray-500 font-semibold whitespace-nowrap">
+                      <th key={c} className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-semibold whitespace-nowrap">
                         {FIELD_LABELS[c]}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
                   {rows.slice(0, 5).map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                    <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/50"}>
                       {PREVIEW_COLS.map((c) => (
-                        <td key={c} className="px-3 py-2 text-gray-700 max-w-[100px] truncate">
-                          {row[c] || <span className="text-gray-300">—</span>}
+                        <td key={c} className="px-3 py-2 text-gray-700 dark:text-gray-200 max-w-[100px] truncate">
+                          {row[c] || <span className="text-gray-300 dark:text-gray-600">—</span>}
                         </td>
                       ))}
                     </tr>
@@ -223,7 +223,7 @@ const ProductImportModal = ({ onClose, onImport }) => {
                 </tbody>
               </table>
               {rows.length > 5 && (
-                <p className="text-xs text-gray-400 text-center py-2 bg-gray-50 border-t border-gray-100">
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
                   +{rows.length - 5} ακόμα προϊόντα
                 </p>
               )}
@@ -244,12 +244,12 @@ const ProductImportModal = ({ onClose, onImport }) => {
               </div>
             </div>
             {result.errors?.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 space-y-1 max-h-40 overflow-y-auto">
-                <p className="text-xs font-semibold text-red-700 sticky top-0 bg-red-50 pb-1">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50 rounded-xl px-4 py-3 space-y-1 max-h-40 overflow-y-auto">
+                <p className="text-xs font-semibold text-red-700 dark:text-red-300 sticky top-0 bg-red-50 dark:bg-red-900/20 pb-1">
                   {result.errors.length} γραμμές απέτυχαν:
                 </p>
                 {result.errors.map((e, i) => (
-                  <p key={i} className="text-xs text-red-600">
+                  <p key={i} className="text-xs text-red-600 dark:text-red-400">
                     • {e.row?.name || "—"}: {e.reason}
                   </p>
                 ))}
@@ -259,7 +259,7 @@ const ProductImportModal = ({ onClose, onImport }) => {
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100">
+        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
           <Button variant="ghost" onClick={onClose}>
             <X className="w-4 h-4" />
             {result ? "Κλείσιμο" : "Ακύρωση"}

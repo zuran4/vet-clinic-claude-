@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Settings, Building2, Users, Clock, Monitor, Bell, Shield,
-  Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff,
+  Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
 } from "lucide-react";
 import LogoUpload from "../components/ui/LogoUpload";
 import WorkingHoursSection from "../components/settings/WorkingHoursSection";
 import DarkModeToggle from "../components/settings/DarkModeToggle";
 import StockThresholdsPanel from "../components/settings/StockThresholdsPanel";
+import KeyboardShortcutsSection from "../components/settings/KeyboardShortcutsSection";
 import { useSettingsPage } from "../hooks/useSettingsPage";
 import request from "../api/apiClient";
 
@@ -24,9 +25,10 @@ const NAV_GROUPS = [
   {
     group: "ΣΥΣΤΗΜΑ",
     items: [
-      { id: "ui",            label: "Εμφάνιση",     icon: Monitor },
-      { id: "notifications", label: "Email",         icon: Mail    },
-      { id: "admin",         label: "Admin",         icon: Shield  },
+      { id: "ui",            label: "Εμφάνιση",      icon: Monitor  },
+      { id: "notifications", label: "Email",          icon: Mail     },
+      { id: "shortcuts",     label: "Συντομεύσεις",  icon: Keyboard },
+      { id: "admin",         label: "Admin",          icon: Shield   },
     ],
   },
 ];
@@ -676,6 +678,16 @@ const SettingsPage = ({ onClose }) => {
                 </div>
               </Section>
             </div>
+          </div>
+
+          {/* ── ΣΥΝΤΟΜΕΥΣΕΙΣ ── */}
+          <div className={activeSection !== "shortcuts" ? "hidden" : ""}>
+            <Section
+              title="Συντομεύσεις Πληκτρολογίου"
+              description="Προσαρμογή πλήκτρων για γρήγορη πλοήγηση στην εφαρμογή."
+            >
+              <KeyboardShortcutsSection />
+            </Section>
           </div>
 
           {/* ── ADMIN ── */}

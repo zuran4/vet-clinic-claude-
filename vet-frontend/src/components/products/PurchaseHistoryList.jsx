@@ -40,62 +40,62 @@ const PurchaseHistoryList = ({ productId, isOpen, onQuantity, summaryQty, catego
   if (!isOpen) return null;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-orange-100 shadow-sm mt-1">
+    <div className="rounded-2xl overflow-hidden border border-orange-100 dark:border-orange-800/30 shadow-sm mt-1">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100 px-4 py-3 flex items-center justify-between">
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShoppingBag className="w-4 h-4 text-orange-500" />
-          <span className="text-sm font-semibold text-orange-700">Ιστορικό Αγορών</span>
+          <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">Ιστορικό Αγορών</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Σύνολο</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">Σύνολο</span>
           <StockBadge qty={headerTotal} config={cfg} />
         </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="bg-white px-4 py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
+        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
       ) : entries.length === 0 ? (
-        <div className="bg-white px-4 py-6 text-center text-sm text-gray-400">
+        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
           Δεν υπάρχουν καταχωρήσεις αγορών.
         </div>
       ) : (
-        <div className="bg-white overflow-x-auto">
+        <div className="bg-white dark:bg-gray-800 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Ημ. Αγοράς</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Προμηθευτής</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Ποσότητα</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Τιμή Χονδρικής</th>
+              <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ημ. Αγοράς</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Προμηθευτής</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ποσότητα</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Τιμή Χονδρικής</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
               {entries.map((entry, idx) => (
-                <tr key={entry._id || idx} className="hover:bg-orange-50/30 transition-colors">
-                  <td className="px-4 py-2.5 text-xs text-gray-500">
+                <tr key={entry._id || idx} className="hover:bg-orange-50/30 dark:hover:bg-orange-900/20 transition-colors">
+                  <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
                     {entry.purchaseDate
                       ? dayjs(entry.purchaseDate).format("DD/MM/YYYY")
                       : "—"}
                   </td>
-                  <td className="px-4 py-2.5 text-sm text-gray-500">
+                  <td className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400">
                     {entry.invoiceNumber || "—"}
                   </td>
-                  <td className="px-4 py-2.5 font-semibold text-gray-700">
+                  <td className="px-4 py-2.5 font-semibold text-gray-700 dark:text-gray-200">
                     {entry.quantity}
                   </td>
-                  <td className="px-4 py-2.5 font-semibold text-gray-700">
+                  <td className="px-4 py-2.5 font-semibold text-gray-700 dark:text-gray-200">
                     {entry.batchNumber || "—"}
                   </td>
                 </tr>
               ))}
             </tbody>
-            <tfoot className="sticky bottom-0 bg-orange-50 border-t border-orange-100">
+            <tfoot className="sticky bottom-0 bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800/30">
               <tr>
                 <td colSpan={2} />
-                <td className="px-4 py-2.5 font-bold text-orange-700">{totalQuantity}</td>
-                <td className="px-4 py-2.5 text-xs font-semibold text-orange-600 uppercase tracking-wide">
+                <td className="px-4 py-2.5 font-bold text-orange-700 dark:text-orange-300">{totalQuantity}</td>
+                <td className="px-4 py-2.5 text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide">
                   Σύνολο
                 </td>
               </tr>

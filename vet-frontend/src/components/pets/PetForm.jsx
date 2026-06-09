@@ -3,8 +3,8 @@ import { PawPrint, Cpu, Calendar, Save, X, Syringe, Scissors } from "lucide-reac
 import PetOwnerSelector from "./PetOwnerSelector.jsx";
 import { usePetForm } from "./hooks/usePetForm.js";
 
-const INPUT = "w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 bg-white";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 const HEALTH_OPTIONS = [
   { key: "neutered",   label: "Στειρωμένο",   icon: Scissors },
@@ -21,7 +21,7 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
     <form onSubmit={handleSubmit} className="space-y-3">
 
       {/* Ιδιοκτήτης */}
-      <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
         <p className={LABEL}>Ιδιοκτήτης</p>
         <PetOwnerSelector
           owner={owner}
@@ -31,14 +31,14 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
       </div>
 
       {/* Βασικά Στοιχεία */}
-      <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
         <p className={LABEL + " mb-3"}>Βασικά Στοιχεία</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
           <div>
             <label className={LABEL}>Όνομα *</label>
             <div className="relative">
-              <PawPrint className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <PawPrint className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
               <input
                 type="text"
                 name="name"
@@ -46,7 +46,7 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
                 value={formData.name}
                 onChange={wrapChange(handleChange)}
                 required
-                className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
           </div>
@@ -87,13 +87,13 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
           <div>
             <label className={LABEL}>Ημ. Γέννησης</label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
               <input
                 type="date"
                 name="birthDate"
                 value={formData.birthDate}
                 onChange={wrapChange(handleChange)}
-                className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
           </div>
@@ -101,14 +101,14 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
           <div className="md:col-span-2">
             <label className={LABEL}>Microchip</label>
             <div className="relative">
-              <Cpu className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <Cpu className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
               <input
                 type="text"
                 name="microchip"
                 placeholder="π.χ. 941000012345678"
                 value={formData.microchip}
                 onChange={wrapChange(handleChange)}
-                className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
           </div>
@@ -116,7 +116,7 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
       </div>
 
       {/* Υγεία */}
-      <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
         <p className={LABEL + " mb-3"}>Υγεία</p>
         <div className="flex gap-2 flex-wrap">
           {HEALTH_OPTIONS.map(({ key, label, icon: Icon }) => (
@@ -124,8 +124,8 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
               key={key}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors ${
                 formData[key]
-                  ? "bg-sky-50 border-sky-200 text-sky-700"
-                  : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                  ? "bg-sky-50 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700/50 text-sky-700 dark:text-sky-300"
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
               }`}
             >
               <input
@@ -136,7 +136,7 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
                 className="hidden"
               />
               <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                formData[key] ? "bg-sky-500 border-sky-500" : "border-gray-300"
+                formData[key] ? "bg-sky-500 border-sky-500" : "border-gray-300 dark:border-gray-600"
               }`}>
                 {formData[key] && (
                   <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 12 12">
@@ -156,7 +156,7 @@ const PetForm = ({ initialData, onSaved, onCancel, owner, onDirty }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         >
           <X className="w-4 h-4" /> Ακύρωση
         </button>

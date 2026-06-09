@@ -47,7 +47,7 @@ export default function LogoUpload({ value, onChange }) {
         <img
           src={value}
           alt="Logo"
-          className="w-12 h-12 rounded-lg border shadow"
+          className="w-12 h-12 rounded-lg border dark:border-gray-600 shadow"
         />
       )}
 

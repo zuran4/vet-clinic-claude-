@@ -128,7 +128,7 @@ const AppointmentCalendar = ({ appointments }) => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-md">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
       <Calendar
         localizer={localizer}
         events={events}

@@ -20,19 +20,19 @@ const TimeSelector = ({
     <div className="space-y-3">
       {/* Επιλογή ημερομηνίας */}
       <div className="flex items-center gap-2">
-        <Clock className="w-5 h-5 text-gray-500" />
+        <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         <DatePicker
           selected={date}
           onChange={onChangeDate}
           dateFormat="dd/MM/yyyy"
-          className="w-full border p-2 rounded text-sm"
+          className="w-full border dark:border-gray-600 p-2 rounded text-sm dark:bg-gray-700 dark:text-gray-100"
         />
       </div>
 
       {/* Slots */}
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {availableSlots.length === 0 && (
-          <p className="col-span-full text-gray-400 text-sm">
+          <p className="col-span-full text-gray-400 dark:text-gray-500 text-sm">
             Δεν υπάρχουν διαθέσιμα slots
           </p>
         )}

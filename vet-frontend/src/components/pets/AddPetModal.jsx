@@ -41,26 +41,26 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
   // ----------------------------
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6 relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
             <PawPrint className="w-5 h-5 text-primary" />
             Προσθήκη Κατοικιδίου
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             title="Κλείσιμο"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
         {/* Φόρμα */}
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Όνομα
             </label>
             <input
@@ -69,13 +69,13 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, name: e.target.value })
               }
-              className="w-full border rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Είδος (π.χ. Σκύλος, Γάτα)
             </label>
             <input
@@ -84,12 +84,12 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, species: e.target.value })
               }
-              className="w-full border rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Φύλο
             </label>
             <select
@@ -97,7 +97,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, gender: e.target.value })
               }
-              className="w-full border rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="">-- Επιλέξτε --</option>
               <option value="Αρσενικό">Αρσενικό</option>

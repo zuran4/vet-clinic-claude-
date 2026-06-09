@@ -2,6 +2,8 @@ import React from "react";
 import { PawPrint } from "lucide-react";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
 
+const SELECT = "border border-gray-200 dark:border-gray-600 p-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+
 const PetSelector = ({
   ownerId = null,
   selectedPetId = "new",
@@ -18,13 +20,12 @@ const PetSelector = ({
 
   return (
     <div className="space-y-2">
-      {/* Dropdown επιλογής κατοικιδίου */}
       {pets.length > 0 && (
         <div className="relative">
           <select
             value={selectedPetId}
             onChange={(e) => onChangePet(e.target.value)}
-            className="w-full border border-gray-200 p-2 rounded-2xl shadow-sm text-sm pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className={`${SELECT} w-full pr-8 appearance-none`}
           >
             {pets.map((p) => (
               <option key={p._id} value={p._id}>
@@ -33,31 +34,28 @@ const PetSelector = ({
             ))}
             <option value="new">➕ Νέο Κατοικίδιο</option>
           </select>
-          <PawPrint className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <PawPrint className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
         </div>
       )}
 
-      {/* Πεδία νέου κατοικιδίου */}
       {isNew && (
-        <div className="space-y-2 border border-dashed border-indigo-200 rounded-2xl p-3 bg-indigo-50/40">
-          <p className="text-xs font-medium text-indigo-600">Νέο κατοικίδιο</p>
+        <div className="space-y-2 border border-dashed border-indigo-200 dark:border-indigo-700/50 rounded-2xl p-3 bg-indigo-50/40 dark:bg-indigo-900/10">
+          <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400">Νέο κατοικίδιο</p>
 
-          {/* Όνομα */}
           <input
             type="text"
             placeholder="Όνομα ζώου"
             value={animalName}
             onChange={(e) => onChangeAnimalName(e.target.value)}
-            className="w-full border border-gray-200 p-2 rounded-2xl shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className={`${SELECT} w-full placeholder-gray-400 dark:placeholder-gray-500`}
             required
           />
 
-          {/* Είδος + Φύλο δίπλα-δίπλα */}
           <div className="flex gap-2">
             <select
               value={newPetSpecies}
               onChange={(e) => onChangeSpecies(e.target.value)}
-              className="flex-1 border border-gray-200 p-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className={`${SELECT} flex-1`}
             >
               <option value="Σκύλος">Σκύλος</option>
               <option value="Γάτα">Γάτα</option>
@@ -67,7 +65,7 @@ const PetSelector = ({
             <select
               value={newPetGender}
               onChange={(e) => onChangeGender(e.target.value)}
-              className="flex-1 border border-gray-200 p-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className={`${SELECT} flex-1`}
             >
               <option value="Αρσενικό">Αρσενικό</option>
               <option value="Θηλυκό">Θηλυκό</option>

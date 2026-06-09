@@ -9,7 +9,6 @@ const ProductExportPanel = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
-  // 📦 Φόρτωση προϊόντων
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/products")
@@ -17,7 +16,6 @@ const ProductExportPanel = () => {
       .catch((err) => console.error("❌ Σφάλμα προϊόντων:", err));
   }, []);
 
-  // 🔍 Αναζήτηση προϊόντος
   const handleSearch = (e) => {
     const val = e.target.value;
     setQuery(val);
@@ -29,7 +27,6 @@ const ProductExportPanel = () => {
     setSelectedProduct(match || null);
   };
 
-  // 🚚 Εξαγωγή προϊόντος
   const handleExport = async () => {
     if (!selectedProduct || quantity < 1) return;
 
@@ -39,7 +36,6 @@ const ProductExportPanel = () => {
         quantity,
       });
 
-      // ✅ Runtime alert
       window.dispatchEvent(
         new CustomEvent("alert", {
           detail: {
@@ -54,7 +50,6 @@ const ProductExportPanel = () => {
       setQuery("");
       setSelectedProduct(null);
 
-      // 🔄 Ενημέρωση αποθεμάτων
       const updated = await axios.get("http://localhost:5000/api/products");
       setAllProducts(updated.data);
     } catch (err) {
@@ -73,37 +68,35 @@ const ProductExportPanel = () => {
   };
 
   return (
-    <div className="bg-yellow-50 p-6 rounded-2xl shadow-xl space-y-4">
-      <h3 className="text-xl font-bold text-yellow-800 text-center flex items-center justify-center gap-2">
-        <Upload className="w-6 h-6 text-yellow-700" />
+    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-2xl shadow-xl space-y-4 border border-yellow-200 dark:border-yellow-700/50">
+      <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200 text-center flex items-center justify-center gap-2">
+        <Upload className="w-6 h-6 text-yellow-700 dark:text-yellow-400" />
         Εξαγωγή Προϊόντος από Αποθήκη
       </h3>
 
-      {/* 🔹 Αναζήτηση */}
       <div className="flex justify-center">
         <input
           type="text"
           value={query}
           onChange={handleSearch}
           placeholder="Αναζήτηση με όνομα ή barcode"
-          className="w-full md:w-2/3 px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full md:w-2/3 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
         />
       </div>
 
-      {/* 🔹 Επιλεγμένο προϊόν */}
       {selectedProduct && (
         <div className="text-center mt-4">
           <p className="flex flex-col items-center justify-center gap-1">
-            <span className="text-lg font-semibold text-gray-800">
+            <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
               {selectedProduct.name}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               Απόθεμα: {selectedProduct.quantity}
             </span>
           </p>
 
           {selectedProduct.barcode && (
-            <p className="flex items-center justify-center gap-1 text-sm text-gray-500 mt-1">
+            <p className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
               <Barcode className="w-4 h-4" />
               {selectedProduct.barcode}
             </p>
@@ -115,7 +108,7 @@ const ProductExportPanel = () => {
               min={1}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="border p-2 rounded-2xl w-24 text-center"
+              className="border border-gray-200 dark:border-gray-600 p-2 rounded-2xl w-24 text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             <Button variant="danger" onClick={handleExport}>
               Εξαγωγή

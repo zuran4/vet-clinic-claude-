@@ -5,6 +5,8 @@ import ExportCart from "../ui/ExportCart.jsx";
 import CustomerPurchasesModal from "../customers/CustomerPurchasesModal.jsx";
 import request from "@/api/apiClient.js";
 
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+
 const ProductExport = () => {
   const [showResults, setShowResults] = useState(false);
   const [cart, setCart] = useState([]);
@@ -106,36 +108,36 @@ const ProductExport = () => {
     <div className="space-y-4 max-w-3xl mx-auto">
 
       {/* Επιλογή Πελάτη */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border-b border-indigo-100 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
-          <User className="w-4 h-4 text-indigo-500" />
-          <span className="text-sm font-semibold text-indigo-700">Πελάτης</span>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/20 border-b border-indigo-100 dark:border-indigo-700/50 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
+          <User className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+          <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Πελάτης</span>
         </div>
         <div className="px-4 py-4">
           <div ref={customerRef} className="relative">
             {selectedCustomer ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-indigo-500">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-indigo-500 dark:text-indigo-300">
                       {selectedCustomer.name?.charAt(0)?.toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{selectedCustomer.name}</p>
-                    <p className="text-xs text-gray-400">{selectedCustomer.phone}</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{selectedCustomer.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{selectedCustomer.phone}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowPurchases(true)}
-                    className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" /> Ιστορικό
                   </button>
                   <button
                     onClick={() => setSelectedCustomer(null)}
-                    className="p-1.5 rounded-xl hover:bg-red-50 text-red-400 transition-colors"
+                    className="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -143,7 +145,7 @@ const ProductExport = () => {
               </div>
             ) : (
               <>
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-500" />
                 <input
                   type="text"
                   value={customerQuery}
@@ -154,29 +156,29 @@ const ProductExport = () => {
                     if (v.trim().length === 0) setCustomerResults([]);
                   }}
                   placeholder="Αναζήτηση πελάτη..."
-                  className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className={`${INPUT} focus:ring-indigo-300`}
                 />
                 {showResults && (
-                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
                     {loadingCustomers ? (
-                      <div className="p-3 text-xs text-gray-400 text-center">Αναζήτηση...</div>
+                      <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
                     ) : customerResults.length > 0 ? (
-                      <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50">
+                      <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
                         {customerResults.map((c) => (
                           <li key={c._id}>
                             <button
                               type="button"
-                              className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 transition-colors"
+                              className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                               onClick={() => { setSelectedCustomer(c); setCustomerQuery(""); setShowResults(false); }}
                             >
-                              <span className="font-medium text-sm text-gray-800">{c.name}</span>
-                              <span className="text-xs text-gray-400 ml-2">{c.phone}</span>
+                              <span className="font-medium text-sm text-gray-800 dark:text-gray-100">{c.name}</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{c.phone}</span>
                             </button>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <div className="p-3 text-xs text-gray-400 text-center">Δεν βρέθηκαν πελάτες.</div>
+                      <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Δεν βρέθηκαν πελάτες.</div>
                     )}
                   </div>
                 )}
@@ -187,14 +189,14 @@ const ProductExport = () => {
       </div>
 
       {/* Επιλογή Προϊόντων */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
-          <PackageSearch className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm font-semibold text-emerald-700">Προϊόντα</span>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border-b border-emerald-100 dark:border-emerald-700/50 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
+          <PackageSearch className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Προϊόντα</span>
         </div>
         <div className="px-4 py-4 space-y-3">
           <div className="relative" ref={productRef}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-500" />
             <input
               type="text"
               value={productQuery}
@@ -205,19 +207,19 @@ const ProductExport = () => {
                 if (v.trim().length === 0) setProductResults([]);
               }}
               placeholder="Αναζήτηση προϊόντος..."
-              className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              className={`${INPUT} focus:ring-emerald-300`}
             />
             {showProductResults && (
-              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
                 {loadingProducts ? (
-                  <div className="p-3 text-xs text-gray-400 text-center">Αναζήτηση...</div>
+                  <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
                 ) : productResults.length > 0 ? (
-                  <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50">
+                  <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
                     {productResults.map((prod) => (
                       <li key={prod._id}>
                         <button
                           type="button"
-                          className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 transition-colors flex items-center justify-between"
+                          className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors flex items-center justify-between"
                           onClick={() => {
                             setCart((prev) => {
                               const exists = prev.find((p) => p.id === prod._id);
@@ -229,14 +231,14 @@ const ProductExport = () => {
                             setShowProductResults(false);
                           }}
                         >
-                          <span className="font-medium text-sm text-gray-800">{prod.name}</span>
-                          <span className="text-xs text-gray-400">απόθεμα: {prod.quantity ?? prod.stockTotal ?? 0}</span>
+                          <span className="font-medium text-sm text-gray-800 dark:text-gray-100">{prod.name}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">απόθεμα: {prod.quantity ?? prod.stockTotal ?? 0}</span>
                         </button>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="p-3 text-xs text-gray-400 text-center">Δεν βρέθηκαν προϊόντα.</div>
+                  <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Δεν βρέθηκαν προϊόντα.</div>
                 )}
               </div>
             )}

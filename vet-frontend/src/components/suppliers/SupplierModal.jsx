@@ -3,8 +3,8 @@ import { Save, Truck, Phone, Mail, Globe, User, StickyNote } from "lucide-react"
 import { Button } from "../ui/button.jsx";
 import Modal from "../ui/Modal.jsx";
 
-const INPUT = "w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 const SupplierModal = ({ initialData, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -51,7 +51,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
 
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Βασικά */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-3">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3 space-y-3">
           <p className={LABEL}>Βασικά Στοιχεία</p>
           <div>
             <label className={LABEL}>Όνομα *</label>
@@ -67,7 +67,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
           <div>
             <label className={LABEL}>Υπεύθυνος Επικοινωνίας</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
               <input
                 type="text" name="contact"
                 placeholder="Όνομα υπεύθυνου"
@@ -80,13 +80,13 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
         </div>
 
         {/* Επικοινωνία */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-3">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3 space-y-3">
           <p className={LABEL}>Επικοινωνία</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Τηλέφωνο</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
                 <input
                   type="text" name="phone"
                   placeholder="210 0000000"
@@ -99,7 +99,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
             <div>
               <label className={LABEL}>Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
                 <input
                   type="email" name="email"
                   placeholder="info@example.com"
@@ -113,7 +113,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
           <div>
             <label className={LABEL}>Ιστότοπος</label>
             <div className="relative">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
               <input
                 type="text" name="website"
                 placeholder="www.example.com"
@@ -126,7 +126,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
         </div>
 
         {/* Σημειώσεις */}
-        <div className="bg-gray-50 rounded-2xl px-4 py-3">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
           <label className={LABEL}>Σημειώσεις</label>
           <textarea
             name="notes"
@@ -139,7 +139,7 @@ const SupplierModal = ({ initialData, onSave, onCancel }) => {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100">
+        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
           <Button variant="danger" type="button" onClick={onCancel}>
             Ακύρωση
           </Button>

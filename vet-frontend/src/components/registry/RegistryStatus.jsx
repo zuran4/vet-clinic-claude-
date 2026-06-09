@@ -7,51 +7,57 @@ const STATUS_CONFIG = {
     pulse: true,
     label: "Registry",
     sub: "Συνδεδεμένο",
-    color: "text-green-700",
-    bg: "bg-green-50 border-green-200 hover:bg-green-100",
+    color: "text-green-700 dark:text-green-300",
+    subColor: "text-green-600 dark:text-green-400",
+    bg: "bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-600/50",
   },
   NEEDS_LOGIN: {
     dot: "bg-amber-400",
     pulse: false,
     label: "Registry",
     sub: "Απαιτεί σύνδεση",
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200 hover:bg-amber-100",
+    color: "text-amber-700 dark:text-amber-300",
+    subColor: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-600/50 dark:hover:bg-amber-900/50",
   },
   SESSION_EXPIRED: {
     dot: "bg-amber-400",
     pulse: false,
     label: "Registry",
     sub: "Η συνεδρία έληξε",
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200 hover:bg-amber-100",
+    color: "text-amber-700 dark:text-amber-300",
+    subColor: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-600/50 dark:hover:bg-amber-900/50",
   },
   OFFLINE: {
-    dot: "bg-gray-300",
+    dot: "bg-gray-300 dark:bg-gray-500",
     pulse: false,
     label: "Registry",
     sub: "Offline",
-    color: "text-gray-500",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100",
+    color: "text-gray-500 dark:text-gray-400",
+    subColor: "text-gray-400 dark:text-gray-500",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
   },
   STOPPED: {
-    dot: "bg-gray-300",
+    dot: "bg-gray-300 dark:bg-gray-500",
     pulse: false,
     label: "Registry",
     sub: "Σταματημένο",
-    color: "text-gray-500",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100",
+    color: "text-gray-500 dark:text-gray-400",
+    subColor: "text-gray-400 dark:text-gray-500",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
   },
 };
 
 function getConfig(status) {
   return STATUS_CONFIG[status] || {
-    dot: "bg-gray-300",
+    dot: "bg-gray-300 dark:bg-gray-500",
     pulse: false,
     label: "Registry",
     sub: "Άγνωστο",
-    color: "text-gray-400",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100",
+    color: "text-gray-400 dark:text-gray-400",
+    subColor: "text-gray-400 dark:text-gray-500",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
   };
 }
 
@@ -107,7 +113,7 @@ export default function RegistryStatus({ onStatusChange = () => {} }) {
         "inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all",
         "disabled:cursor-default",
         starting
-          ? "bg-indigo-50 border-indigo-200 text-indigo-600"
+          ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-900/30 dark:border-indigo-600/50 dark:text-indigo-300"
           : cfg.bg,
       ].join(" ")}
     >
@@ -124,7 +130,7 @@ export default function RegistryStatus({ onStatusChange = () => {} }) {
         <span className={`font-semibold tracking-wide ${starting ? "text-indigo-600" : cfg.color}`}>
           {starting ? "Εκκίνηση..." : cfg.label}
         </span>
-        <span className={`text-[10px] font-normal opacity-70 ${starting ? "text-indigo-500" : cfg.color}`}>
+        <span className={`text-[10px] font-normal ${starting ? "text-indigo-400 dark:text-indigo-400" : cfg.subColor}`}>
           {starting ? "παρακαλώ περιμένετε" : cfg.sub}
         </span>
       </span>

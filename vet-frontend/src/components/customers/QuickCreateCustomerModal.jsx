@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import { User, Phone, Mail, MapPin, StickyNote, Bell, X, Save, UserPlus } from "lucide-react";
 import request from "@/api/apiClient.js";
 
-const INPUT = "w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400";
-const LABEL = "block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1";
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100";
+const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
 
 const NOTIF_OPTIONS = [
   { key: "email",      label: "Email" },
@@ -68,17 +68,17 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gray-50 p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-700/50 p-5 space-y-3 max-h-[80vh] overflow-y-auto">
 
           {/* Στοιχεία Επικοινωνίας */}
-          <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
             <p className={LABEL + " mb-3"}>Στοιχεία Επικοινωνίας</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
               <div>
                 <label className={LABEL}>Ονοματεπώνυμο *</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
                   <input type="text" value={form.name} onChange={(e) => update("name", e.target.value)}
                     required autoFocus placeholder="π.χ. Γιώργος Παπαδόπουλος" className={INPUT} />
                 </div>
@@ -87,7 +87,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
               <div>
                 <label className={LABEL}>Τηλέφωνο *</label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
                   <input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)}
                     required placeholder="π.χ. 6912345678" className={INPUT} />
                 </div>
@@ -96,7 +96,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
               <div>
                 <label className={LABEL}>Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
                   <input type="email" value={form.email} onChange={(e) => update("email", e.target.value)}
                     placeholder="π.χ. info@email.com" className={INPUT} />
                 </div>
@@ -105,7 +105,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
               <div>
                 <label className={LABEL}>Διεύθυνση</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
                   <input type="text" value={form.address} onChange={(e) => update("address", e.target.value)}
                     placeholder="π.χ. Εγνατία 10, Θεσσαλονίκη" className={INPUT} />
                 </div>
@@ -114,28 +114,28 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
               <div className="md:col-span-2">
                 <label className={LABEL}>Σημειώσεις</label>
                 <div className="relative">
-                  <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-300" />
+                  <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-300 dark:text-gray-600" />
                   <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)}
                     rows={2} placeholder="Ιδιαιτερότητες, προτιμήσεις..."
-                    className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 resize-none" />
+                    className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100 resize-none" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Ειδοποιήσεις */}
-          <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-3">
             <div className="flex items-center gap-2 mb-3">
-              <Bell className="w-3.5 h-3.5 text-gray-400" />
+              <Bell className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               <p className={LABEL}>Ειδοποιήσεις</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {NOTIF_OPTIONS.map(({ key, label }) => (
                 <label key={key} className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors ${
-                  form.notifications[key] ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                  form.notifications[key] ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}>
                   <input type="checkbox" checked={form.notifications[key]} onChange={(e) => updateNotif(key, e.target.checked)} className="hidden" />
-                  <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${form.notifications[key] ? "bg-indigo-500 border-indigo-500" : "border-gray-300"}`}>
+                  <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${form.notifications[key] ? "bg-indigo-500 border-indigo-500" : "border-gray-300 dark:border-gray-600"}`}>
                     {form.notifications[key] && <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 12 12"><path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </span>
                   {label}
@@ -144,12 +144,12 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
             </div>
           </div>
 
-          {error && <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
+          {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">{error}</p>}
 
           {/* Κουμπιά */}
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" onClick={onCancel}
-              className="px-4 py-2 rounded-2xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+              className="px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <X className="w-4 h-4 inline mr-1" />Ακύρωση
             </button>
             <button type="submit" disabled={loading || !form.name.trim() || !form.phone.trim()}

@@ -15,11 +15,11 @@ const DateTimeHeader = () => {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-md px-6 py-3 text-center">
-      <h2 className="text-lg font-semibold text-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md px-6 py-3 text-center">
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
         {now.format("dddd D MMMM YYYY")}
       </h2>
-      <p className="text-xl font-bold text-indigo-600">{now.format("HH:mm:ss")}</p>
+      <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{now.format("HH:mm:ss")}</p>
     </div>
   );
 };

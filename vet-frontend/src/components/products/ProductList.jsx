@@ -237,21 +237,21 @@ const ProductList = () => {
                                 setQuickStockProduct(product);
                               }
                             }}
-                            className="p-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-500 transition-colors"
+                            className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 text-orange-500 dark:text-orange-400 transition-colors"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
                           <button
                             title="Επεξεργασία"
                             onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
-                            className="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-colors"
+                            className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             title="Διαγραφή"
                             onClick={() => handleDeleteProduct(product._id)}
-                            className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
+                            className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

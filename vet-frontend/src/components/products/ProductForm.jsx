@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Edit, Plus } from "lucide-react";
 import { Button } from "../ui/button";
 
+const INPUT = "mt-1 block w-full border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const LABEL = "block text-sm font-medium text-gray-700 dark:text-gray-300";
+
 const initialProduct = {
   name: "",
   category: "Άλλο",
@@ -55,7 +58,6 @@ const ProductForm = ({ onSave, initialData = null }) => {
 
     setError("");
 
-    // ✅ Καθαρίζουμε τα πεδία αν δεν είναι Τροφή
     const cleanedProduct = { ...product };
     if (product.category !== "Τροφή") {
       delete cleanedProduct.expirationDate;
@@ -81,10 +83,9 @@ const ProductForm = ({ onSave, initialData = null }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-2xl shadow-xl space-y-6 max-w-3xl mx-auto mt-6"
+      className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 max-w-3xl mx-auto mt-6"
     >
-      {/* Τίτλος */}
-      <h2 className="text-2xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+      <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-100 mb-4 flex items-center gap-2">
         {initialData ? (
           <>
             <Edit className="w-6 h-6 text-primary" />
@@ -99,131 +100,64 @@ const ProductForm = ({ onSave, initialData = null }) => {
       </h2>
 
       {error && (
-        <div className="bg-red-100 text-red-800 px-4 py-2 rounded-2xl border border-red-300 shadow">
+        <div className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-4 py-2 rounded-2xl border border-red-300 dark:border-red-700 shadow">
           {error}
         </div>
       )}
 
-      {/* Πεδία */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Όνομα Προϊόντος *
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={product.name}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-            required
-          />
+          <label className={LABEL}>Όνομα Προϊόντος *</label>
+          <input type="text" name="name" value={product.name} onChange={handleChange} className={INPUT} required />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Barcode</label>
-          <input
-            type="text"
-            name="barcode"
-            value={product.barcode}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-          />
+          <label className={LABEL}>Barcode</label>
+          <input type="text" name="barcode" value={product.barcode} onChange={handleChange} className={INPUT} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Κατηγορία *
-          </label>
-          <select
-            name="category"
-            value={product.category}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-            required
-          >
+          <label className={LABEL}>Κατηγορία *</label>
+          <select name="category" value={product.category} onChange={handleChange} className={INPUT} required>
             <option value="">-- Επιλογή --</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
+              <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Μονάδα Μέτρησης *
-          </label>
-          <select
-            name="unit"
-            value={product.unit}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-            required
-          >
+          <label className={LABEL}>Μονάδα Μέτρησης *</label>
+          <select name="unit" value={product.unit} onChange={handleChange} className={INPUT} required>
             <option value="">-- Επιλογή --</option>
             {units.map((u) => (
-              <option key={u} value={u}>
-                {u}
-              </option>
+              <option key={u} value={u}>{u}</option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Ποσότητα</label>
-          <input
-            type="number"
-            name="quantity"
-            value={product.quantity}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-            min={0}
-          />
+          <label className={LABEL}>Ποσότητα</label>
+          <input type="number" name="quantity" value={product.quantity} onChange={handleChange} className={INPUT} min={0} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Όριο Ειδοποίησης</label>
-          <input
-            type="number"
-            name="threshold"
-            value={product.threshold}
-            onChange={handleChange}
-            className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-            min={0}
-          />
+          <label className={LABEL}>Όριο Ειδοποίησης</label>
+          <input type="number" name="threshold" value={product.threshold} onChange={handleChange} className={INPUT} min={0} />
         </div>
 
         {product.category === "Τροφή" && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Ημερομηνία Λήξης
-              </label>
-              <input
-                type="date"
-                name="expirationDate"
-                value={product.expirationDate}
-                onChange={handleChange}
-                className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-              />
+              <label className={LABEL}>Ημερομηνία Λήξης</label>
+              <input type="date" name="expirationDate" value={product.expirationDate} onChange={handleChange} className={INPUT} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Ειδοποίηση πριν τη λήξη
-              </label>
-              <select
-                name="expirationWarningDays"
-                value={product.expirationWarningDays}
-                onChange={handleChange}
-                className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-              >
+              <label className={LABEL}>Ειδοποίηση πριν τη λήξη</label>
+              <select name="expirationWarningDays" value={product.expirationWarningDays} onChange={handleChange} className={INPUT}>
                 {warningOptions.map((d) => (
-                  <option key={d} value={d}>
-                    {d} ημέρες πριν
-                  </option>
+                  <option key={d} value={d}>{d} ημέρες πριν</option>
                 ))}
               </select>
             </div>
@@ -231,19 +165,11 @@ const ProductForm = ({ onSave, initialData = null }) => {
         )}
       </div>
 
-      {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Σημειώσεις</label>
-        <textarea
-          name="notes"
-          value={product.notes}
-          onChange={handleChange}
-          rows={3}
-          className="mt-1 block w-full border px-3 py-2 rounded-2xl shadow focus:ring-2 focus:ring-primary"
-        />
+        <label className={LABEL}>Σημειώσεις</label>
+        <textarea name="notes" value={product.notes} onChange={handleChange} rows={3} className={INPUT} />
       </div>
 
-      {/* Κουμπιά */}
       <div className="flex gap-3 justify-end pt-4">
         <Button type="button" variant="secondary" onClick={handleReset}>
           Καθαρισμός

@@ -111,9 +111,9 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info" }) => {
 
         {activeTab === "stock" && (
           <div className="space-y-3">
-            <div className="bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-orange-600 font-medium">Σύνολο παρτίδων</span>
-              <span className="text-lg font-bold text-orange-700">{totalQuantity}</span>
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-700/50 rounded-2xl px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-orange-600 dark:text-orange-300 font-medium">Σύνολο παρτίδων</span>
+              <span className="text-lg font-bold text-orange-700 dark:text-orange-200">{totalQuantity}</span>
             </div>
             <StockSection
               productId={productId}
@@ -159,14 +159,14 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info" }) => {
       {/* Confirmation Dialog */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Μη αποθηκευμένες αλλαγές</p>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">Μη αποθηκευμένες αλλαγές</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                   Αν κλείσεις τώρα, οι αλλαγές σου θα χαθούν.
                 </p>
               </div>

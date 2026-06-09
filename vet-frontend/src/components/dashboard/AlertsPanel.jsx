@@ -92,14 +92,14 @@ const AlertsPanel = ({ products = [], pets = [], onEditProduct }) => {
     runtimeAlerts.length > 0;
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-xl mt-6 space-y-4 max-w-4xl mx-auto">
-      <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl mt-6 space-y-4 max-w-4xl mx-auto">
+      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
         <Bell className="w-5 h-5 text-primary" />
         Ειδοποιήσεις
       </h3>
 
       {!hasAlerts && (
-        <p className="text-gray-500 text-sm mt-2">Δεν υπάρχουν ειδοποιήσεις</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">Δεν υπάρχουν ειδοποιήσεις</p>
       )}
 
       {/* 🔔 Runtime alerts */}
@@ -148,7 +148,7 @@ const AlertsPanel = ({ products = [], pets = [], onEditProduct }) => {
       {/* ⏳ Λήξεις / Επικείμενες Λήξεις */}
       {expiringOrExpired.length > 0 && (
         <div className="bg-warning/10 border border-warning/30 p-4 rounded-2xl">
-          <p className="text-amber-700 font-semibold mb-2 flex items-center gap-2">
+          <p className="text-amber-700 dark:text-amber-300 font-semibold mb-2 flex items-center gap-2">
             <Hourglass className="w-5 h-5" />
             Λήξεις / Επικείμενες Λήξεις
           </p>
@@ -159,7 +159,7 @@ const AlertsPanel = ({ products = [], pets = [], onEditProduct }) => {
                 <li
                   key={`${item.productId}-${idx}`}
                   className={`cursor-pointer hover:underline ${
-                    item.diff < 0 ? "text-red-600" : "text-amber-800"
+                    item.diff < 0 ? "text-red-600 dark:text-red-400" : "text-amber-800 dark:text-amber-200"
                   }`}
                   onClick={() => onEditProduct?.(item)}
                 >
@@ -179,12 +179,12 @@ const AlertsPanel = ({ products = [], pets = [], onEditProduct }) => {
 
       {/* 💉 Εκπρόθεσμα Εμβόλια */}
       {overdueVaccines.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl">
-          <p className="text-blue-800 font-semibold mb-2 flex items-center gap-2">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 p-4 rounded-2xl">
+          <p className="text-blue-800 dark:text-blue-300 font-semibold mb-2 flex items-center gap-2">
             <Syringe className="w-5 h-5" />
             Εκπρόθεσμα Εμβόλια
           </p>
-          <ul className="list-disc pl-6 text-sm text-blue-900">
+          <ul className="list-disc pl-6 text-sm text-blue-900 dark:text-blue-200">
             {overdueVaccines.map((p) => (
               <li key={p._id}>
                 {p.name} – Τελευταίο:{" "}

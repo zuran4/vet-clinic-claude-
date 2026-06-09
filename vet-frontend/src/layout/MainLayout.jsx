@@ -1,5 +1,5 @@
 // src/layouts/MainLayout.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/el";
 import { AlertTriangle, Activity } from "lucide-react";
@@ -17,6 +17,7 @@ import SettingsPage from "../pages/SettingsPage";
 
 // ✅ i18n
 import i18n from "../i18n";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 // ✅ Κεντρικό API URL
 import { API_URL } from "../api/api.js";
@@ -56,6 +57,16 @@ function MainLayout({
 
   const openPanel = (panel) => setActivePanel(panel);
   const closePanel = () => setActivePanel("dashboard");
+
+  useKeyboardShortcuts({
+    goHome:          () => openPanel("dashboard"),
+    goAppointments:  () => openPanel("appointments"),
+    goCustomers:     () => openPanel("customers"),
+    goProducts:      () => openPanel("products"),
+    goPrescriptions: () => openPanel("prescriptions"),
+    goPets:          () => openPanel("pets"),
+    goSettings:      () => openPanel("settings"),
+  });
 
   // 🔹 Scroll reset σε κάθε αλλαγή panel
   useEffect(() => {

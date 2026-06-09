@@ -41,7 +41,7 @@ const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
         </div>
 
         {/* Form Area */}
-        <div className="bg-gray-50 p-5 max-h-[80vh] overflow-y-auto">
+        <div className="bg-gray-50 dark:bg-gray-800 p-5 max-h-[80vh] overflow-y-auto">
           <PetForm
             initialData={initialData}
             owner={owner}
@@ -55,20 +55,20 @@ const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
       {/* Confirmation Dialog */}
       {showConfirm && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <p className="font-semibold text-gray-800 text-sm">Άκυρες αλλαγές;</p>
-                <p className="text-xs text-gray-400 mt-0.5">Έχεις αλλαγές που δεν έχουν αποθηκευτεί.</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">Άκυρες αλλαγές;</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Έχεις αλλαγές που δεν έχουν αποθηκευτεί.</p>
               </div>
             </div>
             <div className="flex gap-2 justify-end mt-4">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Συνέχεια επεξεργασίας
               </button>

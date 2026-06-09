@@ -27,7 +27,7 @@ const SECTION_LABELS = {
 const SectionTable = ({ rows }) => {
   if (!rows || rows.length === 0) {
     return (
-      <p className="text-xs text-gray-400 italic py-2 px-1">Δεν βρέθηκαν εγγραφές.</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 italic py-2 px-1">Δεν βρέθηκαν εγγραφές.</p>
     );
   }
 
@@ -37,7 +37,7 @@ const SectionTable = ({ rows }) => {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-sky-50 text-sky-700">
+          <tr className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300">
             {columns.map(col => (
               <th key={col} className="px-3 py-2 text-left font-semibold whitespace-nowrap">
                 {col}
@@ -47,9 +47,9 @@ const SectionTable = ({ rows }) => {
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+            <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50 dark:bg-gray-700/50"}>
               {columns.map(col => (
-                <td key={col} className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                <td key={col} className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
                   {row[col] || "—"}
                 </td>
               ))}
@@ -67,27 +67,27 @@ const Section = ({ sectionKey, rows }) => {
   const count = rows?.length ?? 0;
 
   return (
-    <div className="border border-gray-100 rounded-xl overflow-hidden">
+    <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
       >
         <div className="flex items-center gap-2">
           {open ? (
             <ChevronDown className="w-4 h-4 text-sky-400" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           )}
-          <span className="text-sm font-semibold text-gray-700">{label}</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{label}</span>
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-          count > 0 ? "bg-sky-100 text-sky-600" : "bg-gray-100 text-gray-400"
+          count > 0 ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300" : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
         }`}>
           {count}
         </span>
       </button>
       {open && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-gray-100 dark:border-gray-700">
           <SectionTable rows={rows} />
         </div>
       )}
@@ -182,8 +182,8 @@ const MedicalEventsTab = ({ microchip, petId }) => {
 
   if (!microchip) {
     return (
-      <div className="p-6 text-center text-sm text-gray-400">
-        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+      <div className="p-6 text-center text-sm text-gray-400 dark:text-gray-500">
+        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
         Δεν υπάρχει microchip καταχωρημένο για αυτό το κατοικίδιο.
       </div>
     );
@@ -193,10 +193,10 @@ const MedicalEventsTab = ({ microchip, petId }) => {
     return (
       <div className="p-6 text-center">
         <Wifi className="w-10 h-10 mx-auto mb-3 text-sky-300" />
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Φόρτωση δεδομένων ιατρικού φακέλου από το Εθνικό Μητρώο Ζώων Συντροφιάς.
         </p>
-        <p className="text-xs text-gray-400 mb-4">Microchip: <span className="font-mono font-semibold">{microchip}</span></p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Microchip: <span className="font-mono font-semibold">{microchip}</span></p>
         <button
           onClick={load}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium transition-colors"
@@ -212,8 +212,8 @@ const MedicalEventsTab = ({ microchip, petId }) => {
     return (
       <div className="p-6 text-center">
         <RefreshCw className="w-8 h-8 mx-auto mb-3 text-sky-400 animate-spin" />
-        <p className="text-sm text-gray-500">Γίνεται scraping από pet.gov.gr...</p>
-        <p className="text-xs text-gray-400 mt-1">Μπορεί να πάρει 30-60 δευτερόλεπτα.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Γίνεται scraping από pet.gov.gr...</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Μπορεί να πάρει 30-60 δευτερόλεπτα.</p>
       </div>
     );
   }
@@ -222,8 +222,8 @@ const MedicalEventsTab = ({ microchip, petId }) => {
     return (
       <div className="p-6 text-center">
         <WifiOff className="w-8 h-8 mx-auto mb-3 text-amber-400" />
-        <p className="text-sm font-medium text-gray-700 mb-1">Ο Registry Worker δεν είναι συνδεδεμένος</p>
-        <p className="text-xs text-gray-400 mb-4">Πήγαινε στη σελίδα Μητρώο και ξεκίνα τον worker.</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ο Registry Worker δεν είναι συνδεδεμένος</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Πήγαινε στη σελίδα Μητρώο και ξεκίνα τον worker.</p>
         <button onClick={load} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium transition-colors">
           <RefreshCw className="w-4 h-4" /> Δοκίμασε ξανά
         </button>
@@ -235,8 +235,8 @@ const MedicalEventsTab = ({ microchip, petId }) => {
     return (
       <div className="p-6 text-center">
         <AlertCircle className="w-8 h-8 mx-auto mb-3 text-red-400" />
-        <p className="text-sm font-medium text-red-600 mb-1">Σφάλμα</p>
-        <p className="text-xs text-gray-400 mb-4">{errorMsg}</p>
+        <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">Σφάλμα</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">{errorMsg}</p>
         <button onClick={load} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium transition-colors">
           <RefreshCw className="w-4 h-4" /> Δοκίμασε ξανά
         </button>
@@ -251,7 +251,7 @@ const MedicalEventsTab = ({ microchip, petId }) => {
   return (
     <div className="p-4 space-y-2">
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           {totalRecords} εγγραφές συνολικά
         </p>
         <div className="flex gap-2">
@@ -261,8 +261,8 @@ const MedicalEventsTab = ({ microchip, petId }) => {
               disabled={saving || savedOk}
               className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors ${
                 savedOk
-                  ? "bg-green-50 text-green-600 cursor-default"
-                  : "bg-indigo-50 hover:bg-indigo-100 text-indigo-600"
+                  ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 cursor-default"
+                  : "bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300"
               }`}
             >
               {savedOk
@@ -275,7 +275,7 @@ const MedicalEventsTab = ({ microchip, petId }) => {
           )}
           <button
             onClick={load}
-            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30 text-sky-600 dark:text-sky-300 transition-colors"
           >
             <RefreshCw className="w-3 h-3" /> Ανανέωση
           </button>

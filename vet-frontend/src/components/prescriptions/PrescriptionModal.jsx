@@ -10,6 +10,10 @@ import {
   Plus,
 } from "lucide-react";
 
+const INPUT = "w-full border border-gray-200 dark:border-gray-600 p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+const LABEL = "flex items-center gap-2 font-medium text-gray-600 dark:text-gray-300";
+const ICON = "w-4 h-4 text-gray-500 dark:text-gray-400";
+
 const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }) => {
   const [form, setForm] = useState({
     animalId: "",
@@ -20,7 +24,6 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
     doctor: "",
   });
 
-  // Αν φορτωθούν αρχικά δεδομένα (π.χ. επεξεργασία)
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -34,12 +37,11 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
     }
   }, [initialData]);
 
-  // Υποβολή
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
       ...form,
-      medicines: form.medicines.filter((m) => m.trim() !== ""), // καθαρισμός
+      medicines: form.medicines.filter((m) => m.trim() !== ""),
     });
     onClose();
   };
@@ -48,19 +50,17 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg">
-        {/* Τίτλος */}
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-700">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-lg">
+        <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-700 dark:text-gray-100">
           <FileText className="w-5 h-5 text-primary" />
           Νέα Συνταγή
         </h3>
 
-        {/* Φόρμα */}
         <form onSubmit={handleSubmit} className="space-y-4 text-sm">
-          {/* Ζώο (dropdown) */}
+          {/* Ζώο */}
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-2 font-medium text-gray-600">
-              <PawPrint className="w-4 h-4 text-gray-500" />
+            <label className={LABEL}>
+              <PawPrint className={ICON} />
               Ζώο
             </label>
             <select
@@ -74,7 +74,7 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
                   animalName: selected?.name || "",
                 }));
               }}
-              className="w-full border p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary"
+              className={INPUT}
               required
             >
               <option value="">-- Επιλογή ζώου --</option>
@@ -86,10 +86,10 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
             </select>
           </div>
 
-          {/* Φάρμακα (δυναμική λίστα) */}
+          {/* Φάρμακα */}
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-2 font-medium text-gray-600">
-              <Pill className="w-4 h-4 text-gray-500" />
+            <label className={LABEL}>
+              <Pill className={ICON} />
               Φάρμακα
             </label>
             {form.medicines.map((m, idx) => (
@@ -102,7 +102,7 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
                   newMeds[idx] = e.target.value;
                   setForm((prev) => ({ ...prev, medicines: newMeds }));
                 }}
-                className="w-full border p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary mb-2"
+                className={`${INPUT} mb-2`}
                 placeholder={`Φάρμακο #${idx + 1}`}
                 required
               />
@@ -125,18 +125,16 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
 
           {/* Δοσολογία */}
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-2 font-medium text-gray-600">
-              <Syringe className="w-4 h-4 text-gray-500" />
+            <label className={LABEL}>
+              <Syringe className={ICON} />
               Δοσολογία
             </label>
             <input
               type="text"
               name="dosage"
               value={form.dosage}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, dosage: e.target.value }))
-              }
-              className="w-full border p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary"
+              onChange={(e) => setForm((prev) => ({ ...prev, dosage: e.target.value }))}
+              className={INPUT}
               placeholder="Π.χ. 2x την ημέρα"
               required
             />
@@ -144,17 +142,15 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
 
           {/* Σημειώσεις */}
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-2 font-medium text-gray-600">
-              <StickyNote className="w-4 h-4 text-gray-500" />
+            <label className={LABEL}>
+              <StickyNote className={ICON} />
               Σημειώσεις
             </label>
             <textarea
               name="notes"
               value={form.notes}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, notes: e.target.value }))
-              }
-              className="w-full border p-2 rounded-2xl shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-primary"
+              onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
+              className={INPUT}
               placeholder="Προαιρετικές οδηγίες"
               rows={3}
             />
@@ -162,18 +158,16 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
 
           {/* Γιατρός */}
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-2 font-medium text-gray-600">
-              <User className="w-4 h-4 text-gray-500" />
+            <label className={LABEL}>
+              <User className={ICON} />
               Γιατρός
             </label>
             <input
               type="text"
               name="doctor"
               value={form.doctor}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, doctor: e.target.value }))
-              }
-              className="w-full border p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary"
+              onChange={(e) => setForm((prev) => ({ ...prev, doctor: e.target.value }))}
+              className={INPUT}
               placeholder="Όνομα γιατρού"
               required
             />
@@ -184,11 +178,7 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
             <Button type="button" variant="secondary" onClick={onClose}>
               Ακύρωση
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              className="flex items-center gap-2"
-            >
+            <Button type="submit" variant="primary" className="flex items-center gap-2">
               Αποθήκευση
             </Button>
           </div>
