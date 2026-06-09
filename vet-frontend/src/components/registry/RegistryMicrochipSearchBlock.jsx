@@ -86,7 +86,10 @@ export default function RegistryMicrochipSearchBlock() {
 
   const fetchWorkerState = useCallback(async () => {
     try {
-      const res = await fetch("/api/registry/worker/state");
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/registry/worker/state", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const json = await res.json().catch(() => null);
       setWorkerRunning(Boolean(json?.running));
     } catch {

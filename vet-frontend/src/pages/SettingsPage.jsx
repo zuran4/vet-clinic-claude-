@@ -249,9 +249,11 @@ const SettingsPage = ({ onClose }) => {
       await updateSettings(updated);
       setForm(updated);
       setSettings(updated);
-      const stop = await fetch("/api/registry/worker/stop", { method: "POST" });
+      const token = localStorage.getItem("token");
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      const stop = await fetch("/api/registry/worker/stop", { method: "POST", headers: authHeaders });
       if (!stop.ok) throw new Error("Αποτυχία τερματισμού worker.");
-      const start = await fetch("/api/registry/worker/start", { method: "POST" });
+      const start = await fetch("/api/registry/worker/start", { method: "POST", headers: authHeaders });
       if (!start.ok) throw new Error("Αποτυχία εκκίνησης worker.");
     } catch (err) {
       setWorkerError(err?.message || "Σφάλμα κατά την αλλαγή.");
