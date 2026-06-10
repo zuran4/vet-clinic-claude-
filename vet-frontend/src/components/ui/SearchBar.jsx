@@ -24,8 +24,8 @@ const SearchBar = ({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="pl-10 pr-8 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-2xl shadow
-                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
+        className="pl-10 pr-8 border border-gray-300 dark:border-win-border-light px-3 py-2 rounded-2xl shadow
+                   bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
                    focus:ring-2 focus:ring-primary w-full text-sm"
       />
 

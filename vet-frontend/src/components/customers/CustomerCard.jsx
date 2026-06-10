@@ -6,7 +6,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <li className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <li className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Main row */}
       <div className="flex items-center gap-3 px-4 py-3">
 
@@ -94,7 +94,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
 
       {/* Expanded pets */}
       {expanded && (
-        <div className="border-t border-gray-50 dark:border-gray-700 px-4 py-3 bg-indigo-50/30 dark:bg-indigo-900/10">
+        <div className="border-t border-gray-50 dark:border-win-border px-4 py-3 bg-indigo-50/30 dark:bg-indigo-900/10">
           <CustomerPetsExpanded ownerId={customer._id} />
         </div>
       )}

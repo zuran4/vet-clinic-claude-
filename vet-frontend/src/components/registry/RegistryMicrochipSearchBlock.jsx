@@ -114,7 +114,7 @@ export default function RegistryMicrochipSearchBlock() {
   }, [cardData, microchip, existingSearch]);
 
   return (
-    <section className="w-full rounded-2xl overflow-hidden border border-violet-100 shadow-sm">
+    <section className="w-full rounded-2xl overflow-hidden border border-violet-100 dark:border-violet-700/40 shadow-sm">
 
       {/* Gradient Header */}
       <div className="bg-gradient-to-r from-violet-500 to-indigo-400 px-5 pt-4 pb-4">
@@ -169,7 +169,7 @@ export default function RegistryMicrochipSearchBlock() {
       </div>
 
       {/* Body */}
-      <div className="bg-white p-5 space-y-4">
+      <div className="bg-white dark:bg-win-surface p-5 space-y-4">
         {/* Search Form */}
         <MicrochipSearchForm
           microchip={microchip}
@@ -182,9 +182,9 @@ export default function RegistryMicrochipSearchBlock() {
 
         {/* Error */}
         {error?.message && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <p className="text-xs text-red-700">{error.message}</p>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-600/50">
+            <AlertCircle className="w-4 h-4 text-red-400 dark:text-red-300 flex-shrink-0" />
+            <p className="text-xs text-red-700 dark:text-red-300">{error.message}</p>
           </div>
         )}
 
@@ -193,17 +193,17 @@ export default function RegistryMicrochipSearchBlock() {
 
         {/* Last Result */}
         {lastResult && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-violet-50 border border-violet-100">
-            <CheckCircle className="w-4 h-4 text-violet-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-700/40">
+            <CheckCircle className="w-4 h-4 text-violet-400 dark:text-violet-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                <span className="text-xs font-mono text-violet-500">{lastResult.chip}</span>
-                <span className="text-xs font-semibold text-gray-800">{lastResult.pet}</span>
-                <span className="text-xs text-gray-500">{lastResult.owner}</span>
+                <span className="text-xs font-mono text-violet-500 dark:text-violet-300">{lastResult.chip}</span>
+                <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{lastResult.pet}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{lastResult.owner}</span>
               </div>
             </div>
             {lastResult.at && (
-              <div className="flex items-center gap-1 text-[11px] text-gray-400 flex-shrink-0">
+              <div className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 flex-shrink-0">
                 <Clock className="w-3 h-3" />
                 {lastResult.at}
               </div>
@@ -213,8 +213,8 @@ export default function RegistryMicrochipSearchBlock() {
 
         {/* History */}
         {history?.length > 0 && (
-          <div className="border-t border-gray-100 pt-3">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          <div className="border-t border-gray-100 dark:border-win-border pt-3">
+            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
               Τελευταίες Αναζητήσεις
             </p>
             <SearchHistoryList

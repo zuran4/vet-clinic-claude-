@@ -41,7 +41,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
   // ----------------------------
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+      <div className="bg-white dark:bg-win-surface rounded-2xl shadow-xl w-full max-w-md p-6 relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -50,7 +50,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-win-elevated transition"
             title="Κλείσιμο"
           >
             <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -69,7 +69,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, name: e.target.value })
               }
-              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
+              className="w-full border dark:border-win-border-light rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-win-elevated dark:text-gray-100"
               required
             />
           </div>
@@ -84,7 +84,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, species: e.target.value })
               }
-              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
+              className="w-full border dark:border-win-border-light rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-win-elevated dark:text-gray-100"
             />
           </div>
 
@@ -97,7 +97,7 @@ const AddPetModal = ({ ownerId, onSave, onClose }) => {
               onChange={(e) =>
                 setPetData({ ...petData, gender: e.target.value })
               }
-              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-gray-100"
+              className="w-full border dark:border-win-border-light rounded-2xl px-3 py-2 text-sm shadow focus:ring-2 focus:ring-primary dark:bg-win-elevated dark:text-gray-100"
             >
               <option value="">-- Επιλέξτε --</option>
               <option value="Αρσενικό">Αρσενικό</option>

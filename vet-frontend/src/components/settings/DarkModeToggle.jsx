@@ -44,7 +44,7 @@ const DarkModeToggle = ({ settings, setSettings, updateSettings }) => {
   };
 
   return (
-    <div className="flex items-center justify-between max-w-sm p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-600">
+    <div className="flex items-center justify-between max-w-sm p-4 bg-gray-50 dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border-light">
       <div className="flex items-center gap-3">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
           isDark ? "bg-slate-700" : "bg-amber-50"

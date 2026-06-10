@@ -194,7 +194,7 @@ function MainLayout({
       ok: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-950/35 dark:text-emerald-200",
       warn: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/35 dark:text-amber-200",
       info: "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/40 dark:bg-sky-950/35 dark:text-sky-200",
-      neutral: "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-600/50 dark:bg-gray-800/60 dark:text-gray-200",
+      neutral: "border-gray-200 bg-gray-50 text-gray-700 dark:border-win-border-light/50 dark:bg-win-surface/60 dark:text-gray-200",
     };
 
     const label =
@@ -219,7 +219,7 @@ function MainLayout({
   const isDashboard = activePanel === "dashboard";
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-win-bg dark:text-gray-100">
       {/* 🔹 Header */}
       <HeaderBar
         onLogout={onLogout}
@@ -231,7 +231,7 @@ function MainLayout({
       />
 
       {/* 🔹 Κύριο περιεχόμενο */}
-      <main className="max-w-6xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 space-y-6 mt-6">
+      <main className="max-w-6xl mx-auto bg-white dark:bg-win-surface shadow-md rounded-xl p-6 space-y-6 mt-6">
         {/* ✅ Page Header (σταθερό pattern) */}
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">

@@ -123,14 +123,14 @@ const InlinePrescriptions = ({ petId, pet, customer }) => {
       {loading ? (
         <div className="py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
       ) : prescriptions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 py-10 text-center">
+        <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border py-10 text-center">
           <Pill className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
           <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν συνταγές ακόμα.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {prescriptions.map((rx) => (
-            <div key={rx._id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 px-4 py-3">
+            <div key={rx._id} className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border px-4 py-3">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Pill className="w-4 h-4 text-violet-500 dark:text-violet-400" />

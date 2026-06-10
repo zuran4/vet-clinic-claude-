@@ -54,7 +54,7 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
 
       {/* Empty state */}
       {!loading && filteredSuppliers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-gray-200 dark:border-win-border rounded-2xl">
           <Truck className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           <p className="text-sm text-gray-400 dark:text-gray-500">
             {searchTerm ? "Δεν βρέθηκαν αποτελέσματα." : "Δεν υπάρχουν προμηθευτές ακόμα."}
@@ -68,7 +68,7 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
           {filteredSuppliers.map((s) => (
             <div
               key={s._id}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
               {/* Card Header */}
               <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 px-4 py-3 flex items-center justify-between">
@@ -89,14 +89,14 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
                   <button
                     title="Επεξεργασία"
                     onClick={() => { setEditingSupplier(s); setShowForm(true); }}
-                    className="p-1.5 rounded-xl bg-white dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-700/50 transition-colors"
+                    className="p-1.5 rounded-xl bg-white dark:bg-win-elevated hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-700/50 transition-colors"
                   >
                     <Edit className="w-3.5 h-3.5" />
                   </button>
                   <button
                     title="Διαγραφή"
                     onClick={() => deleteSupplier(s._id)}
-                    className="p-1.5 rounded-xl bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/40 text-red-400 dark:text-red-400 border border-red-100 dark:border-red-700/50 transition-colors"
+                    className="p-1.5 rounded-xl bg-white dark:bg-win-elevated hover:bg-red-50 dark:hover:bg-red-900/40 text-red-400 dark:text-red-400 border border-red-100 dark:border-red-700/50 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -133,7 +133,7 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
                   </div>
                 )}
                 {s.notes && (
-                  <div className="flex items-start gap-2 text-sm text-gray-400 dark:text-gray-500 pt-1.5 border-t border-gray-50 dark:border-gray-700">
+                  <div className="flex items-start gap-2 text-sm text-gray-400 dark:text-gray-500 pt-1.5 border-t border-gray-50 dark:border-win-border">
                     <StickyNote className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                     <span className="italic">{s.notes}</span>
                   </div>

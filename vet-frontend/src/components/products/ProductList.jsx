@@ -110,7 +110,7 @@ const ProductList = () => {
   return (
     <>
       {/* 🔹 Search + Filters + Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 mb-3 flex flex-wrap items-center gap-3 justify-between">
+      <div className="bg-white dark:bg-win-surface rounded-2xl shadow p-4 mb-3 flex flex-wrap items-center gap-3 justify-between">
         {/* Αριστερά: Αναζήτηση + Φίλτρα */}
         <div className="flex flex-wrap items-center gap-3">
           <SearchBar
@@ -123,7 +123,7 @@ const ProductList = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 min-w-[150px]"
+            className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 min-w-[150px]"
             aria-label="Φίλτρο κατηγορίας"
           >
             <option value="all">Όλες οι Κατηγορίες</option>
@@ -135,7 +135,7 @@ const ProductList = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 min-w-[150px]"
+            className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 min-w-[150px]"
             aria-label="Φίλτρο κατάστασης αποθέματος"
           >
             <option value="all">Όλες οι Καταστάσεις</option>
@@ -170,7 +170,7 @@ const ProductList = () => {
             }}
             title="Λήψη CSV: Χαμηλά/Εξαντλημένα"
             aria-label="Λήψη CSV"
-            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95 transition"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 dark:border-win-border-light shadow-sm hover:bg-gray-100 dark:hover:bg-win-elevated active:scale-95 transition"
           >
             <Download className="w-5 h-5 text-gray-700 dark:text-gray-300" />
           </button>
@@ -180,7 +180,7 @@ const ProductList = () => {
 
     
       {/* 🔹 Πίνακας Προϊόντων */}
-      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-2xl shadow">
+      <div className="overflow-x-auto bg-white dark:bg-win-surface rounded-2xl shadow">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 text-left">
@@ -198,7 +198,7 @@ const ProductList = () => {
                 const cfg = getThresholdForCategory(product?.category);
                 return (
                   <React.Fragment key={product._id}>
-                    <tr className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-orange-50/30 dark:hover:bg-orange-900/10 transition">
+                    <tr className="border-b border-gray-50 dark:border-win-border/50 hover:bg-orange-50/30 dark:hover:bg-orange-900/10 transition">
                       <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                         <button
                           onClick={() =>
@@ -261,7 +261,7 @@ const ProductList = () => {
 
                     {expandedProduct === product._id && (
                       <tr>
-                        <td colSpan="6" className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4">
+                        <td colSpan="6" className="bg-gray-50 dark:bg-win-elevated/50 px-6 py-4">
                           {BATCHED_CATEGORIES.includes(product.category) ? (
                             <BatchList
                               key={batchRefreshKeys[product._id] || 0}

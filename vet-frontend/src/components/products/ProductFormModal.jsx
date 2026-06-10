@@ -12,7 +12,7 @@ import {
 } from '../ui/Select';
 import StockSection from './StockSection';
 
-const INPUT = "border border-gray-200 dark:border-gray-600 px-3 py-2 rounded w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400";
+const INPUT = "border border-gray-200 dark:border-win-border-light px-3 py-2 rounded w-full bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400";
 const LABEL = "block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1";
 
 const CATEGORY_OPTIONS = ['Φάρμακα', 'Τροφή', 'Αξεσουάρ'];
@@ -141,7 +141,7 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
               value={product.category}
               onValueChange={(value) => handleChange('category', value)}
             >
-              <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+              <SelectTrigger className="border border-gray-200 dark:border-win-border-light rounded px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100">
                 <SelectValue placeholder="Επιλέξτε Κατηγορία" />
               </SelectTrigger>
               <SelectContent>
@@ -172,7 +172,7 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
                   value={String(product.expirationWarningDays)}
                   onValueChange={(value) => handleChange('expirationWarningDays', parseInt(value, 10))}
                 >
-                  <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                  <SelectTrigger className="border border-gray-200 dark:border-win-border-light rounded px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Επιλέξτε..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,7 +201,7 @@ const ProductFormModal = ({ productId, onClose, onSave }) => {
               value={product.unit}
               onValueChange={(value) => handleChange('unit', value)}
             >
-              <SelectTrigger className="border border-gray-200 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+              <SelectTrigger className="border border-gray-200 dark:border-win-border-light rounded px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100">
                 <SelectValue placeholder="Επιλέξτε Μονάδα" />
               </SelectTrigger>
               <SelectContent>

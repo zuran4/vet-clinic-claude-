@@ -32,7 +32,7 @@ export default function AppointmentHistoryPanel() {
   return (
     <div className="space-y-4">
       {/* Φίλτρα */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 space-y-3">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border p-4 space-y-3">
         {/* Αναζήτηση κειμένου */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-500 pointer-events-none" />
@@ -41,7 +41,7 @@ export default function AppointmentHistoryPanel() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Αναζήτηση με όνομα πελάτη ή ζώου..."
-            className="w-full pl-9 pr-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full pl-9 pr-3 py-2.5 rounded-2xl border border-gray-200 dark:border-win-border-light bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
         </div>
 
@@ -53,7 +53,7 @@ export default function AppointmentHistoryPanel() {
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-2.5 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="flex-1 border border-gray-200 dark:border-win-border-light rounded-xl px-2.5 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
               title="Από"
             />
           </div>
@@ -63,14 +63,14 @@ export default function AppointmentHistoryPanel() {
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-2.5 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="flex-1 border border-gray-200 dark:border-win-border-light rounded-xl px-2.5 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
               title="Έως"
             />
           </div>
           <select
             value={doctor}
             onChange={(e) => setDoctor(e.target.value)}
-            className="border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
           >
             <option value="">Όλοι οι γιατροί</option>
             {DOCTORS.filter(Boolean).map((d) => (
@@ -92,11 +92,11 @@ export default function AppointmentHistoryPanel() {
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl animate-pulse" />
+              <div key={i} className="h-16 bg-gray-100 dark:bg-win-elevated rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : results.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 py-14 text-center">
+          <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border py-14 text-center">
             <Clock className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
             <p className="text-sm text-gray-400 dark:text-gray-500">
               {q || from || to || doctor
@@ -106,14 +106,14 @@ export default function AppointmentHistoryPanel() {
           </div>
         ) : (
           results.map((appt) => {
-            const typeClass = TYPE_COLORS[appt.type] || "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
+            const typeClass = TYPE_COLORS[appt.type] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-300";
             const isGrooming = appt.doctor === "Grooming";
             return (
               <button
                 key={appt._id}
                 type="button"
                 onClick={() => setSelected(appt)}
-                className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 px-4 py-3 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600 transition-all group"
+                className="w-full text-left bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border px-4 py-3 hover:shadow-md hover:border-gray-200 dark:hover:border-win-border-light transition-all group"
               >
                 <div className="flex items-center gap-3">
                   {/* Accent line */}
@@ -164,7 +164,7 @@ export default function AppointmentHistoryPanel() {
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-win-border-light text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-4 h-4" /> Προηγούμενη
           </button>
@@ -174,7 +174,7 @@ export default function AppointmentHistoryPanel() {
           <button
             onClick={() => setPage((p) => Math.min(p + 1, pages))}
             disabled={page >= pages}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-win-border-light text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Επόμενη <ChevronRight className="w-4 h-4" />
           </button>

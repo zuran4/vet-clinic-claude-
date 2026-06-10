@@ -94,17 +94,17 @@ const CustomerSearchBox = ({ onSelect }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Όνομα ή τηλέφωνο πελάτη..."
-          className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-gray-100"
+          className="w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-win-elevated dark:text-gray-100"
         />
 
         {showDropdown && query.length >= 2 && (
-          <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-lg overflow-hidden">
             {loading ? (
               <div className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
             ) : (
               <>
                 {results.length > 0 ? (
-                  <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700/50">
+                  <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50 dark:divide-win-border/50">
                     {results.map((c) => (
                       <li key={c._id}>
                         <button

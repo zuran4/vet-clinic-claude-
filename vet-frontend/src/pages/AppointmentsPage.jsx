@@ -44,13 +44,13 @@ function AppointmentsPage({
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-700/50 rounded-2xl w-fit mb-4">
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-win-elevated/50 rounded-2xl w-fit mb-4">
         <button
           type="button"
           onClick={() => setTab("calendar")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
             tab === "calendar"
-              ? "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
+              ? "bg-white dark:bg-win-surface text-gray-800 dark:text-gray-100 shadow-sm"
               : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           }`}
         >
@@ -62,7 +62,7 @@ function AppointmentsPage({
           onClick={() => setTab("history")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
             tab === "history"
-              ? "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-sm"
+              ? "bg-white dark:bg-win-surface text-gray-800 dark:text-gray-100 shadow-sm"
               : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           }`}
         >

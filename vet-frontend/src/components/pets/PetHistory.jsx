@@ -68,14 +68,14 @@ const PetHistory = ({ petId }) => {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             required
-            className="border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="border border-gray-200 dark:border-win-border-light rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
           />
           <input
             type="text"
             placeholder="Αποτέλεσμα / Σχόλια"
             value={result}
             onChange={(e) => setResult(e.target.value)}
-            className="border border-gray-200 dark:border-gray-600 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="border border-gray-200 dark:border-win-border-light rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
           />
         </div>
         <div className="flex justify-end">
@@ -101,7 +101,7 @@ const PetHistory = ({ petId }) => {
       ) : (
         <ul className="space-y-2">
           {history.map((entry) => (
-            <li key={entry._id} className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors">
+            <li key={entry._id} className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors">
               <div className="flex gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <CalendarDays className="w-4 h-4 text-sky-500 dark:text-sky-400" />

@@ -11,7 +11,7 @@ const Modal = ({ isOpen, onClose, children, preventBackdropClose = false }) => {
       onClick={preventBackdropClose ? undefined : onClose}
     >
       <div
-        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-purple-400 hover:scrollbar-thumb-purple-500 scrollbar-track-gray-100 dark:scrollbar-track-gray-700"
+        className="relative bg-white dark:bg-win-surface rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-purple-400 hover:scrollbar-thumb-purple-500 scrollbar-track-gray-100 dark:scrollbar-track-win-elevated"
         onClick={(e) => e.stopPropagation()}
       >
         <Button

@@ -10,7 +10,7 @@ import {
   Plus,
 } from "lucide-react";
 
-const INPUT = "w-full border border-gray-200 dark:border-gray-600 p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+const INPUT = "w-full border border-gray-200 dark:border-win-border-light p-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 const LABEL = "flex items-center gap-2 font-medium text-gray-600 dark:text-gray-300";
 const ICON = "w-4 h-4 text-gray-500 dark:text-gray-400";
 
@@ -50,7 +50,7 @@ const PrescriptionModal = ({ isOpen, onClose, onSubmit, initialData, pets = [] }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-lg">
+      <div className="bg-white dark:bg-win-surface p-6 rounded-2xl shadow-xl w-full max-w-lg">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-700 dark:text-gray-100">
           <FileText className="w-5 h-5 text-primary" />
           Νέα Συνταγή

@@ -73,7 +73,7 @@ const LoginForm = ({ onLogin }) => {
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-b-2xl px-8 py-8 flex flex-col gap-6"
+          className="bg-white/95 dark:bg-win-surface/95 backdrop-blur-sm rounded-b-2xl px-8 py-8 flex flex-col gap-6"
         >
           {/* Header */}
           <div className="flex flex-col items-center gap-3">
@@ -115,12 +115,12 @@ const LoginForm = ({ onLogin }) => {
                 className={`
                   w-full px-4 py-2.5 pr-10
                   border rounded-xl text-center text-xl font-mono tracking-[0.5em]
-                  bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600
+                  bg-gray-50 dark:bg-win-elevated focus:bg-white dark:focus:bg-win-elevated2
                   text-gray-900 dark:text-gray-100
                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
                   disabled:opacity-50 disabled:cursor-not-allowed
                   transition-all duration-150
-                  ${error ? "border-red-400 focus:ring-red-400" : "border-gray-200 dark:border-gray-600"}
+                  ${error ? "border-red-400 focus:ring-red-400" : "border-gray-200 dark:border-win-border-light"}
                 `}
               />
               <button

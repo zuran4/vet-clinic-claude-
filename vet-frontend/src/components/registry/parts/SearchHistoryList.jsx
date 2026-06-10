@@ -10,14 +10,14 @@ export default function SearchHistoryList({ history, onSelectMicrochip, formatDa
           <button
             type="button"
             onClick={() => onSelectMicrochip(item.microchip)}
-            className="flex w-full items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-violet-50 transition-colors group"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors group"
           >
             <div className="flex flex-col min-w-0">
-              <span className="font-mono text-xs font-semibold text-gray-700 group-hover:text-violet-700 transition-colors">
+              <span className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-200 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
                 {item.microchip}
               </span>
               {(item.petName || item.species) && (
-                <span className="text-[11px] text-gray-400 mt-0.5">
+                <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
                   {item.petName
                     ? `${item.petName}${item.species ? ` · ${item.species}` : ""}`
                     : item.species || ""}
@@ -26,7 +26,7 @@ export default function SearchHistoryList({ history, onSelectMicrochip, formatDa
             </div>
 
             {item.lastSearchedAt && (
-              <span className="whitespace-nowrap text-[11px] text-gray-300 group-hover:text-violet-400 flex-shrink-0 transition-colors">
+              <span className="whitespace-nowrap text-[11px] text-gray-300 dark:text-gray-600 group-hover:text-violet-400 dark:group-hover:text-violet-400 flex-shrink-0 transition-colors">
                 {formatDateTime(item.lastSearchedAt)}
               </span>
             )}

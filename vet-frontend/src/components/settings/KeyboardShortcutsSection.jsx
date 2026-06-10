@@ -79,8 +79,8 @@ export default function KeyboardShortcutsSection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-          Πάτα <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-mono">Αλλαγή</kbd> και μετά ένα πλήκτρο για να ορίσεις συντόμευση.
-          Πάτα <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-mono">Esc</kbd> για ακύρωση.
+          Πάτα <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-win-elevated text-gray-700 dark:text-gray-300 text-xs font-mono">Αλλαγή</kbd> και μετά ένα πλήκτρο για να ορίσεις συντόμευση.
+          Πάτα <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-win-elevated text-gray-700 dark:text-gray-300 text-xs font-mono">Esc</kbd> για ακύρωση.
         </p>
         <button
           type="button"
@@ -97,7 +97,7 @@ export default function KeyboardShortcutsSection() {
         </p>
       )}
 
-      <div className="rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
         {Object.keys(SHORTCUT_LABELS).map((action, i) => {
           const { label, description } = SHORTCUT_LABELS[action];
           const key = shortcuts[action] || "—";
@@ -107,11 +107,11 @@ export default function KeyboardShortcutsSection() {
             <div
               key={action}
               className={`flex items-center justify-between gap-4 px-4 py-3 ${
-                i > 0 ? "border-t border-gray-50 dark:border-gray-700/50" : ""
-              } ${isRecording ? "bg-indigo-50 dark:bg-indigo-900/20" : "bg-white dark:bg-gray-800"}`}
+                i > 0 ? "border-t border-gray-50 dark:border-win-border/50" : ""
+              } ${isRecording ? "bg-indigo-50 dark:bg-indigo-900/20" : "bg-white dark:bg-win-surface"}`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-gray-50 dark:bg-win-elevated flex items-center justify-center flex-shrink-0">
                   <Keyboard className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 </div>
                 <div className="min-w-0">
@@ -126,7 +126,7 @@ export default function KeyboardShortcutsSection() {
                     Πίεσε πλήκτρο...
                   </span>
                 ) : (
-                  <kbd className="min-w-[32px] text-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-mono font-bold uppercase shadow-sm">
+                  <kbd className="min-w-[32px] text-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-win-elevated text-gray-700 dark:text-gray-300 text-sm font-mono font-bold uppercase shadow-sm">
                     {key}
                   </kbd>
                 )}
@@ -135,7 +135,7 @@ export default function KeyboardShortcutsSection() {
                   onClick={() => isRecording ? cancelRecording() : startRecording(action)}
                   className={`text-xs px-2.5 py-1.5 rounded-xl font-medium transition-colors ${
                     isRecording
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      ? "bg-gray-100 dark:bg-win-elevated text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-win-elevated2"
                       : "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
                   }`}
                 >

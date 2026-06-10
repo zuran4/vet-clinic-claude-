@@ -30,7 +30,7 @@ const CustomerPetsExpanded = ({ ownerId }) => {
 
   return (
     <>
-      <ul className="mt-2 ml-4 pl-2 border-l-2 border-gray-100 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 space-y-1">
+      <ul className="mt-2 ml-4 pl-2 border-l-2 border-gray-100 dark:border-win-border text-sm text-gray-700 dark:text-gray-300 space-y-1">
         {pets.map((p) => (
           <li
             key={p._id}

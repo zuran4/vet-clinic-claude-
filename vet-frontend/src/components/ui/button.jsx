@@ -29,7 +29,7 @@ export function Button({
     warning:
       "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 focus:ring-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900/60",
     ghost:
-      "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent focus:ring-gray-300",
+      "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-win-elevated border border-transparent focus:ring-gray-300",
   };
 
   return (

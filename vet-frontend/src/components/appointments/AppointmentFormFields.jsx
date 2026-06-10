@@ -19,7 +19,7 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
           name="type"
           value={formData.type}
           onChange={onChange}
-          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
         >
           {optionsByDoctor[doctor]?.map((opt) => (
             <option key={opt} value={opt}>
@@ -39,7 +39,7 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
           name="duration"
           value={formData.duration}
           onChange={onChange}
-          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
         >
           <option value={30}>30 λεπτά</option>
           <option value={60}>1 ώρα</option>
@@ -59,7 +59,7 @@ const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) 
           placeholder="Σημειώσεις (προαιρετικό)"
           value={formData.notes}
           onChange={onChange}
-          className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary"
+          className="w-full border border-gray-300 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary"
           rows={3}
         />
       </div>

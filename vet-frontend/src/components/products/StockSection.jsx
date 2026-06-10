@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { PlusCircle, Trash2, Save, XCircle, Edit } from "lucide-react";
 import { Button } from "../ui/button";
 
-const INPUT = "mt-1 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const INPUT = "mt-1 w-full border border-gray-300 dark:border-win-border-light rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100";
 const LABEL = "block text-sm font-medium text-gray-700 dark:text-gray-300";
 
 const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onChange }) => {
@@ -57,15 +57,15 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
         <div className="w-full">
           {/* Table για desktop */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full table-auto text-sm border border-gray-200 dark:border-gray-600 rounded-lg">
-              <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+            <table className="w-full table-auto text-sm border border-gray-200 dark:border-win-border-light rounded-lg">
+              <thead className="bg-gray-100 dark:bg-win-elevated text-gray-700 dark:text-gray-200">
                 <tr>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Αρ. Παρτίδας</th>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Ποσότητα</th>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Α/Α Τιμολογίου</th>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Ημ. Αγοράς</th>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Ημ. Λήξης</th>
-                  <th className="px-2 py-2 border border-gray-200 dark:border-gray-600">Ενέργειες</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Αρ. Παρτίδας</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Ποσότητα</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Α/Α Τιμολογίου</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Ημ. Αγοράς</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Ημ. Λήξης</th>
+                  <th className="px-2 py-2 border border-gray-200 dark:border-win-border-light">Ενέργειες</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,39 +73,39 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
                   <tr key={i} className={getRowClass(b)}>
                     {editingIndex === i ? (
                       <>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Αρ. Παρτίδας</label>
                           <input type="text" value={editBatch.batchNumber}
                             onChange={(e) => setEditBatch({ ...editBatch, batchNumber: e.target.value })}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ποσότητα</label>
                           <input type="number" value={editBatch.quantity}
                             onChange={(e) => setEditBatch({ ...editBatch, quantity: Number(e.target.value) })}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Α/Α Τιμολογίου</label>
                           <input type="text" value={editBatch.invoiceNumber}
                             onChange={(e) => setEditBatch({ ...editBatch, invoiceNumber: e.target.value })}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ημ. Αγοράς</label>
                           <input type="date"
                             value={editBatch.purchaseDate ? dayjs(editBatch.purchaseDate).format("YYYY-MM-DD") : ""}
                             onChange={(e) => setEditBatch({ ...editBatch, purchaseDate: e.target.value })}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ημ. Λήξης</label>
                           <input type="date"
                             value={editBatch.expirationDate ? dayjs(editBatch.expirationDate).format("YYYY-MM-DD") : ""}
                             onChange={(e) => setEditBatch({ ...editBatch, expirationDate: e.target.value })}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-gray-600 flex gap-2">
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light flex gap-2">
                           <Button onClick={() => handleSaveEdit(i, editBatch)} variant="success" className="flex items-center gap-1">
                             <Save size={16} /> Αποθήκευση
                           </Button>
@@ -116,16 +116,16 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
                       </>
                     ) : (
                       <>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100">{b.batchNumber || "-"}</td>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100">{b.quantity}</td>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100">{b.invoiceNumber || "-"}</td>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light text-gray-800 dark:text-gray-100">{b.batchNumber || "-"}</td>
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light text-gray-800 dark:text-gray-100">{b.quantity}</td>
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light text-gray-800 dark:text-gray-100">{b.invoiceNumber || "-"}</td>
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light text-gray-700 dark:text-gray-200">
                           {b.purchaseDate ? dayjs(b.purchaseDate).format("DD/MM/YYYY") : "-"}
                         </td>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light text-gray-700 dark:text-gray-200">
                           {b.expirationDate ? dayjs(b.expirationDate).format("DD/MM/YYYY") : "-"}
                         </td>
-                        <td className="px-4 py-2 border border-gray-200 dark:border-gray-600 flex gap-2">
+                        <td className="px-4 py-2 border border-gray-200 dark:border-win-border-light flex gap-2">
                           <Button onClick={() => { setEditingIndex(i); setEditBatch({ ...b }); }} variant="secondary" className="flex items-center gap-1">
                             <Edit size={16} /> Επεξεργασία
                           </Button>
@@ -144,7 +144,7 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
           {/* Card layout για κινητό */}
           <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
             {batches.map((b, i) => (
-              <div key={i} className={`p-3 border border-gray-200 dark:border-gray-600 rounded-lg shadow ${getRowClass(b)}`}>
+              <div key={i} className={`p-3 border border-gray-200 dark:border-win-border-light rounded-lg shadow ${getRowClass(b)}`}>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Αρ. Παρτίδας:</strong> {b.batchNumber || "-"}</p>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ποσότητα:</strong> {b.quantity}</p>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Α/Α Τιμολογίου:</strong> {b.invoiceNumber || "-"}</p>
@@ -166,7 +166,7 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
 
       {/* Φόρμα νέας παρτίδας */}
       {adding && (
-        <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-xl shadow bg-white dark:bg-gray-800 space-y-4">
+        <div className="p-4 border border-gray-200 dark:border-win-border-light rounded-xl shadow bg-white dark:bg-win-surface space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className={LABEL}>Αρ. Παρτίδας</label>

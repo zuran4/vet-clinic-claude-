@@ -100,7 +100,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         aria-modal="true"
         aria-labelledby={dialogId}
         aria-describedby={descId}
-        className="relative z-50 flex w-full max-h-[88vh] max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="relative z-50 flex w-full max-h-[88vh] max-w-2xl flex-col overflow-hidden rounded-3xl bg-white dark:bg-win-surface shadow-2xl"
       >
         {/* ── HEADER (gradient) ── */}
         <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 pt-6 pb-4">
@@ -174,7 +174,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         </div>
 
         {/* ── BODY ── */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 px-5 py-4">
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg px-5 py-4">
           {!data ? (
             <EmptyState text="Δεν υπάρχουν δεδομένα για εμφάνιση." />
           ) : tab === "summary" ? (
@@ -251,7 +251,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         </div>
 
         {/* ── FOOTER ── */}
-        <div className="border-t border-gray-200 bg-white px-5 py-4">
+        <div className="border-t border-gray-200 dark:border-win-border bg-white dark:bg-win-surface px-5 py-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
               <button
@@ -274,7 +274,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-600 transition"
+              className="inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-win-border bg-gray-50 dark:bg-win-elevated hover:bg-gray-100 dark:hover:bg-win-elevated2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 transition"
             >
               Κλείσιμο
             </button>
@@ -289,10 +289,10 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
 
 function Card({ title, icon: Icon, children }) {
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 bg-gray-50/80">
-        <Icon className="w-4 h-4 text-indigo-400" />
-        <span className="text-xs font-bold uppercase tracking-wide text-gray-500">{title}</span>
+    <div className="rounded-2xl bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
+        <Icon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
+        <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">{title}</span>
       </div>
       <div className="px-4 py-3 space-y-2.5">{children}</div>
     </div>
@@ -301,15 +301,15 @@ function Card({ title, icon: Icon, children }) {
 
 function HealthCard({ title, active, activeLabel, inactiveLabel, icon: Icon, children }) {
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 bg-gray-50/80">
+    <div className="rounded-2xl bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-indigo-400" />
-          <span className="text-xs font-bold uppercase tracking-wide text-gray-500">{title}</span>
+          <Icon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
+          <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">{title}</span>
         </div>
         {active
-          ? <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><BadgeCheck className="w-3 h-3" />{activeLabel}</span>
-          : <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-500 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><AlertCircle className="w-3 h-3" />{inactiveLabel}</span>
+          ? <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><BadgeCheck className="w-3 h-3" />{activeLabel}</span>
+          : <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-300 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><AlertCircle className="w-3 h-3" />{inactiveLabel}</span>
         }
       </div>
       <div className="px-4 py-3 space-y-2.5">{children}</div>
@@ -321,14 +321,14 @@ function IconField({ icon: Icon, label, value, mono = false, highlight = false, 
   const isEmpty = !value || value === "—";
   return (
     <div className="flex items-start gap-3">
-      <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon className="w-3.5 h-3.5 text-indigo-400" />
+      <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Icon className="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-300" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
         <p className={[
           "text-sm font-semibold leading-snug",
-          isEmpty ? "text-gray-300" : highlight ? "text-emerald-600" : danger ? "text-red-500" : "text-gray-800",
+          isEmpty ? "text-gray-300 dark:text-gray-600" : highlight ? "text-emerald-600 dark:text-emerald-400" : danger ? "text-red-500 dark:text-red-400" : "text-gray-800 dark:text-gray-100",
           mono ? "font-mono text-xs" : "",
         ].join(" ")}>
           {value || "—"}
@@ -340,19 +340,19 @@ function IconField({ icon: Icon, label, value, mono = false, highlight = false, 
 
 function OwnerCard({ ownerName, ownerPhone, ownerEmail, ownerAddress, ownerCity, ownerAfm, display }) {
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 bg-gray-50/80">
-        <User className="w-4 h-4 text-indigo-400" />
-        <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Ιδιοκτήτης</span>
+    <div className="rounded-2xl bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
+        <User className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
+        <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ιδιοκτήτης</span>
       </div>
       {/* Owner name + avatar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50">
-        <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
+        <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
           {display(ownerName) !== "—" ? display(ownerName).charAt(0).toUpperCase() : "?"}
         </div>
         <div>
-          <p className="font-bold text-gray-900">{display(ownerName)}</p>
-          {ownerCity && <p className="text-xs text-gray-400">{display(ownerCity)}</p>}
+          <p className="font-bold text-gray-900 dark:text-gray-100">{display(ownerName)}</p>
+          {ownerCity && <p className="text-xs text-gray-400 dark:text-gray-500">{display(ownerCity)}</p>}
         </div>
       </div>
       <div className="px-4 py-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">
@@ -390,7 +390,7 @@ function StatusPill({ active, activeLabel, inactiveLabel, danger = false }) {
 
 function EmptyState({ text }) {
   return (
-    <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+    <div className="rounded-2xl border border-dashed border-gray-200 dark:border-win-border bg-white dark:bg-win-surface p-8 text-center text-sm text-gray-400 dark:text-gray-500">
       {text}
     </div>
   );

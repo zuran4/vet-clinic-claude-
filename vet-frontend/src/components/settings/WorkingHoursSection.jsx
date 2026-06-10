@@ -11,19 +11,19 @@ const DAYS = [
   { key: "sunday",    label: "Κυριακή"   },
 ];
 
-const TIME_INPUT = "border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 tabular-nums w-[90px]";
+const TIME_INPUT = "border border-gray-200 dark:border-win-border-light rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 tabular-nums w-[90px]";
 
 const WorkingHoursSection = ({ title = "Ωράριο Λειτουργίας", workingHours, updateDay }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="rounded-2xl border border-gray-200 dark:border-win-border overflow-hidden">
 
       {/* Header — collapsible */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-win-elevated/50 hover:bg-gray-100 dark:hover:bg-win-elevated transition-colors"
       >
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-emerald-500" />
@@ -41,7 +41,7 @@ const WorkingHoursSection = ({ title = "Ωράριο Λειτουργίας", wo
 
       {/* Content */}
       {open && (
-        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+        <div className="divide-y divide-gray-100 dark:divide-win-border">
           {DAYS.map(({ key, label }) => {
             const day = workingHours?.[key] || {
               enabled: false,

@@ -80,7 +80,7 @@ const ProductExportPanel = () => {
           value={query}
           onChange={handleSearch}
           placeholder="Αναζήτηση με όνομα ή barcode"
-          className="w-full md:w-2/3 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+          className="w-full md:w-2/3 px-4 py-2 border border-gray-200 dark:border-win-border-light rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
         />
       </div>
 
@@ -108,7 +108,7 @@ const ProductExportPanel = () => {
               min={1}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="border border-gray-200 dark:border-gray-600 p-2 rounded-2xl w-24 text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="border border-gray-200 dark:border-win-border-light p-2 rounded-2xl w-24 text-center bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
             />
             <Button variant="danger" onClick={handleExport}>
               Εξαγωγή

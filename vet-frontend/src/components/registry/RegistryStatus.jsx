@@ -30,34 +30,34 @@ const STATUS_CONFIG = {
     bg: "bg-amber-50 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-600/50 dark:hover:bg-amber-900/50",
   },
   OFFLINE: {
-    dot: "bg-gray-300 dark:bg-gray-500",
+    dot: "bg-gray-300 dark:bg-win-elevated2",
     pulse: false,
     label: "Registry",
     sub: "Offline",
     color: "text-gray-500 dark:text-gray-400",
     subColor: "text-gray-400 dark:text-gray-500",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-win-elevated/50 dark:border-win-border-light dark:hover:bg-win-elevated",
   },
   STOPPED: {
-    dot: "bg-gray-300 dark:bg-gray-500",
+    dot: "bg-gray-300 dark:bg-win-elevated2",
     pulse: false,
     label: "Registry",
     sub: "Σταματημένο",
     color: "text-gray-500 dark:text-gray-400",
     subColor: "text-gray-400 dark:text-gray-500",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-win-elevated/50 dark:border-win-border-light dark:hover:bg-win-elevated",
   },
 };
 
 function getConfig(status) {
   return STATUS_CONFIG[status] || {
-    dot: "bg-gray-300 dark:bg-gray-500",
+    dot: "bg-gray-300 dark:bg-win-elevated2",
     pulse: false,
     label: "Registry",
     sub: "Άγνωστο",
     color: "text-gray-400 dark:text-gray-400",
     subColor: "text-gray-400 dark:text-gray-500",
-    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700",
+    bg: "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-win-elevated/50 dark:border-win-border-light dark:hover:bg-win-elevated",
   };
 }
 

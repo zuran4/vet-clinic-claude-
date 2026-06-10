@@ -27,7 +27,7 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
   }, [timeZone]);
 
   return (
-    <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 border-b border-indigo-100 dark:border-gray-700 shadow-sm mb-6">
+    <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-win-bg dark:via-win-bg dark:to-win-bg border-b border-indigo-100 dark:border-win-border shadow-sm mb-6">
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
         {/* Αριστερά: Logo + Όνομα */}

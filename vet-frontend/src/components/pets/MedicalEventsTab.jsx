@@ -47,7 +47,7 @@ const SectionTable = ({ rows }) => {
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50 dark:bg-gray-700/50"}>
+            <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-win-surface" : "bg-gray-50 dark:bg-win-elevated/50"}>
               {columns.map(col => (
                 <td key={col} className="px-3 py-2 text-gray-700 dark:text-gray-200 whitespace-nowrap">
                   {row[col] || "—"}
@@ -67,10 +67,10 @@ const Section = ({ sectionKey, rows }) => {
   const count = rows?.length ?? 0;
 
   return (
-    <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+    <div className="border border-gray-100 dark:border-win-border rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-win-surface hover:bg-gray-50 dark:hover:bg-win-elevated/50 transition-colors"
       >
         <div className="flex items-center gap-2">
           {open ? (
@@ -81,13 +81,13 @@ const Section = ({ sectionKey, rows }) => {
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{label}</span>
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-          count > 0 ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300" : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+          count > 0 ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300" : "bg-gray-100 dark:bg-win-elevated text-gray-400 dark:text-gray-500"
         }`}>
           {count}
         </span>
       </button>
       {open && (
-        <div className="border-t border-gray-100 dark:border-gray-700">
+        <div className="border-t border-gray-100 dark:border-win-border">
           <SectionTable rows={rows} />
         </div>
       )}

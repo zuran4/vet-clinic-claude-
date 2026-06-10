@@ -3,7 +3,7 @@ import Button from "./button";
 
 const PageHeader = ({ title, onClose }) => {
   return (
-    <div className="flex justify-between items-center mb-6 border-b dark:border-gray-700 pb-3">
+    <div className="flex justify-between items-center mb-6 border-b dark:border-win-border pb-3">
       <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">{title}</h2>
       {onClose && (
         <Button

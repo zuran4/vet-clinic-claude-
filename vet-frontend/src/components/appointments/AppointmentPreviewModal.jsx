@@ -21,7 +21,7 @@ const TYPE_COLORS = {
 };
 
 const InfoRow = ({ icon: Icon, label, value, iconColor = "text-gray-400" }) => (
-  <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+  <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 dark:border-win-border/50 last:border-0">
     <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
     <span className="text-xs text-gray-400 dark:text-gray-500 w-20 flex-shrink-0">{label}</span>
     <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{value || "—"}</span>
@@ -93,7 +93,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
                 onClick={() => setActiveTab(key)}
                 className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-xl transition-all ${
                   activeTab === key
-                    ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 shadow-sm"
+                    ? "bg-white dark:bg-win-surface text-gray-700 dark:text-gray-100 shadow-sm"
                     : "text-white/70 hover:text-white hover:bg-white/10"
                 }`}
               >
@@ -105,18 +105,18 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
         </div>
 
         {/* Content — scrollable */}
-        <div className="bg-gray-50 dark:bg-gray-800/50 overflow-y-auto flex-1">
+        <div className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1">
 
           {/* ΕΠΙΣΚΟΠΗΣΗ */}
           {activeTab === "overview" && (
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-2">
+                <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-2">
                   <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide pt-2 pb-1">Πελάτης</p>
                   <InfoRow icon={User}  label="Όνομα"    value={appointment.clientName} iconColor="text-indigo-400" />
                   <InfoRow icon={Phone} label="Τηλέφωνο" value={appointment.phone}      iconColor="text-indigo-400" />
                 </div>
-                <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-2">
+                <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-2">
                   <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide pt-2 pb-1">Ραντεβού</p>
                   <InfoRow icon={Calendar} label="Ημερομηνία" value={appointment.date}                 iconColor="text-emerald-400" />
                   <InfoRow icon={Clock}    label="Ώρα"         value={appointment.time}                 iconColor="text-emerald-400" />
@@ -132,7 +132,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
               )}
 
               {pets.length > 0 && (
-                <div className="bg-white dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 px-4 py-3">
+                <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-3">
                   <div className="flex items-center gap-2 mb-2">
                     <PawPrint className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Κατοικίδια πελάτη</p>
@@ -140,7 +140,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
                   <div className="flex flex-wrap gap-2">
                     {pets.map((pet) => (
                       <span key={pet._id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-sm text-gray-700 dark:text-gray-200"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 dark:bg-win-elevated2 border border-gray-200 dark:border-win-border-light text-sm text-gray-700 dark:text-gray-200"
                       >
                         <span className="font-medium">{pet.name}</span>
                         <span className="text-gray-400 dark:text-gray-400 text-xs">{pet.species}</span>

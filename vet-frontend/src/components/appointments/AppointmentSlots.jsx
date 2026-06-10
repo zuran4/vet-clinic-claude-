@@ -109,7 +109,7 @@ const AppointmentSlots = ({
         ? isGroomingDoctor
           ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700/50 hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer shadow-sm"
           : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/50 hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer shadow-sm"
-        : "bg-white dark:bg-gray-700 border-dashed border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 cursor-pointer";
+        : "bg-white dark:bg-win-elevated border-dashed border-gray-200 dark:border-win-border-light hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 cursor-pointer";
 
       rendered.push(
         <div

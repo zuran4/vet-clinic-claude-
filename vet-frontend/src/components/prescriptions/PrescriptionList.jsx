@@ -82,7 +82,7 @@ const PrescriptionList = () => {
   return (
     <>
       {prescriptions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm py-14 text-center">
+        <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm py-14 text-center">
           <Pill className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
           <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν καταχωρημένες συνταγές.</p>
         </div>
@@ -91,7 +91,7 @@ const PrescriptionList = () => {
           {prescriptions.map((p) => (
             <div
               key={p._id}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
               <div className="flex items-center gap-4 px-4 py-3">
                 {/* Violet accent */}

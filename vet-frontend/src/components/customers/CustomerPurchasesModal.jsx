@@ -115,7 +115,7 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
       onClick={onClose}
     >
       <div
-        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] my-10"
+        className="relative bg-white dark:bg-win-surface rounded-2xl shadow-xl p-6 w-full max-w-[95vw] md:max-w-[800px] my-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -143,11 +143,11 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
             Δεν βρέθηκαν αγορές για αυτόν τον πελάτη.
           </p>
         ) : (
-          <div className="divide-y dark:divide-gray-700 rounded-xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+          <div className="divide-y dark:divide-win-border rounded-xl border dark:border-win-border bg-gray-50 dark:bg-win-elevated/50">
             {purchases.map((p) => (
               <div
                 key={p._id}
-                className="flex items-center justify-between p-3 hover:bg-white dark:hover:bg-gray-700 transition"
+                className="flex items-center justify-between p-3 hover:bg-white dark:hover:bg-win-elevated transition"
               >
                 <div className="flex items-center gap-3">
                   <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />

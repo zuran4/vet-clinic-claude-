@@ -29,7 +29,7 @@ const SupplierSelect = ({ value, onChange }) => {
 
   if (loading) {
     return (
-      <div className="border dark:border-gray-600 rounded px-3 py-2 text-gray-500 dark:text-gray-400 text-sm dark:bg-gray-700">
+      <div className="border dark:border-win-border-light rounded px-3 py-2 text-gray-500 dark:text-gray-400 text-sm dark:bg-win-elevated">
         Φόρτωση...
       </div>
     );
@@ -37,7 +37,7 @@ const SupplierSelect = ({ value, onChange }) => {
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="border dark:border-gray-600 rounded px-3 py-2 text-sm flex items-center gap-2 dark:bg-gray-700 dark:text-gray-100">
+      <SelectTrigger className="border dark:border-win-border-light rounded px-3 py-2 text-sm flex items-center gap-2 dark:bg-win-elevated dark:text-gray-100">
         <Truck className="w-4 h-4 text-gray-500 dark:text-gray-400" />
         <SelectValue placeholder="Επιλέξτε Προμηθευτή" />
       </SelectTrigger>

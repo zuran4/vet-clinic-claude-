@@ -62,7 +62,7 @@ export default function MicrochipResultCard({
     );
 
   return (
-    <section className="mt-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+    <section className="mt-4 rounded-xl border border-gray-200 dark:border-win-border bg-white dark:bg-win-bg p-4 shadow-sm">
       {/* Header κάρτας */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -89,7 +89,7 @@ export default function MicrochipResultCard({
       {/* Πλέγμα πεδίων */}
       <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
         {/* Microchip */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Microchip
           </div>
@@ -99,7 +99,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Ημερομηνία σήμανσης */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Ημερομηνία σήμανσης
           </div>
@@ -109,7 +109,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Αριθμός διαβατηρίου */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Αριθμός διαβατηρίου
           </div>
@@ -119,7 +119,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Όνομα ζώου */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Όνομα ζώου
           </div>
@@ -129,7 +129,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Φύλο */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Φύλο
           </div>
@@ -139,7 +139,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Ηλικία */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Ηλικία
           </div>
@@ -149,7 +149,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Φυλή */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Φυλή
           </div>
@@ -159,7 +159,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Είδος ζώου */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Είδος ζώου
           </div>
@@ -169,7 +169,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Μικρό ζώο (<10kg) */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Μικρό ζώο (&lt;10kg)
           </div>
@@ -179,7 +179,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Χρώμα */}
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Χρώμα
           </div>
@@ -189,7 +189,7 @@ export default function MicrochipResultCard({
         </div>
 
         {/* Διαχείριση από */}
-        <div className="md:col-span-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+        <div className="md:col-span-2 rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Διαχείριση από
           </div>
@@ -200,7 +200,7 @@ export default function MicrochipResultCard({
 
         {/* Στοιχεία ιδιοκτήτη (μόνο αν υπάρχει κάτι να δείξουμε) */}
         {hasOwner ? (
-          <div className="md:col-span-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+          <div className="md:col-span-2 rounded-lg border border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-surface p-3">
             <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Ιδιοκτήτης
             </div>

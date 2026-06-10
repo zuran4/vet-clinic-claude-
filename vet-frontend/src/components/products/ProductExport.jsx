@@ -5,7 +5,7 @@ import ExportCart from "../ui/ExportCart.jsx";
 import CustomerPurchasesModal from "../customers/CustomerPurchasesModal.jsx";
 import request from "@/api/apiClient.js";
 
-const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 
 const ProductExport = () => {
   const [showResults, setShowResults] = useState(false);
@@ -108,7 +108,7 @@ const ProductExport = () => {
     <div className="space-y-4 max-w-3xl mx-auto">
 
       {/* Επιλογή Πελάτη */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm">
         <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/20 border-b border-indigo-100 dark:border-indigo-700/50 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
           <User className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Πελάτης</span>
@@ -159,11 +159,11 @@ const ProductExport = () => {
                   className={`${INPUT} focus:ring-indigo-300`}
                 />
                 {showResults && (
-                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-lg overflow-hidden">
                     {loadingCustomers ? (
                       <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
                     ) : customerResults.length > 0 ? (
-                      <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
+                      <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-win-border">
                         {customerResults.map((c) => (
                           <li key={c._id}>
                             <button
@@ -189,7 +189,7 @@ const ProductExport = () => {
       </div>
 
       {/* Επιλογή Προϊόντων */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm">
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border-b border-emerald-100 dark:border-emerald-700/50 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
           <PackageSearch className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Προϊόντα</span>
@@ -210,11 +210,11 @@ const ProductExport = () => {
               className={`${INPUT} focus:ring-emerald-300`}
             />
             {showProductResults && (
-              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-lg overflow-hidden">
                 {loadingProducts ? (
                   <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
                 ) : productResults.length > 0 ? (
-                  <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700">
+                  <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-win-border">
                     {productResults.map((prod) => (
                       <li key={prod._id}>
                         <button

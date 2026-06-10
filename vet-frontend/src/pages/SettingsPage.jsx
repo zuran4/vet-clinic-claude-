@@ -59,14 +59,14 @@ const getSupportedTimeZones = () => {
 
 /* ─── Section wrapper ─────────────────────────────────────── */
 const Section = ({ title, description, children, onSave, saving, saved, saveError }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+  <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-100 dark:border-win-border">
       <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</h2>
       {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{description}</p>}
     </div>
     <div className="px-6 py-5 space-y-5">{children}</div>
     {onSave && (
-      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+      <div className="px-6 py-3 bg-gray-50 dark:bg-win-elevated/50 border-t border-gray-100 dark:border-win-border flex items-center justify-between">
         <div>
           {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">✓ Αποθηκεύτηκε</span>}
           {saveError && <span className="text-xs text-red-500 dark:text-red-400">{saveError}</span>}
@@ -86,7 +86,7 @@ const Section = ({ title, description, children, onSave, saving, saved, saveErro
 
 /* ─── Input helpers ───────────────────────────────────────── */
 const LABEL = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5";
-const INPUT = "w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 
 /* ─── Main component ──────────────────────────────────────── */
 const SettingsPage = ({ onClose }) => {
@@ -296,7 +296,7 @@ const SettingsPage = ({ onClose }) => {
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-win-border-light text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors"
           >
             <X className="w-4 h-4" /> Κλείσιμο
           </button>
@@ -307,7 +307,7 @@ const SettingsPage = ({ onClose }) => {
       <div className="flex gap-6 items-start">
 
         {/* Sidebar */}
-        <div className="w-44 flex-shrink-0 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden py-3">
+        <div className="w-44 flex-shrink-0 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden py-3">
           {NAV_GROUPS.map(({ group, items }) => (
             <div key={group} className="mb-4 last:mb-0">
               <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-1 px-4">
@@ -320,7 +320,7 @@ const SettingsPage = ({ onClose }) => {
                   className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm font-medium transition-colors text-left ${
                     activeSection === id
                       ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-r-2 border-indigo-500"
-                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
@@ -381,7 +381,7 @@ const SettingsPage = ({ onClose }) => {
                   <select
                     value={form.timezone || "Europe/Athens"}
                     onChange={(e) => patch("timezone", e.target.value)}
-                    className="w-full border border-gray-200 dark:border-gray-600 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full border border-gray-200 dark:border-win-border-light rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
                   >
                     {timeZones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                   </select>
@@ -397,9 +397,9 @@ const SettingsPage = ({ onClose }) => {
               description="Διαχείριση μελών ομάδας και ρόλων."
               {...saveProps}
             >
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="rounded-2xl border border-gray-200 dark:border-win-border overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 border-b border-gray-200 dark:border-gray-700 px-5 py-3 flex items-center gap-2">
+                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 border-b border-gray-200 dark:border-win-border px-5 py-3 flex items-center gap-2">
                   <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                   <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Μέλη Ομάδας</span>
                   {(form.staff || []).length > 0 && (
@@ -411,9 +411,9 @@ const SettingsPage = ({ onClose }) => {
 
                 {/* List */}
                 {(form.staff || []).length > 0 ? (
-                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  <div className="divide-y divide-gray-100 dark:divide-win-border">
                     {form.staff.map((member, i) => (
-                      <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                      <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-win-elevated/50 transition-colors group">
                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-sm">
                           <span className="text-sm font-bold text-white">
                             {member.name.charAt(0).toUpperCase()}
@@ -422,7 +422,7 @@ const SettingsPage = ({ onClose }) => {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{member.name}</p>
                         </div>
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"}`}>
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-400"}`}>
                           {member.role}
                         </span>
                         <button
@@ -443,7 +443,7 @@ const SettingsPage = ({ onClose }) => {
                 )}
 
                 {/* Add form */}
-                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 px-5 py-3">
+                <div className="border-t border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-elevated/50 px-5 py-3">
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -451,12 +451,12 @@ const SettingsPage = ({ onClose }) => {
                       onChange={(e) => setNewName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addStaff()}
                       placeholder="Όνομα μέλους..."
-                      className="flex-1 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="flex-1 border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     />
                     <select
                       value={newRole}
                       onChange={(e) => setNewRole(e.target.value)}
-                      className="border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     >
                       {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
@@ -506,7 +506,7 @@ const SettingsPage = ({ onClose }) => {
                   updateSettings={updateSettings}
                 />
               </div>
-              <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
+              <div className="border-t border-gray-100 dark:border-win-border pt-5">
                 <p className={LABEL + " mb-3"}>Stock Thresholds</p>
                 <StockThresholdsPanel />
               </div>
@@ -573,7 +573,7 @@ const SettingsPage = ({ onClose }) => {
                       value={form.emailConfig?.password || ""}
                       onChange={(e) => patchEmail("password", e.target.value)}
                       placeholder="••••••••••••••••"
-                      className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
                     />
                     <button
                       type="button"
@@ -586,7 +586,7 @@ const SettingsPage = ({ onClose }) => {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 dark:border-gray-700 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="border-t border-gray-100 dark:border-win-border pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={LABEL}>Όνομα αποστολέα</label>
                   <input
@@ -653,7 +653,7 @@ const SettingsPage = ({ onClose }) => {
                 )}
 
                 {/* Αυτόματες ειδοποιήσεις info */}
-                <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                <div className="mt-4 border-t border-gray-100 dark:border-win-border pt-4">
                   <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Αυτόματες Ειδοποιήσεις</p>
                   <div className="space-y-2">
                     {[
@@ -661,14 +661,14 @@ const SettingsPage = ({ onClose }) => {
                       { icon: "💉", label: "Υπενθύμιση εμβολίου",   desc: "7 και 1 μέρα πριν — κάθε μέρα 09:00",   active: true },
                       { icon: "🎂", label: "Γενέθλια κατοικιδίου",  desc: "Την ημέρα των γενεθλίων",               active: false },
                     ].map((item) => (
-                      <div key={item.label} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                      <div key={item.label} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-win-elevated/50 rounded-xl">
                         <span className="text-lg flex-shrink-0">{item.icon}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{item.label}</p>
                           <p className="text-xs text-gray-400 dark:text-gray-500">{item.desc}</p>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                          item.active ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                          item.active ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-gray-100 dark:bg-win-elevated text-gray-400 dark:text-gray-500"
                         }`}>
                           {item.active ? "ΕΝΕΡΓΟ" : "ΣΧΕΔΙΑΣΜΟΣ"}
                         </span>
@@ -693,9 +693,9 @@ const SettingsPage = ({ onClose }) => {
           {/* ── ADMIN ── */}
           <div className={activeSection !== "admin" ? "hidden" : ""}>
             <Section title="Admin" description="Ρυθμίσεις για τον Playwright registry worker (gov.gr).">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-win-elevated flex items-center justify-center flex-shrink-0">
                     <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </div>
                   <div>
@@ -710,7 +710,7 @@ const SettingsPage = ({ onClose }) => {
                   onClick={handleToggleHeadless}
                   disabled={workerChanging}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                    form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"
+                    form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300 dark:bg-win-elevated2"
                   } ${workerChanging ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${

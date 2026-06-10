@@ -15,7 +15,7 @@ const DateTimeHeader = () => {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md px-6 py-3 text-center">
+    <div className="bg-white dark:bg-win-surface rounded-2xl shadow-md px-6 py-3 text-center">
       <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
         {now.format("dddd D MMMM YYYY")}
       </h2>

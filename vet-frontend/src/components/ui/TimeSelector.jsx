@@ -25,7 +25,7 @@ const TimeSelector = ({
           selected={date}
           onChange={onChangeDate}
           dateFormat="dd/MM/yyyy"
-          className="w-full border dark:border-gray-600 p-2 rounded text-sm dark:bg-gray-700 dark:text-gray-100"
+          className="w-full border dark:border-win-border-light p-2 rounded text-sm dark:bg-win-elevated dark:text-gray-100"
         />
       </div>
 

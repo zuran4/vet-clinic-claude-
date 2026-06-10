@@ -120,7 +120,7 @@ const InlinePurchases = ({ customerId }) => {
     <div className="space-y-3">
 
       {/* ── Φόρμα νέας αγοράς ── */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b border-emerald-100 dark:border-emerald-800/30 px-4 py-2.5 flex items-center gap-2">
           <PackageSearch className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Νέα Αγορά</span>
@@ -142,7 +142,7 @@ const InlinePurchases = ({ customerId }) => {
               onFocus={openDropdown}
               onBlur={() => setTimeout(closeDropdown, 200)}
               placeholder="Αναζήτηση προϊόντος..."
-              className="w-full border border-gray-200 dark:border-gray-600 rounded-2xl pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              className="w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
 
@@ -152,7 +152,7 @@ const InlinePurchases = ({ customerId }) => {
               <div className="rounded-2xl border border-emerald-100 overflow-hidden">
                 <ul className="divide-y divide-emerald-50">
                   {cart.map((p) => (
-                    <li key={p.id} className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-700/50 gap-2">
+                    <li key={p.id} className="flex items-center justify-between px-3 py-2 bg-white dark:bg-win-elevated/50 gap-2">
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-100 block truncate">{p.name}</span>
                         {p.retailPrice != null && (
@@ -165,7 +165,7 @@ const InlinePurchases = ({ customerId }) => {
                         <button
                           type="button"
                           onClick={() => setCart((prev) => prev.map((x) => x.id === p.id && x.quantity > 1 ? { ...x, quantity: x.quantity - 1 } : x))}
-                          className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center"
+                          className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-win-elevated2 hover:bg-gray-200 dark:hover:bg-win-elevated2 flex items-center justify-center"
                         >
                           <Minus className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                         </button>
@@ -207,7 +207,7 @@ const InlinePurchases = ({ customerId }) => {
 
               {/* ── Υπενθύμιση section ── */}
               <div className={`rounded-2xl border transition-all overflow-hidden ${
-                reminderEnabled ? "border-violet-200 dark:border-violet-700/50 bg-violet-50 dark:bg-violet-900/20" : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30"
+                reminderEnabled ? "border-violet-200 dark:border-violet-700/50 bg-violet-50 dark:bg-violet-900/20" : "border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-elevated/30"
               }`}>
                 {/* Toggle header */}
                 <button
@@ -225,7 +225,7 @@ const InlinePurchases = ({ customerId }) => {
                     </span>
                   </div>
                   <div className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors flex-shrink-0 ${
-                    reminderEnabled ? "bg-violet-500" : "bg-gray-300 dark:bg-gray-600"
+                    reminderEnabled ? "bg-violet-500" : "bg-gray-300 dark:bg-win-elevated2"
                   }`}>
                     <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${
                       reminderEnabled ? "translate-x-3.5" : "translate-x-0.5"
@@ -315,7 +315,7 @@ const InlinePurchases = ({ customerId }) => {
       {showDropdown && createPortal(
         <div
           style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
-          className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden"
+          className="bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-lg overflow-hidden"
         >
           {loadingSearch ? (
             <div className="p-3 text-xs text-gray-400 text-center">Αναζήτηση...</div>

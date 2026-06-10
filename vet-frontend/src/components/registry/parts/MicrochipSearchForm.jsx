@@ -12,7 +12,7 @@ export default function MicrochipSearchForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-gray-800 px-3 py-3 sm:grid-cols-[minmax(0,1.6fr)_auto] sm:px-4 sm:py-4"
+      className="grid gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-win-surface px-3 py-3 sm:grid-cols-[minmax(0,1.6fr)_auto] sm:px-4 sm:py-4"
     >
       <div className="flex flex-col gap-1.5">
         <label
@@ -29,7 +29,7 @@ export default function MicrochipSearchForm({
             value={microchip}
             onChange={(e) => onChangeMicrochip(e.target.value)}
             placeholder="Πληκτρολόγησε microchip..."
-            className="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-gray-700 px-3 py-2 pr-9 text-sm text-slate-900 dark:text-slate-100 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-win-elevated px-3 py-2 pr-9 text-sm text-slate-900 dark:text-slate-100 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-win-elevated focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
           <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         </div>

@@ -27,7 +27,7 @@ function getTypeDot(type) {
 
 function AppointmentItem({ appt }) {
   return (
-    <li className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50">
+    <li className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50">
       <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
       <span className="text-sm font-bold text-gray-700 dark:text-gray-200 w-12 flex-shrink-0">
         {appt.time}
@@ -63,7 +63,7 @@ function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowA
             {title}
           </span>
           {appointments.length > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-bold">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-300 text-xs font-bold">
               {appointments.length}
             </span>
           )}
@@ -78,7 +78,7 @@ function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowA
 
       {/* Άδεια κατάσταση */}
       {appointments.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-6 text-center gap-2 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+        <div className="flex flex-col items-center justify-center py-6 text-center gap-2 border border-dashed border-gray-200 dark:border-win-border rounded-xl">
           <Clock className="w-6 h-6 text-gray-300 dark:text-gray-600" />
           <p className="text-xs text-gray-400 dark:text-gray-500">{emptyText}</p>
         </div>
@@ -119,7 +119,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
   const groomingAppts = todaysAppointments.filter((a) => a.doctor === "Grooming");
 
   return (
-    <div className="bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-4 space-y-4">
+    <div className="bg-white dark:bg-win-bg/30 border border-gray-200 dark:border-win-border rounded-2xl shadow-sm p-4 space-y-4">
 
       {/* Header */}
       <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
       </div>
 
       {/* Διαχωριστής */}
-      <div className="h-px bg-gray-100 dark:bg-gray-700" />
+      <div className="h-px bg-gray-100 dark:bg-win-elevated" />
 
       {/* Δύο στήλες */}
       <div className="flex gap-4">
@@ -150,7 +150,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
         />
 
         {/* Κάθετος διαχωριστής */}
-        <div className="w-px bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
+        <div className="w-px bg-gray-100 dark:bg-win-elevated flex-shrink-0" />
 
         {/* Δεξιά: Grooming */}
         <Column

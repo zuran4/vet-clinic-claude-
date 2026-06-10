@@ -68,7 +68,7 @@ const PetOwnerSelector = ({ owner, selectedOwnerId, onSelect }) => {
           type="text"
           value={selectedName}
           readOnly
-          className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm w-full text-sm bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+          className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm w-full text-sm bg-gray-50 dark:bg-win-elevated text-gray-700 dark:text-gray-300 cursor-not-allowed"
         />
       ) : (
         <>
@@ -78,7 +78,7 @@ const PetOwnerSelector = ({ owner, selectedOwnerId, onSelect }) => {
               placeholder="Αναζήτηση πελάτη (όνομα ή τηλέφωνο)"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm w-full text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+              className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm w-full text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             />
             <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
@@ -90,12 +90,12 @@ const PetOwnerSelector = ({ owner, selectedOwnerId, onSelect }) => {
           )}
 
           {filtered.length > 0 && (
-            <ul className="mt-2 border border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 shadow max-h-40 overflow-y-auto">
+            <ul className="mt-2 border border-gray-200 dark:border-win-border-light rounded-2xl bg-white dark:bg-win-surface shadow max-h-40 overflow-y-auto">
               {filtered.map((c) => (
                 <li
                   key={c._id}
                   onClick={() => handleSelect(c)}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-100"
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-win-elevated text-sm text-gray-800 dark:text-gray-100"
                 >
                   {c.name} ({c.phone})
                 </li>

@@ -2,7 +2,7 @@ import React from "react";
 import { PawPrint } from "lucide-react";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
 
-const SELECT = "border border-gray-200 dark:border-gray-600 p-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const SELECT = "border border-gray-200 dark:border-win-border-light p-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100";
 
 const PetSelector = ({
   ownerId = null,

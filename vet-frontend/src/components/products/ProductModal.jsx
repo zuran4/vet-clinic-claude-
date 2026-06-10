@@ -159,7 +159,7 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info" }) => {
       {/* Confirmation Dialog */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
+          <div className="bg-white dark:bg-win-surface rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />

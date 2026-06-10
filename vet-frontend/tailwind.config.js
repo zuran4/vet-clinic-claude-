@@ -30,6 +30,15 @@ module.exports = {
           light: "#F9FAFB",
           dark: "#374151",
         },
+        // 🔹 Windows 11 Fluent dark palette (layered surfaces)
+        win: {
+          bg: "#202020",
+          surface: "#2c2c2c",
+          elevated: "#383838",
+          elevated2: "#454545",
+          border: "#3f3f3f",
+          "border-light": "#525252",
+        },
       },
     },
   },

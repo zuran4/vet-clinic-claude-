@@ -151,7 +151,7 @@ const CustomerImportModal = ({ onClose, onImport }) => {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="w-full border-2 border-dashed border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-600 rounded-xl px-4 py-6 flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-indigo-500 transition-colors"
+              className="w-full border-2 border-dashed border-gray-200 dark:border-win-border-light hover:border-indigo-300 dark:hover:border-indigo-600 rounded-xl px-4 py-6 flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-indigo-500 transition-colors"
             >
               <Upload className="w-6 h-6" />
               <span className="text-sm font-medium">
@@ -187,9 +187,9 @@ const CustomerImportModal = ({ onClose, onImport }) => {
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
               Προεπισκόπηση ({rows.length} {rows.length === 1 ? "πελάτης" : "πελάτες"})
             </p>
-            <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
+            <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-win-border">
               <table className="min-w-full text-xs">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                <thead className="bg-gray-50 dark:bg-win-elevated/50">
                   <tr>
                     {PREVIEW_COLS.map((c) => (
                       <th key={c} className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-semibold">
@@ -198,9 +198,9 @@ const CustomerImportModal = ({ onClose, onImport }) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                <tbody className="divide-y divide-gray-50 dark:divide-win-border/50">
                   {rows.slice(0, 5).map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/50"}>
+                    <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-win-surface" : "bg-gray-50/50 dark:bg-win-elevated/50"}>
                       {PREVIEW_COLS.map((c) => (
                         <td key={c} className="px-3 py-2 text-gray-700 dark:text-gray-200 max-w-[120px] truncate">
                           {row[c] || <span className="text-gray-300 dark:text-gray-600">—</span>}
@@ -211,7 +211,7 @@ const CustomerImportModal = ({ onClose, onImport }) => {
                 </tbody>
               </table>
               {rows.length > 5 && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2 bg-gray-50 dark:bg-win-elevated/50 border-t border-gray-100 dark:border-win-border">
                   +{rows.length - 5} ακόμα πελάτες
                 </p>
               )}
@@ -247,7 +247,7 @@ const CustomerImportModal = ({ onClose, onImport }) => {
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex gap-2 justify-end pt-2 border-t border-gray-100 dark:border-win-border">
           <Button variant="ghost" onClick={onClose}>
             <X className="w-4 h-4" />
             {result ? "Κλείσιμο" : "Ακύρωση"}

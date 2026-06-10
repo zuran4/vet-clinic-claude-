@@ -57,7 +57,7 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-win-bg flex items-center justify-center">
         <p className="text-gray-500 dark:text-gray-400 text-lg">Φόρτωση...</p>
       </div>
     );
@@ -65,14 +65,14 @@ function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-100 dark:bg-win-bg flex items-center justify-center p-4">
         <LoginForm onLogin={login} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-100 dark:bg-win-bg p-6">
       <MainLayout
         user={user}
         onLogout={logout}

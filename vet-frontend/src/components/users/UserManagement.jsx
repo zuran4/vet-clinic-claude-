@@ -3,7 +3,7 @@ import { Save, XCircle, Pencil, Trash2, User } from "lucide-react";
 import { Button } from "../ui/button";
 import { useUsersManagement } from "../../hooks/useUsersManagement";
 
-const INPUT = "border border-gray-200 dark:border-gray-600 px-3 py-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+const INPUT = "border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100";
 
 const UserManagement = ({ getAuthHeaders }) => {
   const {
@@ -101,7 +101,7 @@ const UserManagement = ({ getAuthHeaders }) => {
           ) : (
             <li
               key={user._id}
-              className="bg-gray-100 dark:bg-gray-700 p-4 rounded-2xl shadow flex justify-between items-center"
+              className="bg-gray-100 dark:bg-win-elevated p-4 rounded-2xl shadow flex justify-between items-center"
             >
               <div>
                 <p className="font-semibold text-gray-700 dark:text-gray-100">{user.name}</p>

@@ -55,23 +55,23 @@ const PurchaseHistoryList = ({ productId, isOpen, onQuantity, summaryQty, catego
 
       {/* Content */}
       {loading ? (
-        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
+        <div className="bg-white dark:bg-win-surface px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
       ) : entries.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
+        <div className="bg-white dark:bg-win-surface px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
           Δεν υπάρχουν καταχωρήσεις αγορών.
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 overflow-x-auto">
+        <div className="bg-white dark:bg-win-surface overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+              <tr className="bg-gray-50 dark:bg-win-elevated/50 border-b border-gray-100 dark:border-win-border">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ημ. Αγοράς</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Προμηθευτής</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ποσότητα</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Τιμή Χονδρικής</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+            <tbody className="divide-y divide-gray-50 dark:divide-win-border/50">
               {entries.map((entry, idx) => (
                 <tr key={entry._id || idx} className="hover:bg-orange-50/30 dark:hover:bg-orange-900/20 transition-colors">
                   <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">

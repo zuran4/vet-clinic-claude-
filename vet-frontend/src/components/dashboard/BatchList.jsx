@@ -38,7 +38,7 @@ const BatchList = ({ productId, isOpen, onQuantity, summaryQty, category }) => {
   };
 
   const getBatchStatus = (expirationDate) => {
-    if (!expirationDate) return { label: "—", className: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400" };
+    if (!expirationDate) return { label: "—", className: "bg-gray-100 text-gray-500 dark:bg-win-elevated dark:text-gray-400" };
     const diff = dayjs(expirationDate).diff(dayjs(), "day");
     if (diff < 0)   return { label: "Έληξε",              className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" };
     if (diff <= 30) return { label: `Λήγει σε ${diff}μ`,  className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" };
@@ -72,14 +72,14 @@ const BatchList = ({ productId, isOpen, onQuantity, summaryQty, category }) => {
 
       {/* Content */}
       {loading ? (
-        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
+        <div className="bg-white dark:bg-win-surface px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Φόρτωση...</div>
       ) : batches.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν παρτίδες.</div>
+        <div className="bg-white dark:bg-win-surface px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν παρτίδες.</div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 overflow-x-auto max-h-72 overflow-y-auto">
+        <div className="bg-white dark:bg-win-surface overflow-x-auto max-h-72 overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+              <tr className="bg-gray-50 dark:bg-win-elevated/50 border-b border-gray-100 dark:border-win-border">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Παρτίδα</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Κατάσταση</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ποσότητα</th>
@@ -89,7 +89,7 @@ const BatchList = ({ productId, isOpen, onQuantity, summaryQty, category }) => {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+            <tbody className="divide-y divide-gray-50 dark:divide-win-border/50">
               {batches.map((batch, idx) => {
                 const status = getBatchStatus(batch.expirationDate);
                 const rowBg = getRowBg(batch.expirationDate);

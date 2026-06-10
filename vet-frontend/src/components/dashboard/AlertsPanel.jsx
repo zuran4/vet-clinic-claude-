@@ -92,7 +92,7 @@ const AlertsPanel = ({ products = [], pets = [], onEditProduct }) => {
     runtimeAlerts.length > 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl mt-6 space-y-4 max-w-4xl mx-auto">
+    <div className="bg-white dark:bg-win-surface p-6 rounded-2xl shadow-xl mt-6 space-y-4 max-w-4xl mx-auto">
       <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
         <Bell className="w-5 h-5 text-primary" />
         Ειδοποιήσεις

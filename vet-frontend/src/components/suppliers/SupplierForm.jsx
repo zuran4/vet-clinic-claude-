@@ -77,7 +77,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border dark:border-gray-600 mt-4">
+    <div className="bg-white dark:bg-win-surface rounded-xl shadow-md p-4 border dark:border-win-border-light mt-4">
       <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
         <User className="w-5 h-5 text-purple-500" />
         {initialData ? "Επεξεργασία Προμηθευτή" : "Νέος Προμηθευτής"}
@@ -92,7 +92,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
           </label>
           <input
             type="text"
-            className="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-100"
+            className="w-full border dark:border-win-border-light rounded px-3 py-2 text-sm dark:bg-win-elevated dark:text-gray-100"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -107,7 +107,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
           </label>
           <input
             type="text"
-            className="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-100"
+            className="w-full border dark:border-win-border-light rounded px-3 py-2 text-sm dark:bg-win-elevated dark:text-gray-100"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -121,7 +121,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
           </label>
           <input
             type="email"
-            className="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-100"
+            className="w-full border dark:border-win-border-light rounded px-3 py-2 text-sm dark:bg-win-elevated dark:text-gray-100"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -136,7 +136,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
           <input
             type="text"
             placeholder="https://example.com ή www.example.com"
-            className={`w-full border dark:border-gray-600 rounded px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-100 ${websiteError ? "border-red-500" : ""}`}
+            className={`w-full border dark:border-win-border-light rounded px-3 py-2 text-sm dark:bg-win-elevated dark:text-gray-100 ${websiteError ? "border-red-500" : ""}`}
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             onBlur={(e) => handleWebsiteBlur(e.target.value)}
@@ -154,7 +154,7 @@ const SupplierForm = ({ initialData, onSave, onCancel }) => {
             Σημειώσεις
           </label>
           <textarea
-            className="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-100"
+            className="w-full border dark:border-win-border-light rounded px-3 py-2 text-sm dark:bg-win-elevated dark:text-gray-100"
             rows="3"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

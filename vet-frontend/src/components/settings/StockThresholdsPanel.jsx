@@ -74,7 +74,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
   return (
     <div className="space-y-6">
       {/* Global thresholds */}
-      <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+      <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-win-bg dark:border-win-border">
         <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Global thresholds</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
@@ -84,7 +84,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
               min={0}
               value={globalLow}
               onChange={(e) => setGlobalLow(e.target.value)}
-              className="w-full rounded-2xl border px-3 py-2 dark:bg-gray-950 dark:border-gray-700"
+              className="w-full rounded-2xl border px-3 py-2 dark:bg-win-bg dark:border-win-border"
             />
             <p className="mt-1 text-[11px] text-gray-500">Κάτω ή ίσο με αυτό το όριο θεωρείται χαμηλό.</p>
           </div>
@@ -95,7 +95,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
               min={1}
               value={globalOk}
               onChange={(e) => setGlobalOk(e.target.value)}
-              className="w-full rounded-2xl border px-3 py-2 dark:bg-gray-950 dark:border-gray-700"
+              className="w-full rounded-2xl border px-3 py-2 dark:bg-win-bg dark:border-win-border"
             />
             <p className="mt-1 text-[11px] text-gray-500">Ποσότητα πάνω από αυτό θεωρείται ΟΚ.</p>
           </div>
@@ -116,7 +116,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
       </section>
 
       {/* Per-category overrides */}
-      <section className="p-4 rounded-2xl border dark:border-gray-700">
+      <section className="p-4 rounded-2xl border dark:border-win-border">
         <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Overrides ανά κατηγορία</h3>
 
         {/* Add new override */}
@@ -128,7 +128,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
               placeholder="π.χ. Φάρμακα"
               value={newCat}
               onChange={(e) => setNewCat(e.target.value)}
-              className="w-full rounded-2xl border px-3 py-2 dark:bg-gray-950 dark:border-gray-700"
+              className="w-full rounded-2xl border px-3 py-2 dark:bg-win-bg dark:border-win-border"
             />
             <datalist id="known-categories">
               {existingCats.map((c) => (
@@ -143,7 +143,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
               min={0}
               value={newLow}
               onChange={(e) => setNewLow(e.target.value)}
-              className="w-full rounded-2xl border px-3 py-2 dark:bg-gray-950 dark:border-gray-700"
+              className="w-full rounded-2xl border px-3 py-2 dark:bg-win-bg dark:border-win-border"
             />
           </div>
           <div>
@@ -153,7 +153,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
               min={1}
               value={newOk}
               onChange={(e) => setNewOk(e.target.value)}
-              className="w-full rounded-2xl border px-3 py-2 dark:bg-gray-950 dark:border-gray-700"
+              className="w-full rounded-2xl border px-3 py-2 dark:bg-win-bg dark:border-win-border"
             />
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left border-b dark:border-gray-800">
+              <tr className="text-left border-b dark:border-win-border">
                 <th className="py-2 pr-2">Κατηγορία</th>
                 <th className="py-2 pr-2">Low</th>
                 <th className="py-2 pr-2">OK</th>
@@ -194,7 +194,7 @@ export default function StockThresholdsPanel({ categories = [] }) {
                 const cfg = thresholds?._byCategory?.[cat];
                 if (!cfg) return null; // δείχνουμε μόνο όσα έχουν override
                 return (
-                  <tr key={cat} className="border-b dark:border-gray-800">
+                  <tr key={cat} className="border-b dark:border-win-border">
                     <td className="py-2 pr-2">{cat}</td>
                     <td className="py-2 pr-2">{cfg.low}</td>
                     <td className="py-2 pr-2">{cfg.ok}</td>
@@ -218,14 +218,14 @@ export default function StockThresholdsPanel({ categories = [] }) {
       </section>
 
       {/* Import / Export */}
-      <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+      <section className="p-4 rounded-2xl border bg-gray-50 dark:bg-win-bg dark:border-win-border">
         <h3 className="text-sm font-semibold mb-3 dark:text-gray-200">Import / Export</h3>
         <div className="flex flex-wrap gap-2">
           <Button onClick={handleExport}>Export JSON</Button>
 
           <label className="inline-flex items-center gap-2">
             <input type="file" accept="application/json" className="hidden" onChange={handleImport} />
-            <span className="px-3 py-2 rounded-2xl border cursor-pointer dark:border-gray-700 dark:text-gray-200">
+            <span className="px-3 py-2 rounded-2xl border cursor-pointer dark:border-win-border dark:text-gray-200">
               Import JSON
             </span>
           </label>
