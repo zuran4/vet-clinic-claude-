@@ -28,25 +28,25 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
 
   return (
     <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-win-bg dark:via-win-bg dark:to-win-bg border-b border-indigo-100 dark:border-win-border shadow-sm mb-6">
-      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-4">
 
         {/* Αριστερά: Logo + Όνομα */}
         <button
           onClick={onGoHome}
-          className="flex items-center gap-3 hover:opacity-75 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+          className="flex items-center gap-2 sm:gap-3 hover:opacity-75 transition-opacity bg-transparent border-0 p-0 cursor-pointer min-w-0"
         >
           <img
             src={logo || logoFallback}
             alt={clinicName || "Κτηνιατρείο"}
-            className="w-9 h-9 object-contain rounded-xl"
+            className="w-9 h-9 object-contain rounded-xl flex-shrink-0"
           />
-          <span className="text-xl font-bold text-indigo-600 tracking-tight">
+          <span className="text-lg sm:text-xl font-bold text-indigo-600 tracking-tight truncate">
             {clinicName || "Vet Clinic"}
           </span>
         </button>
 
         {/* Κέντρο: Ημερομηνία & Ώρα */}
-        <div className="text-center flex-1">
+        <div className="text-center flex-1 hidden sm:block">
           <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             {now.locale("el").format("dddd D MMMM YYYY")}
           </p>
@@ -57,7 +57,7 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
         </div>
 
         {/* Δεξιά: User + Κουμπιά */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {user && (
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300 hidden sm:block">
               {user.name}
@@ -70,7 +70,7 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
             className="flex items-center gap-2"
           >
             <Settings className="w-4 h-4" />
-            {t("settings")}
+            <span className="hidden sm:inline">{t("settings")}</span>
           </Button>
 
           <Button
@@ -79,7 +79,7 @@ function HeaderBar({ onLogout, onShowSettings, onGoHome, user, clinicName, logo 
             className="flex items-center gap-2"
           >
             <LogOut className="w-4 h-4" />
-            {t("logout")}
+            <span className="hidden sm:inline">{t("logout")}</span>
           </Button>
         </div>
 

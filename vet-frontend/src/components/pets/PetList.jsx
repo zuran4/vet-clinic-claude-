@@ -89,11 +89,11 @@ const PetList = () => {
               <tr className="bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-900/20 dark:to-cyan-900/20 border-b border-sky-100 dark:border-sky-800/30 text-left">
                 <th className="px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">Όνομα</th>
                 <th className="px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">Είδος</th>
-                <th className="px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">Φύλο</th>
-                <th className="px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
+                <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">Φύλο</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
                   <span className="flex items-center gap-1"><Cpu className="w-3.5 h-3.5" />Chip</span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
+                <th className="hidden md:table-cell px-4 py-3 text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">
                   <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" />Ιδιοκτήτης</span>
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wide">Ενέργειες</th>
@@ -108,18 +108,18 @@ const PetList = () => {
                       {pet.species}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="hidden sm:table-cell px-4 py-3">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${GENDER_STYLE[pet.gender] ?? "bg-gray-100 text-gray-600"}`}>
                       {pet.gender}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="hidden sm:table-cell px-4 py-3">
                     {pet.microchip
                       ? <span className="font-mono text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-win-elevated border border-gray-100 dark:border-win-border-light px-2 py-0.5 rounded-lg">{pet.microchip}</span>
                       : <span className="text-gray-300 dark:text-gray-600 text-xs">—</span>
                     }
                   </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-sm">
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-600 dark:text-gray-400 text-sm">
                     {pet.owner
                       ? <span>{pet.owner.name} <span className="text-gray-400 dark:text-gray-500">({pet.owner.phone || "—"})</span></span>
                       : <span className="text-gray-400 dark:text-gray-500">Άγνωστος</span>

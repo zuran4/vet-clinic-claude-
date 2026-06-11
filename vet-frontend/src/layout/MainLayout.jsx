@@ -231,7 +231,7 @@ function MainLayout({
       />
 
       {/* 🔹 Κύριο περιεχόμενο */}
-      <main className="max-w-6xl mx-auto bg-white dark:bg-win-surface shadow-md rounded-xl p-6 space-y-6 mt-6">
+      <main className="max-w-6xl mx-auto bg-white dark:bg-win-surface shadow-md rounded-xl p-3 sm:p-6 space-y-6 mt-6">
         {/* ✅ Page Header (σταθερό pattern) */}
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">

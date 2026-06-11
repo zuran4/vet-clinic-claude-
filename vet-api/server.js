@@ -63,12 +63,23 @@ const allowedOrigins =
     ? [...config.corsOrigins, ...devFallbackOrigins]
     : devFallbackOrigins;
 
+// Σε development, επιτρέπουμε επίσης πρόσβαση από συσκευές του τοπικού δικτύου
+// (π.χ. κινητό στο ίδιο Wi-Fi) που ανοίγουν το frontend μέσω LAN IP.
+const lanOriginPattern = /^http:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}):5173$/;
+
+function corsOriginCheck(origin, callback) {
+  if (!origin) return callback(null, true);
+  if (allowedOrigins.includes(origin)) return callback(null, true);
+  if (config.isDev && lanOriginPattern.test(origin)) return callback(null, true);
+  return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+}
+
 // ==============================
 // 🔌 Socket.io
 // ==============================
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: corsOriginCheck,
     methods: ["GET", "POST"],
   },
 });
@@ -100,12 +111,6 @@ app.use(
 // ==============================
 // 🌍 CORS
 // ==============================
-function corsOriginCheck(origin, callback) {
-  if (!origin) return callback(null, true);
-  if (allowedOrigins.includes(origin)) return callback(null, true);
-  return callback(new Error(`CORS blocked for origin: ${origin}`), false);
-}
-
 const corsOptions = {
   origin: corsOriginCheck,
   credentials: true,

@@ -28,7 +28,7 @@ const _originalFetch = window.fetch;
 window.fetch = function (url, options = {}) {
   const isOwnApi =
     typeof url === "string" &&
-    (url.startsWith("/api") || url.includes("localhost:5000"));
+    (url.startsWith("/api") || /:5000\/api/.test(url));
 
   if (isOwnApi) {
     const token = localStorage.getItem("token");

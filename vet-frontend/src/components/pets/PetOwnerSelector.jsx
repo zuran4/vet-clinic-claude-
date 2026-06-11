@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import toast from "react-hot-toast";
 
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
 
 const PetOwnerSelector = ({ owner, selectedOwnerId, onSelect }) => {
   const [customers, setCustomers] = useState([]);

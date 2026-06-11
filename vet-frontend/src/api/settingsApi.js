@@ -36,9 +36,9 @@ export const uploadLogo = async (file) => {
 
   // 👉 Ίδιο base URL με το apiClient:
   // - Σε production: VITE_API_BASE_URL (Render)
-  // - Local: http://localhost:5000/api
+  // - Local/LAN: http://<host>:5000/api
   const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+    import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
 
   const res = await fetch(`${API_BASE_URL}${UPLOAD_LOGO_ENDPOINT}`, {
     method: "POST",

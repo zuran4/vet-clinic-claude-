@@ -185,8 +185,8 @@ const ProductList = () => {
           <thead>
             <tr className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 text-left">
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Όνομα</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Κατηγορία</th>
-              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Barcode</th>
+              <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Κατηγορία</th>
+              <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Barcode</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ποσότητα</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Τιμή</th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ενέργειες</th>
@@ -213,8 +213,8 @@ const ProductList = () => {
 
                         {product.name}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
-                      <td className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
+                      <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
+                      <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
                       <td className="px-4 py-3">
                         <StockBadge qty={product.stockTotal ?? product.quantity ?? 0} config={cfg} />
                       </td>

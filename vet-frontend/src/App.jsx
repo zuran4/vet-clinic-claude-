@@ -72,7 +72,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-win-bg p-6">
+    <div className="min-h-screen bg-gray-100 dark:bg-win-bg p-2 sm:p-6 safe-top safe-bottom">
       <MainLayout
         user={user}
         onLogout={logout}

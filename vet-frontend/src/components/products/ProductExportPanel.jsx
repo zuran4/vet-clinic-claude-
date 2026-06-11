@@ -3,6 +3,9 @@ import axios from "axios";
 import { Package, Barcode, Upload } from "lucide-react";
 import Button from "../ui/button";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
+
 const ProductExportPanel = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [query, setQuery] = useState("");
@@ -11,7 +14,7 @@ const ProductExportPanel = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/products")
+      .get(`${API_BASE_URL}/products`)
       .then((res) => setAllProducts(res.data))
       .catch((err) => console.error("❌ Σφάλμα προϊόντων:", err));
   }, []);
@@ -31,7 +34,7 @@ const ProductExportPanel = () => {
     if (!selectedProduct || quantity < 1) return;
 
     try {
-      await axios.post(`http://localhost:5000/api/products/export`, {
+      await axios.post(`${API_BASE_URL}/products/export`, {
         productId: selectedProduct._id,
         quantity,
       });
@@ -50,7 +53,7 @@ const ProductExportPanel = () => {
       setQuery("");
       setSelectedProduct(null);
 
-      const updated = await axios.get("http://localhost:5000/api/products");
+      const updated = await axios.get(`${API_BASE_URL}/products`);
       setAllProducts(updated.data);
     } catch (err) {
       console.error("❌ Σφάλμα εξαγωγής:", err);
