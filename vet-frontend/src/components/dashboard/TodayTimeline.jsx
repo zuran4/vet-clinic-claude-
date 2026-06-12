@@ -25,9 +25,12 @@ function getTypeDot(type) {
   return TYPE_DOT[type] || "bg-gray-400";
 }
 
-function AppointmentItem({ appt }) {
+function AppointmentItem({ appt, onClick }) {
   return (
-    <li className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50">
+    <li
+      onClick={onClick}
+      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/30 dark:hover:border-indigo-700/50 transition-colors"
+    >
       <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
       <span className="text-sm font-bold text-gray-700 dark:text-gray-200 w-12 flex-shrink-0">
         {appt.time}
@@ -49,7 +52,7 @@ function AppointmentItem({ appt }) {
 
 const MAX_VISIBLE = 4;
 
-function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowAll }) {
+function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowAll, onEditAppointment }) {
   const visible = appointments.slice(0, MAX_VISIBLE);
   const remaining = appointments.length - MAX_VISIBLE;
 
@@ -89,7 +92,11 @@ function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowA
         <>
           <ul className="space-y-2">
             {visible.map((appt) => (
-              <AppointmentItem key={appt._id} appt={appt} />
+              <AppointmentItem
+                key={appt._id}
+                appt={appt}
+                onClick={() => onEditAppointment?.(appt)}
+              />
             ))}
           </ul>
 
@@ -108,7 +115,7 @@ function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowA
   );
 }
 
-export default function TodayTimeline({ appointments = [], onShowAppointments }) {
+export default function TodayTimeline({ appointments = [], onShowAppointments, onEditAppointment }) {
   const today = new Date().toISOString().split("T")[0];
 
   const todaysAppointments = appointments
@@ -138,7 +145,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
       <div className="h-px bg-gray-100 dark:bg-win-elevated" />
 
       {/* Δύο στήλες */}
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {/* Αριστερά: Ιατρείο */}
         <Column
           title="Ιατρείο"
@@ -147,10 +154,11 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
           appointments={clinicAppts}
           emptyText="Κανένα ραντεβού ιατρείου"
           onShowAll={onShowAppointments}
+          onEditAppointment={onEditAppointment}
         />
 
-        {/* Κάθετος διαχωριστής */}
-        <div className="w-px bg-gray-100 dark:bg-win-elevated flex-shrink-0" />
+        {/* Διαχωριστής: οριζόντιος σε mobile, κάθετος σε desktop */}
+        <div className="w-full h-px md:w-px md:h-auto bg-gray-100 dark:bg-win-elevated flex-shrink-0" />
 
         {/* Δεξιά: Grooming */}
         <Column
@@ -160,6 +168,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments })
           appointments={groomingAppts}
           emptyText="Κανένα ραντεβού grooming"
           onShowAll={onShowAppointments}
+          onEditAppointment={onEditAppointment}
         />
       </div>
     </div>

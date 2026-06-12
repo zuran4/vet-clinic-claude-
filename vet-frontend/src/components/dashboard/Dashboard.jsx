@@ -16,14 +16,13 @@ const Dashboard = ({
   pets = [],
   products = [],
   onShowAppointments,
+  onEditAppointment,
   onShowProducts,
   onShowCustomers,
   onShowPets,
   onShowPrescriptions,
   onShowExportPanel,
-  onEditProduct,
 }) => {
-
   // ✅ Enterprise-friendly: "quick actions" config
   const quickActions = useMemo(
     () => [
@@ -80,10 +79,11 @@ const Dashboard = ({
       <TodayTimeline
         appointments={appointments}
         onShowAppointments={onShowAppointments}
+        onEditAppointment={onEditAppointment}
       />
 
-      {/* Quick Actions */}
-      <section className="space-y-3">
+      {/* Quick Actions — μόνο σε desktop/tablet, στο mobile βρίσκονται στο ☰ μενού του header */}
+      <section className="hidden sm:block space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
             Γρήγορες ενέργειες

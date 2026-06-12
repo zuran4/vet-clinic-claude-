@@ -30,6 +30,18 @@ body {
   margin-bottom: env(safe-area-inset-bottom);
 }
 
+/* ===================================== */
+/* 📱 Αποφυγή αυτόματου zoom σε iOS/Android   */
+/* όταν εστιάζει input με font-size < 16px    */
+/* ===================================== */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

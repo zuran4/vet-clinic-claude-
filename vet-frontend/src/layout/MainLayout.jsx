@@ -175,7 +175,7 @@ function MainLayout({
       case "settings":
         return { title: "Ρυθμίσεις", subtitle: "Διαμόρφωση κλινικής και συστήματος." };
       default:
-        return { title: "Επισκόπηση", subtitle: "Γρήγορη πρόσβαση στις βασικές λειτουργίες." };
+        return { title: "Επισκόπηση" };
     }
   }, [activePanel]);
 
@@ -228,24 +228,28 @@ function MainLayout({
         user={user}
         clinicName={settings?.clinicName}
         logo={settings?.logo}
+        onShowProducts={() => openPanel("products")}
+        onShowCustomers={() => openPanel("customers")}
+        onShowPets={() => openPanel("pets")}
+        onShowPrescriptions={() => openPanel("prescriptions")}
+        onShowExportPanel={() => openPanel("export")}
       />
 
       {/* 🔹 Κύριο περιεχόμενο */}
       <main className="max-w-6xl mx-auto bg-white dark:bg-win-surface shadow-md rounded-xl p-3 sm:p-6 space-y-6 mt-6">
         {/* ✅ Page Header (σταθερό pattern) */}
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <header className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {pageInfo.title}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-300">
-              {pageInfo.subtitle}
-            </p>
+            {pageInfo.subtitle && (
+              <p className="text-sm text-gray-500 dark:text-gray-300">
+                {pageInfo.subtitle}
+              </p>
+            )}
           </div>
-
-          <div className="flex items-center">
-            <RegistryStatus onStatusChange={handleRegistryStatusChange} />
-          </div>
+          <RegistryStatus onStatusChange={handleRegistryStatusChange} />
         </header>
 
         {errorMessage && (
@@ -264,6 +268,10 @@ function MainLayout({
               clients={[]} // TODO: σύνδεση clients
               products={productsWithExpDate}
               onShowAppointments={() => openPanel("appointments")}
+              onEditAppointment={(appt) => {
+                onEditAppointment(appt);
+                openPanel("appointments");
+              }}
               onShowProducts={() => openPanel("products")}
               onShowCustomers={() => openPanel("customers")}
               onShowPets={() => openPanel("pets")}

@@ -50,7 +50,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
   return (
     <div className="relative">
       {/* Header */}
-      <div className={`-mx-6 -mt-6 mb-5 px-6 pt-5 pb-4 rounded-t-2xl ${headerBg}`}>
+      <div className={`-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-3 sm:mb-5 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 rounded-t-2xl ${headerBg}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-white">
             {isGrooming
@@ -64,8 +64,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           </span>
         </div>
 
-        <div className="mt-3 text-white">
-          <div className="text-2xl font-bold">{selectedTime || time}</div>
+        <div className="mt-2 sm:mt-3 text-white">
+          <div className="text-xl sm:text-2xl font-bold">{selectedTime || time}</div>
           <div className="text-sm text-white/80 mt-0.5">
             {existingData ? existingData.date : "Επιλογή ώρας & τύπου παρακάτω"}
           </div>
@@ -75,7 +75,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Αλλαγή ώρας (μόνο σε επεξεργασία) */}
         {existingData && (
-          <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-4 py-3">
+          <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
               Ώρα & Ημερομηνία
             </p>
@@ -90,7 +90,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         )}
 
         {/* Πελάτης */}
-        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-4 py-3 space-y-2">
+        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 space-y-2">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">
             Πελάτης
           </p>
@@ -116,7 +116,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Κατοικίδιο */}
-        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-4 py-3">
+        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
             Κατοικίδιο
           </p>
@@ -136,7 +136,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Τύπος, Διάρκεια, Σημειώσεις */}
-        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-4 py-3">
+        <div className="bg-gray-50 dark:bg-win-elevated/50 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3">
             Λεπτομέρειες
           </p>
