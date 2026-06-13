@@ -4,11 +4,14 @@ import "dayjs/locale/el";
 import "./index.css";
 
 import LoginForm from "./components/ui/LoginForm";
+import InstallPwaBanner from "./components/ui/InstallPwaBanner";
 import MainLayout from "./layout/MainLayout";
 
 import { useAuth } from "./hooks/useAuth";
 import { useAppointmentsData } from "./hooks/useAppointmentsData";
 import { useProductsData } from "./hooks/useProductsData";
+import { useRefetchOnFocus } from "./hooks/useRefetchOnFocus";
+import { useRealtimeSync } from "./hooks/useRealtimeSync";
 
 dayjs.locale("el");
 
@@ -35,6 +38,20 @@ function App() {
       fetchProducts();
     }
   }, [user, selectedDate, fetchAppointments, fetchProducts]);
+
+  // 🔹 Ξανά-φόρτωση ραντεβού/προϊόντων όταν η εφαρμογή επανέρχεται σε προσκήνιο
+  useRefetchOnFocus(() => {
+    if (user) {
+      fetchAppointments();
+      fetchProducts();
+    }
+  });
+
+  // 🔹 Real-time ενημέρωση όταν αλλάζουν δεδομένα από άλλη συσκευή
+  useRealtimeSync({
+    appointments: () => user && fetchAppointments(),
+    products: () => user && fetchProducts(),
+  });
 
   const handleSaveAppointment = async (details, appointmentId = null) => {
     // Το date, time και doctor έρχονται από τη φόρμα μέσα στο details
@@ -67,12 +84,14 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-win-bg flex items-center justify-center p-4">
         <LoginForm onLogin={login} />
+        <InstallPwaBanner />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-win-bg p-2 sm:p-6 safe-top safe-bottom">
+      <InstallPwaBanner />
       <MainLayout
         user={user}
         onLogout={logout}

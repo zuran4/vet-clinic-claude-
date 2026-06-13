@@ -46,6 +46,13 @@ window.fetch = function (url, options = {}) {
   return _originalFetch(url, options);
 };
 
+// 📲 Service worker — απαραίτητο για το PWA install prompt στο κινητό
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 // 🔹 Φόρτωση i18n πριν το render
 import "./i18n";
 

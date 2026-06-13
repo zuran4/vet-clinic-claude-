@@ -6,6 +6,7 @@ import {
   remove as removeOne,
   search as searchAppointments,
 } from "../../services/appointments/service.js";
+import { emitChange } from "../../utils/realtime.js";
 
 /**
  * 🔍 Αναζήτηση ραντεβού με φίλτρα
@@ -59,6 +60,7 @@ export const createAppointment = async (req, res, next) => {
     };
 
     const saved = await createOne(payload);
+    emitChange("appointments");
     res.status(201).json(saved);
   } catch (error) {
     next(error);
@@ -88,6 +90,7 @@ export const updateAppointment = async (req, res, next) => {
     if (!updated) {
       return res.status(404).json({ message: "❌ Το ραντεβού δεν βρέθηκε." });
     }
+    emitChange("appointments");
     res.json(updated);
   } catch (error) {
     next(error);
@@ -103,6 +106,7 @@ export const deleteAppointment = async (req, res, next) => {
     if (!deleted) {
       return res.status(404).json({ message: "❌ Ραντεβού δεν βρέθηκε." });
     }
+    emitChange("appointments");
     res.json({ message: "✅ Διαγράφηκε επιτυχώς!" });
   } catch (error) {
     next(error);

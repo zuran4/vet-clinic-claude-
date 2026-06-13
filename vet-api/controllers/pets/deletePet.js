@@ -1,6 +1,7 @@
 import * as petService from "../../services/petService.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { emitChange } from "../../utils/realtime.js";
 
 export default async function deletePet(req, res, next) {
   try {
@@ -13,6 +14,7 @@ export default async function deletePet(req, res, next) {
     }
 
     logger.info(`🗑️ Διαγράφηκε κατοικίδιο: ${deleted.name} (${deleted.species})`);
+    emitChange("pets");
     res.json({ message: "✅ Το κατοικίδιο διαγράφηκε" });
   } catch (error) {
     logger.error("❌ Σφάλμα κατά τη διαγραφή κατοικιδίου", { stack: error.stack });

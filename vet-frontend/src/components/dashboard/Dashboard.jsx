@@ -17,6 +17,7 @@ const Dashboard = ({
   products = [],
   onShowAppointments,
   onEditAppointment,
+  onJumpToDate,
   onShowProducts,
   onShowCustomers,
   onShowPets,
@@ -80,6 +81,7 @@ const Dashboard = ({
         appointments={appointments}
         onShowAppointments={onShowAppointments}
         onEditAppointment={onEditAppointment}
+        onJumpToDate={onJumpToDate}
       />
 
       {/* Quick Actions — μόνο σε desktop/tablet, στο mobile βρίσκονται στο ☰ μενού του header */}

@@ -18,6 +18,8 @@ import SettingsPage from "../pages/SettingsPage";
 // ✅ i18n
 import i18n from "../i18n";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useRefetchOnFocus } from "../hooks/useRefetchOnFocus";
+import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 // ✅ Κεντρικό API URL
 import { API_URL } from "../api/api.js";
@@ -74,27 +76,44 @@ function MainLayout({
   }, [activePanel]);
 
   // 🔹 Φόρτωση αριθμού κατοικιδίων για Dashboard
-  useEffect(() => {
+  const loadPetsCount = useCallback(() => {
     fetch(`${API_URL}/pets`)
       .then((r) => r.json())
       .then((data) => setPetsCount(Array.isArray(data) ? data.length : 0))
       .catch(() => {});
   }, []);
 
-  // 🔹 Φόρτωση settings από backend (με API_URL)
   useEffect(() => {
-    async function loadSettings() {
-      try {
-        const res = await fetch(`${API_URL}/settings`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setSettings(data);
-      } catch (err) {
-        console.error("⚠️ Error loading settings", err);
-      }
+    loadPetsCount();
+  }, [loadPetsCount]);
+
+  // 🔹 Φόρτωση settings από backend (με API_URL)
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/settings`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setSettings(data);
+    } catch (err) {
+      console.error("⚠️ Error loading settings", err);
     }
-    loadSettings();
   }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  // 🔹 Ξανά-φόρτωση settings/πλήθους κατοικιδίων όταν η εφαρμογή επανέρχεται σε προσκήνιο
+  useRefetchOnFocus(() => {
+    loadSettings();
+    loadPetsCount();
+  });
+
+  // 🔹 Real-time ενημέρωση όταν αλλάζουν δεδομένα από άλλη συσκευή
+  useRealtimeSync({
+    settings: loadSettings,
+    pets: loadPetsCount,
+  });
 
   // 🔹 Live αλλαγή γλώσσας όταν αλλάζουν τα settings
   useEffect(() => {
@@ -270,6 +289,10 @@ function MainLayout({
               onShowAppointments={() => openPanel("appointments")}
               onEditAppointment={(appt) => {
                 onEditAppointment(appt);
+                openPanel("appointments");
+              }}
+              onJumpToDate={(date) => {
+                setSelectedDate(dayjs(date).format("YYYY-MM-DD"));
                 openPanel("appointments");
               }}
               onShowProducts={() => openPanel("products")}

@@ -206,3 +206,140 @@ code {
 .dark .shadow-md  { box-shadow: 0 4px 12px rgba(0,0,0,.5) !important; }
 .dark .shadow-lg  { box-shadow: 0 8px 24px rgba(0,0,0,.6) !important; }
 .dark .shadow-2xl { box-shadow: 0 24px 48px rgba(0,0,0,.7) !important; }
+
+/* ── react-datepicker (enterprise card style) ── */
+.react-datepicker-popper {
+  z-index: 50;
+}
+.react-datepicker {
+  font-family: inherit !important;
+  border: 1px solid #f3f4f6 !important; /* gray-100 */
+  border-radius: 1rem !important; /* rounded-2xl */
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important;
+  overflow: hidden;
+}
+.react-datepicker__triangle {
+  display: none !important;
+}
+.react-datepicker__header {
+  background-color: #eef2ff !important; /* indigo-50 */
+  border-bottom: 1px solid #e0e7ff !important;
+  padding-top: 0.75rem !important;
+}
+.react-datepicker__current-month {
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important; /* gray-700 */
+}
+.react-datepicker__day-name {
+  color: #9ca3af !important; /* gray-400 */
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+.react-datepicker__day {
+  border-radius: 9999px !important;
+  font-size: 0.8125rem !important;
+  color: #374151 !important;
+}
+.react-datepicker__day:hover {
+  background-color: #eef2ff !important; /* indigo-50 */
+  border-radius: 9999px !important;
+}
+.react-datepicker__day--outside-month {
+  color: #d1d5db !important;
+}
+.react-datepicker__day--today {
+  font-weight: 700 !important;
+  color: #6366f1 !important;
+}
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #6366f1 !important; /* indigo-500 */
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--keyboard-selected:hover {
+  background-color: #4f46e5 !important; /* indigo-600 */
+}
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #6366f1 !important;
+}
+
+/* ── react-datepicker (dark mode — π.χ. όπως τα dropdown menus) ── */
+.dark .react-datepicker {
+  background-color: #2c2c2c !important; /* win-surface */
+  border-color: #3f3f3f !important; /* win-border */
+}
+.dark .react-datepicker__header {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  border-color: #3f3f3f !important;
+}
+.dark .react-datepicker__current-month,
+.dark .react-datepicker__day-name {
+  color: #e5e7eb !important;
+}
+.dark .react-datepicker__day {
+  color: #d1d5db !important;
+}
+.dark .react-datepicker__day:hover {
+  background-color: rgba(99, 102, 241, 0.25) !important;
+}
+.dark .react-datepicker__day--outside-month {
+  color: #6b7280 !important;
+}
+.dark .react-datepicker__day--today {
+  color: #a5b4fc !important;
+}
+.dark .react-datepicker__day--selected,
+.dark .react-datepicker__day--keyboard-selected {
+  background-color: #6366f1 !important;
+  color: #fff !important;
+}
+.dark .react-datepicker__navigation-icon::before {
+  border-color: #9ca3af !important;
+}
+.dark .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #a5b4fc !important;
+}
+
+/* ── react-datepicker: πληρότητα ραντεβού ανά ημέρα ── */
+.react-datepicker__day.day-occupancy-low {
+  box-shadow: inset 0 0 0 1.5px rgba(34, 197, 94, 0.6) !important; /* green-500 */
+  background-color: rgba(34, 197, 94, 0.08) !important;
+}
+.react-datepicker__day.day-occupancy-mid {
+  box-shadow: inset 0 0 0 1.5px rgba(245, 158, 11, 0.6) !important; /* amber-500 */
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+.react-datepicker__day.day-occupancy-medium {
+  box-shadow: inset 0 0 0 1.5px rgba(249, 115, 22, 0.6) !important; /* orange-500 */
+  background-color: rgba(249, 115, 22, 0.08) !important;
+}
+.react-datepicker__day.day-occupancy-high {
+  box-shadow: inset 0 0 0 1.5px rgba(239, 68, 68, 0.65) !important; /* red-500 */
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+.dark .react-datepicker__day.day-occupancy-low {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+.dark .react-datepicker__day.day-occupancy-mid {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+}
+.dark .react-datepicker__day.day-occupancy-medium {
+  background-color: rgba(249, 115, 22, 0.18) !important;
+}
+.dark .react-datepicker__day.day-occupancy-high {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+/* Διατήρηση της επιλεγμένης/σημερινής ημέρας πάνω από το χρώμα πληρότητας */
+.react-datepicker__day--selected.day-occupancy-low,
+.react-datepicker__day--selected.day-occupancy-mid,
+.react-datepicker__day--selected.day-occupancy-medium,
+.react-datepicker__day--selected.day-occupancy-high,
+.react-datepicker__day--keyboard-selected.day-occupancy-low,
+.react-datepicker__day--keyboard-selected.day-occupancy-mid,
+.react-datepicker__day--keyboard-selected.day-occupancy-medium,
+.react-datepicker__day--keyboard-selected.day-occupancy-high {
+  background-color: #6366f1 !important;
+}

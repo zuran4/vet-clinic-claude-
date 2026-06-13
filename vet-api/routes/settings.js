@@ -3,6 +3,7 @@ import express from "express";
 import Settings from "../models/Settings.js";
 import { sendEmail } from "../services/emailService.js";
 import { testEmailHtml } from "../services/emailTemplates.js";
+import { emitChange } from "../utils/realtime.js";
 
 console.log("📡 settings.js loaded");
 
@@ -72,6 +73,7 @@ router.put("/", async (req, res) => {
     }
 
     await settings.save();
+    emitChange("settings");
     res.json(settings);
   } catch (err) {
     console.error("❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων:", err);

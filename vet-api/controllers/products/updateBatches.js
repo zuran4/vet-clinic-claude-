@@ -1,5 +1,6 @@
 // controllers/products/updateBatches.js
 import Product from "../../models/Product.js";
+import { emitChange } from "../../utils/realtime.js";
 
 // Ασφαλής μετατροπή σε αριθμό
 function toNum(n) {
@@ -90,6 +91,8 @@ export async function updateBatches(req, res, next) {
     }
 
     if (!doc) return res.status(404).json({ message: "Product not found" });
+
+    emitChange("products");
 
     // Επιστρέφουμε το ενημερωμένο προϊόν (quantity συγχρονισμένο από το schema hook)
     return res.json({

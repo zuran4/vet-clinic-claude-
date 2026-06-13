@@ -49,6 +49,12 @@ playwright-report/
 test-results/
 
 # =========================
+# Database backups (περιέχουν προσωπικά δεδομένα πελατών)
+# =========================
+vet-api/backups/
+**/backups/
+
+# =========================
 # Playwright persistent profiles / caches / auth
 # =========================
 vet-api/playwright-registry-worker/

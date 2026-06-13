@@ -1,6 +1,7 @@
 import * as petService from "../../services/petService.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { emitChange } from "../../utils/realtime.js";
 
 export default async function updatePet(req, res, next) {
   try {
@@ -13,6 +14,7 @@ export default async function updatePet(req, res, next) {
     }
 
     logger.info(`✏️ Ενημερώθηκε κατοικίδιο: ${updated.name} (${updated.species})`);
+    emitChange("pets");
     res.json(updated);
   } catch (error) {
     logger.error("❌ Σφάλμα κατά την ενημέρωση κατοικιδίου", { stack: error.stack });
