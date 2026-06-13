@@ -12,6 +12,7 @@ import { useAppointmentsData } from "./hooks/useAppointmentsData";
 import { useProductsData } from "./hooks/useProductsData";
 import { useRefetchOnFocus } from "./hooks/useRefetchOnFocus";
 import { useRealtimeSync } from "./hooks/useRealtimeSync";
+import settingsApi from "./api/settingsApi";
 
 dayjs.locale("el");
 
@@ -52,6 +53,36 @@ function App() {
     appointments: () => user && fetchAppointments(),
     products: () => user && fetchProducts(),
   });
+
+  // 🔹 Συγχρονισμός ωραρίων (clinic/grooming) στο localStorage σε κάθε φόρτωση.
+  // Χωρίς αυτό, μια συσκευή που δεν έχει ανοίξει ποτέ τις Ρυθμίσεις έχει άδειο
+  // groomingWorkingHours στο localStorage και δεν εμφανίζει καθόλου τα slots grooming.
+  useEffect(() => {
+    if (!user) return;
+
+    const defaultHours = () => ({
+      monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+      tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+      wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+      thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+      friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+      saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
+      sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
+    });
+
+    settingsApi.getSettings().then((data) => {
+      if (!data) return;
+      const clinicWorkingHours = data.clinicWorkingHours || defaultHours();
+      const groomingWorkingHours = data.groomingWorkingHours || defaultHours();
+
+      localStorage.setItem("clinicWorkingHours", JSON.stringify(clinicWorkingHours));
+      localStorage.setItem("groomingWorkingHours", JSON.stringify(groomingWorkingHours));
+
+      window.dispatchEvent(new CustomEvent("settings:workingHoursChanged", {
+        detail: { clinicWorkingHours, groomingWorkingHours },
+      }));
+    }).catch((err) => console.error("❌ Σφάλμα φόρτωσης ωραρίων:", err));
+  }, [user]);
 
   const handleSaveAppointment = async (details, appointmentId = null) => {
     // Το date, time και doctor έρχονται από τη φόρμα μέσα στο details
