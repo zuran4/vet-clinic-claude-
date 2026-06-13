@@ -78,20 +78,20 @@ const PetProfile = ({ petId, initialTab }) => {
     <div className="p-5 space-y-4">
 
       {/* Pet identity card */}
-      <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm px-4 py-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
-          <PawPrint className="w-7 h-7 text-sky-400 dark:text-sky-300" />
+      <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm px-4 py-4 flex items-center gap-3 sm:gap-4">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+          <PawPrint className="w-6 h-6 sm:w-7 sm:h-7 text-sky-400 dark:text-sky-300" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{pet.name}</p>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <p className="text-[17px] sm:text-xl font-bold text-gray-800 dark:text-gray-100">{pet.name}</p>
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-1 flex-wrap">
             {pet.species && (
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${SPECIES_STYLE[pet.species] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={`text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ${SPECIES_STYLE[pet.species] ?? "bg-gray-100 text-gray-600"}`}>
                 {pet.species}
               </span>
             )}
             {pet.gender && (
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${GENDER_STYLE[pet.gender] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={`text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ${GENDER_STYLE[pet.gender] ?? "bg-gray-100 text-gray-600"}`}>
                 {pet.gender}
               </span>
             )}
@@ -108,7 +108,7 @@ const PetProfile = ({ petId, initialTab }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm p-1">
+      <div className="flex gap-1 bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm p-[3px] sm:p-1">
         {[
           { key: "details", label: "Στοιχεία", icon: Info },
           { key: "history", label: "Ιστορικό", icon: Clock },
@@ -117,13 +117,13 @@ const PetProfile = ({ petId, initialTab }) => {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-xl transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-[6px] sm:py-2 text-[11px] sm:text-sm font-medium rounded-xl transition-all ${
               activeTab === key
                 ? "bg-sky-500 text-white shadow-sm"
                 : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated2"
             }`}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-[13px] h-[13px] sm:w-4 sm:h-4" />
             {label}
           </button>
         ))}

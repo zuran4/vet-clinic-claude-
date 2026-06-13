@@ -7,9 +7,9 @@ import { el } from "date-fns/locale";
 
 registerLocale("el", el);
 
-// 🔹 Προεπιλεγμένο ωράριο Ιατρείου (fallback όταν δεν υπάρχει localStorage)
+// 🔹 Προεπιλεγμένο ωράριο (fallback όταν δεν υπάρχει localStorage)
 const SLOT_DURATION = 30;
-const DEFAULT_CLINIC_HOURS = {
+const DEFAULT_WORKING_HOURS = {
   monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
   tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
   wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
@@ -19,12 +19,12 @@ const DEFAULT_CLINIC_HOURS = {
   sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
 };
 
-// 🔹 Διαθέσιμα λεπτά Ιατρείου για μια ημέρα (βάσει ωραρίου)
-function getClinicAvailableMinutes(date) {
-  const saved = localStorage.getItem("clinicWorkingHours");
-  const clinicHours = saved ? JSON.parse(saved) : DEFAULT_CLINIC_HOURS;
+// 🔹 Διαθέσιμα λεπτά για μια ημέρα (βάσει ωραρίου από localStorage)
+function getAvailableMinutes(date, storageKey) {
+  const saved = localStorage.getItem(storageKey);
+  const workingHours = saved ? JSON.parse(saved) : DEFAULT_WORKING_HOURS;
   const dayKey = dayjs(date).locale("en").format("dddd").toLowerCase();
-  const schedule = clinicHours?.[dayKey];
+  const schedule = workingHours?.[dayKey];
 
   if (!schedule || !schedule.enabled) return 0;
 
@@ -36,15 +36,15 @@ function getClinicAvailableMinutes(date) {
   }, 0);
 }
 
-// 🔹 Επιστρέφει class για χρωματισμό ημέρας βάσει πληρότητας Ιατρείου
+// 🔹 Επιστρέφει class για χρωματισμό ημέρας βάσει πληρότητας
 // (μετράμε δεσμευμένα λεπτά, όχι αριθμό ραντεβού — ένα ραντεβού 90' "πιάνει" όσο 3 slot των 30')
-function getClinicOccupancyClass(date, appointments) {
-  const availableMinutes = getClinicAvailableMinutes(date);
+function getOccupancyClass(date, appointments, { storageKey, doctor }) {
+  const availableMinutes = getAvailableMinutes(date, storageKey);
   if (!availableMinutes) return undefined;
 
   const dateStr = dayjs(date).format("YYYY-MM-DD");
   const bookedMinutes = appointments
-    .filter((a) => a.date === dateStr && (a.doctor || "Ιατρείο") === "Ιατρείο")
+    .filter((a) => a.date === dateStr && (a.doctor || "Ιατρείο") === doctor)
     .reduce((sum, a) => sum + (a.duration || SLOT_DURATION), 0);
 
   const ratio = bookedMinutes / availableMinutes;
@@ -52,6 +52,14 @@ function getClinicOccupancyClass(date, appointments) {
   if (ratio > 0.51) return "day-occupancy-medium";
   if (ratio > 0.2) return "day-occupancy-mid";
   return "day-occupancy-low";
+}
+
+function getClinicOccupancyClass(date, appointments) {
+  return getOccupancyClass(date, appointments, { storageKey: "clinicWorkingHours", doctor: "Ιατρείο" });
+}
+
+function getGroomingOccupancyClass(date, appointments) {
+  return getOccupancyClass(date, appointments, { storageKey: "groomingWorkingHours", doctor: "Grooming" });
 }
 
 const TYPE_COLORS = {
@@ -118,17 +126,17 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
 
 const MAX_VISIBLE = 4;
 
-function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowAll, onEditAppointment }) {
+function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowAll, onEditAppointment, extra }) {
   const visible = appointments.slice(0, MAX_VISIBLE);
   const remaining = appointments.length - MAX_VISIBLE;
 
   return (
     <div className="flex-1 min-w-0 space-y-3">
       {/* Column Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${iconColor}`} />
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+      <div className="grid grid-cols-3 items-center">
+        <div className="flex items-center gap-2 justify-self-start">
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+          <span className="text-base font-semibold text-gray-700 dark:text-gray-200">
             {title}
           </span>
           {appointments.length > 0 && (
@@ -137,9 +145,10 @@ function Column({ title, icon: Icon, iconColor, appointments, emptyText, onShowA
             </span>
           )}
         </div>
+        <div className="justify-self-center">{extra}</div>
         <button
           onClick={onShowAll}
-          className="text-xs text-indigo-500 hover:text-indigo-700 font-medium transition-colors"
+          className="justify-self-end text-xs text-indigo-500 hover:text-indigo-700 font-medium transition-colors"
         >
           Όλα →
         </button>
@@ -195,29 +204,15 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
     <div className="bg-white dark:bg-win-bg/30 border border-gray-200 dark:border-win-border rounded-2xl shadow-sm p-4 space-y-4">
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-indigo-500" />
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-            Σημερινά Ραντεβού
+      <div className="flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-indigo-500" />
+        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          Σημερινά Ραντεβού
+        </span>
+        {todaysAppointments.length > 0 && (
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
+            {todaysAppointments.length}
           </span>
-          {todaysAppointments.length > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
-              {todaysAppointments.length}
-            </span>
-          )}
-        </div>
-
-        {onJumpToDate && (
-          <DatePicker
-            locale="el"
-            dateFormat="dd/MM/yyyy"
-            onChange={(date) => date && onJumpToDate(date)}
-            customInput={<JumpToDateButton />}
-            popperPlacement="bottom-end"
-            portalId="datepicker-portal"
-            dayClassName={(date) => getClinicOccupancyClass(date, appointments)}
-          />
         )}
       </div>
 
@@ -235,10 +230,23 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
           emptyText="Κανένα ραντεβού ιατρείου"
           onShowAll={onShowAppointments}
           onEditAppointment={onEditAppointment}
+          extra={
+            onJumpToDate && (
+              <DatePicker
+                locale="el"
+                dateFormat="dd/MM/yyyy"
+                onChange={(date) => date && onJumpToDate(date)}
+                customInput={<JumpToDateButton />}
+                popperPlacement="bottom"
+                portalId="datepicker-portal"
+                dayClassName={(date) => getClinicOccupancyClass(date, appointments)}
+              />
+            )
+          }
         />
 
         {/* Διαχωριστής: οριζόντιος σε mobile, κάθετος σε desktop */}
-        <div className="w-full h-px md:w-px md:h-auto bg-gray-100 dark:bg-win-elevated flex-shrink-0" />
+        <div className="w-full h-px md:w-px md:h-auto bg-gray-200 dark:bg-win-border md:bg-gray-100 md:dark:bg-win-elevated flex-shrink-0" />
 
         {/* Δεξιά: Grooming */}
         <Column
@@ -249,6 +257,19 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
           emptyText="Κανένα ραντεβού grooming"
           onShowAll={onShowAppointments}
           onEditAppointment={onEditAppointment}
+          extra={
+            onJumpToDate && (
+              <DatePicker
+                locale="el"
+                dateFormat="dd/MM/yyyy"
+                onChange={(date) => date && onJumpToDate(date)}
+                customInput={<JumpToDateButton />}
+                popperPlacement="bottom"
+                portalId="datepicker-portal"
+                dayClassName={(date) => getGroomingOccupancyClass(date, appointments)}
+              />
+            )
+          }
         />
       </div>
     </div>

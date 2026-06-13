@@ -37,7 +37,7 @@ function AppointmentsPage({
         title={
           <div className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5 text-primary" />
-            <span>Διαχείριση Ραντεβού</span>
+            <span className="text-lg sm:text-2xl whitespace-nowrap">Διαχείριση Ραντεβού</span>
           </div>
         }
         onClose={onClose}

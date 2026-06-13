@@ -149,7 +149,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
           {existingData && (
             <Button
               type="button"

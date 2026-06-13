@@ -89,6 +89,15 @@ code {
   background-color: transparent;
 }
 
+/* Κρυφή scrollbar για οριζόντιο scroll (π.χ. tabs σε mobile) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* =========================================== */
 /* 🌙 DARK MODE — Global overrides             */
 /* =========================================== */

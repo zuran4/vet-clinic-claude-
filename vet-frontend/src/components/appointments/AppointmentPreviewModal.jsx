@@ -58,7 +58,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh]">
+      <div className="relative w-full min-w-0 max-w-2xl rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh]">
 
         {/* Gradient Header — σταθερό */}
         <div className={`${headerBg} px-5 pt-5 pb-0 flex-shrink-0`}>
@@ -86,12 +86,12 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
           </div>
 
           {/* Tabs μέσα στο header */}
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar -mx-5 px-5 sm:mx-0 sm:px-0">
             {TABS.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-xl transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-xl transition-all flex-shrink-0 whitespace-nowrap ${
                   activeTab === key
                     ? "bg-white dark:bg-win-surface text-gray-700 dark:text-gray-100 shadow-sm"
                     : "text-white/70 hover:text-white hover:bg-white/10"
