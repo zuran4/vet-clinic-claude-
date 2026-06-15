@@ -61,4 +61,17 @@ describe("PUT /api/settings", () => {
     const stored = await Settings.findOne();
     expect(stored.emailConfig.password).toBe("new-secret");
   });
+
+});
+
+describe("POST /api/settings/test-email", () => {
+  it("απορρίπτει με 403 χρήστες με ρόλο assistant", async () => {
+    const assistantApp = buildTestApp({ user: { userId: "u2", role: "assistant", name: "Βοηθός" } });
+
+    const res = await request(assistantApp)
+      .post("/api/settings/test-email")
+      .send({ to: "someone@example.com" });
+
+    expect(res.status).toBe(403);
+  });
 });

@@ -4,6 +4,7 @@ import Settings from "../models/Settings.js";
 import { sendEmail } from "../services/emailService.js";
 import { testEmailHtml } from "../services/emailTemplates.js";
 import { emitChange } from "../utils/realtime.js";
+import requireRole from "../middlewares/auth/requireRole.js";
 
 console.log("📡 settings.js loaded");
 
@@ -98,9 +99,9 @@ router.put("/", async (req, res) => {
 
 
 // ==========================
-// 🔹 POST /api/settings/test-email
+// 🔹 POST /api/settings/test-email (μόνο admin)
 // ==========================
-router.post("/test-email", async (req, res) => {
+router.post("/test-email", requireRole("admin"), async (req, res) => {
   try {
     const { to } = req.body;
     if (!to) return res.status(400).json({ error: "Το πεδίο 'to' είναι υποχρεωτικό." });
