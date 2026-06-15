@@ -120,43 +120,55 @@ const ProductList = () => {
             className="flex-1 min-w-[250px] md:max-w-md"
           />
 
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 min-w-[150px]"
-            aria-label="Φίλτρο κατηγορίας"
-          >
-            <option value="all">Όλες οι Κατηγορίες</option>
-            {uniqueCategories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="flex-1 sm:flex-none border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 sm:min-w-[150px]"
+              aria-label="Φίλτρο κατηγορίας"
+            >
+              <option value="all">Κατηγορία</option>
+              {uniqueCategories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 min-w-[150px]"
-            aria-label="Φίλτρο κατάστασης αποθέματος"
-          >
-            <option value="all">Όλες οι Καταστάσεις</option>
-            <option value="out">Εξαντλημένο</option>
-            <option value="low">Χαμηλό</option>
-            <option value="ok">Εντάξει</option>
-            <option value="high">Υψηλό</option>
-          </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="flex-1 sm:flex-none border border-gray-200 dark:border-win-border-light px-3 py-2 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 sm:min-w-[150px]"
+              aria-label="Φίλτρο κατάστασης αποθέματος"
+            >
+              <option value="all">Κατάσταση</option>
+              <option value="out">Εξαντλημένο</option>
+              <option value="low">Χαμηλό</option>
+              <option value="ok">Εντάξει</option>
+              <option value="high">Υψηλό</option>
+            </select>
+          </div>
         </div>
 
         {/* Δεξιά: actions */}
-        <div className="flex items-center gap-2 ml-auto">
-          <Button
-            variant="secondary"
-            size="sm"
+        <div className="flex items-center gap-2 ml-auto w-full sm:w-auto">
+          {/* Mobile only: Νέο Προϊόν (μετακινήθηκε εδώ από το header) */}
+          <button
+            type="button"
+            onClick={() => { setProductId(null); setInitialTab("info"); setShowForm(true); }}
+            className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
+          >
+            <Plus className="w-4 h-4" /> Νέο Προϊόν
+          </button>
+
+          <button
+            type="button"
             onClick={() => setShowImportModal(true)}
             title="Εισαγωγή προϊόντων από CSV"
+            aria-label="Εισαγωγή CSV"
+            className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-xl text-sm font-medium shadow-sm border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700 dark:hover:bg-emerald-900/60 active:scale-95 transition"
           >
             <Upload className="w-4 h-4" />
-            Εισαγωγή CSV
-          </Button>
+            <span className="hidden sm:inline">Εισαγωγή CSV</span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -179,14 +191,14 @@ const ProductList = () => {
       </div>
 
     
-      {/* 🔹 Πίνακας Προϊόντων */}
-      <div className="overflow-x-auto bg-white dark:bg-win-surface rounded-2xl shadow">
+      {/* 🔹 Πίνακας Προϊόντων (desktop) */}
+      <div className="hidden sm:block overflow-x-auto bg-white dark:bg-win-surface rounded-2xl shadow">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30 text-left">
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Όνομα</th>
-              <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Κατηγορία</th>
-              <th className="hidden sm:table-cell px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Barcode</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Κατηγορία</th>
+              <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Barcode</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ποσότητα</th>
               <th className="px-4 py-3 text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Τιμή</th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Ενέργειες</th>
@@ -213,8 +225,8 @@ const ProductList = () => {
 
                         {product.name}
                       </td>
-                      <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
-                      <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
+                      <td className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
                       <td className="px-4 py-3">
                         <StockBadge qty={product.stockTotal ?? product.quantity ?? 0} config={cfg} />
                       </td>
@@ -296,6 +308,121 @@ const ProductList = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* 🔹 Λίστα Προϊόντων (mobile cards) */}
+      <div className="sm:hidden space-y-2">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => {
+            const cfg = getThresholdForCategory(product?.category);
+            const isExpanded = expandedProduct === product._id;
+            return (
+              <div
+                key={product._id}
+                className="rounded-2xl border border-gray-100 dark:border-win-border-light/50 bg-white dark:bg-win-surface shadow-sm overflow-hidden"
+              >
+                <div className="flex items-center justify-between gap-2 px-3 py-2.5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-100 dark:border-orange-800/30">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedProduct(isExpanded ? null : product._id)}
+                    className="flex items-center gap-1.5 min-w-0 text-left"
+                    aria-label="Ιστορικό αγορών"
+                  >
+                    <ChevronRight
+                      className="w-4 h-4 flex-shrink-0 text-gray-300 transition-transform duration-200"
+                      style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}
+                    />
+                    <span className="font-bold text-base text-gray-900 dark:text-gray-100 truncate">{product.name}</span>
+                  </button>
+
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button
+                      title="Προσθήκη Αποθέματος"
+                      onClick={() => {
+                        if (BATCHED_CATEGORIES.includes(product.category)) {
+                          setProductId(product._id);
+                          setInitialTab("stock");
+                          setShowForm(true);
+                        } else {
+                          setQuickStockProduct(product);
+                        }
+                      }}
+                      className="p-2 rounded-xl bg-orange-100/70 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Επεξεργασία"
+                      onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
+                      className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      title="Διαγραφή"
+                      onClick={() => handleDeleteProduct(product._id)}
+                      className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="text-[10px] font-semibold text-orange-700/70 dark:text-orange-300/70 uppercase tracking-wide mb-0.5">Κατηγορία</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 truncate">{product.category || "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-orange-700/70 dark:text-orange-300/70 uppercase tracking-wide mb-0.5">Barcode</div>
+                      <div className="text-sm text-gray-400 dark:text-gray-500 font-mono truncate">{product.barcode || "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-orange-700/70 dark:text-orange-300/70 uppercase tracking-wide mb-0.5">Ποσότητα</div>
+                      <StockBadge qty={product.stockTotal ?? product.quantity ?? 0} config={cfg} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-orange-700/70 dark:text-orange-300/70 uppercase tracking-wide mb-0.5">Τιμή</div>
+                      {product.retailPrice != null
+                        ? <span className="text-sm font-semibold text-emerald-600">{Number(product.retailPrice).toFixed(2)} €</span>
+                        : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="bg-gray-50 dark:bg-win-elevated/50 px-3 py-3 border-t border-gray-100 dark:border-win-border-light/50">
+                    {BATCHED_CATEGORIES.includes(product.category) ? (
+                      <BatchList
+                        key={batchRefreshKeys[product._id] || 0}
+                        productId={product._id}
+                        isOpen={true}
+                        onQuantity={handleBatchTotal}
+                        summaryQty={product.stockTotal ?? product.quantity ?? 0}
+                        category={product.category}
+                      />
+                    ) : (
+                      <PurchaseHistoryList
+                        key={batchRefreshKeys[product._id] || 0}
+                        productId={product._id}
+                        isOpen={true}
+                        onQuantity={handleBatchTotal}
+                        summaryQty={product.stockTotal ?? product.quantity ?? 0}
+                        category={product.category}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-win-surface rounded-2xl shadow">
+            Δεν βρέθηκαν προϊόντα.
+          </div>
+        )}
       </div>
 
       {/* Quick Stock Modal (για μη-batched προϊόντα) */}

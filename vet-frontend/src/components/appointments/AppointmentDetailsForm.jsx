@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit3, PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, User, Phone } from "lucide-react";
+import { Edit3, PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, User, Phone, X } from "lucide-react";
 
 import PrescriptionModal from "../prescriptions/PrescriptionModal";
 import CustomerSearchBox from "../customers/CustomerSearchBox";
@@ -59,16 +59,26 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
             }
             <span className="font-semibold text-sm">{doctor}</span>
           </div>
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/20 text-white">
-            {existingData ? "Επεξεργασία" : "Νέο Ραντεβού"}
-          </span>
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Κλείσιμο"
+            className="text-white/80 hover:text-white hover:bg-white/10 rounded-full p-1 -m-1 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="mt-2 sm:mt-3 text-white">
-          <div className="text-xl sm:text-2xl font-bold">{selectedTime || time}</div>
-          <div className="text-sm text-white/80 mt-0.5">
-            {existingData ? existingData.date : "Επιλογή ώρας & τύπου παρακάτω"}
+        <div className="mt-2 sm:mt-3 text-white flex items-center justify-between gap-2">
+          <div>
+            <div className="text-xl sm:text-2xl font-bold">{selectedTime || time}</div>
+            <div className="text-sm text-white/80 mt-0.5">
+              {existingData ? existingData.date : "Επιλογή ώρας & τύπου παρακάτω"}
+            </div>
           </div>
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/20 text-white whitespace-nowrap">
+            {existingData ? "Επεξεργασία" : "Νέο Ραντεβού"}
+          </span>
         </div>
       </div>
 

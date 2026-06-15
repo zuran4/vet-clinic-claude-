@@ -117,9 +117,9 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
     type="button"
     onClick={onClick}
     title="Μετάβαση σε ημερομηνία"
-    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+    className="inline-flex items-center justify-center gap-1.5 w-9 h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg bg-gray-50 dark:bg-win-elevated2 sm:bg-transparent sm:dark:bg-transparent border border-gray-200 dark:border-win-border-light sm:border-0 shadow-sm sm:shadow-none text-xs font-medium text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-200 dark:hover:border-indigo-700/50 sm:hover:border-transparent transition-colors"
   >
-    <CalendarDays className="w-3.5 h-3.5" />
+    <CalendarDays className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
     <span className="hidden sm:inline">Μετάβαση σε ημέρα</span>
   </button>
 ));

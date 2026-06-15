@@ -181,3 +181,57 @@ export async function fetchMedicalEvents(microchip) {
 
   return json;
 }
+
+/**
+ * GET /api/registry/history
+ * Returns { ok, history: [{ microchip, petName, species, lastSearchedAt }] }
+ */
+export async function getRegistryHistory() {
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const res = await fetch(`/api/registry/history`, { headers });
+  const text = await res.text().catch(() => "");
+  const json = safeJsonParse(text);
+
+  if (!res.ok || !json) {
+    throw makeApiError(json?.error?.message || `Αποτυχία φόρτωσης ιστορικού (status ${res.status})`, {
+      code: json?.error?.code || "HTTP_ERROR",
+      requestId: pickRequestId(res, json),
+      httpStatus: res.status,
+    });
+  }
+
+  return json.history || [];
+}
+
+/**
+ * POST /api/registry/history
+ * Body: { microchip, petName, species }
+ * Returns updated history array.
+ */
+export async function addRegistryHistoryEntry({ microchip, petName, species }) {
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const res = await fetch(`/api/registry/history`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ microchip, petName, species }),
+  });
+  const text = await res.text().catch(() => "");
+  const json = safeJsonParse(text);
+
+  if (!res.ok || !json) {
+    throw makeApiError(json?.error?.message || `Αποτυχία αποθήκευσης ιστορικού (status ${res.status})`, {
+      code: json?.error?.code || "HTTP_ERROR",
+      requestId: pickRequestId(res, json),
+      httpStatus: res.status,
+    });
+  }
+
+  return json.history || [];
+}

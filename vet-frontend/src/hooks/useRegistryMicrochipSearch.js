@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { lookupMicrochip } from "../api/registryApi.js";
-import {
-  loadRegistryMicrochipHistory,
-  saveRegistryMicrochipHistory,
-} from "../components/registry/utils/registryHistoryStorage.js";
+import { lookupMicrochip, getRegistryHistory, addRegistryHistoryEntry } from "../api/registryApi.js";
 
 const EMPTY_CARD_DATA = {
   microchip: null,
@@ -111,11 +107,12 @@ export function useRegistryMicrochipSearch() {
   const reqSeqRef = useRef(0);
 
   useEffect(() => {
-    const loaded = loadRegistryMicrochipHistory();
-    if (loaded.length > 0) setHistory(loaded);
+    getRegistryHistory()
+      .then((loaded) => setHistory(loaded))
+      .catch(() => {});
   }, []);
 
-  function saveToHistory(nextData) {
+  async function saveToHistory(nextData) {
     if (!nextData?.microchip) return;
 
     const entry = {
@@ -125,12 +122,13 @@ export function useRegistryMicrochipSearch() {
       lastSearchedAt: new Date().toISOString(),
     };
 
-    setHistory((prev) => {
-      const filtered = prev.filter((x) => x.microchip !== entry.microchip);
-      const updated = [entry, ...filtered];
-      saveRegistryMicrochipHistory(updated);
-      return updated;
-    });
+    // Optimistic update ώστε να φαίνεται άμεσα στο UI
+    setHistory((prev) => [entry, ...prev.filter((x) => x.microchip !== entry.microchip)]);
+
+    try {
+      const updated = await addRegistryHistoryEntry(entry);
+      setHistory(updated);
+    } catch {}
   }
 
   async function performLookup(trimmedMicrochip, { openModalOnSuccess = true } = {}) {

@@ -11,6 +11,7 @@ import { stopWorker } from "../../controllers/registry/stopWorker.js";
 import { lookupMicrochipHandler } from "../../controllers/registry/lookupMicrochip.js";
 import { getMedicalEventsHandler } from "../../controllers/registry/getMedicalEvents.js";
 import { getWorkerState } from "../../controllers/registry/getWorkerState.js";
+import { getRegistryHistory, addRegistryHistoryEntry } from "../../controllers/registry/searchHistory.js";
 
 const router = express.Router();
 
@@ -99,5 +100,15 @@ router.get("/lookup", validateMicrochipQuery, asyncHandler(lookupMicrochipHandle
  * GET /api/registry/medical-events?microchip=...
  */
 router.get("/medical-events", validateMicrochipQuery, asyncHandler(getMedicalEventsHandler));
+
+/**
+ * GET /api/registry/history
+ */
+router.get("/history", asyncHandler(getRegistryHistory));
+
+/**
+ * POST /api/registry/history
+ */
+router.post("/history", asyncHandler(addRegistryHistoryEntry));
 
 export default router;

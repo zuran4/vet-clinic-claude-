@@ -1,5 +1,5 @@
 // src/layouts/MainLayout.jsx
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/el";
 import { AlertTriangle, Activity } from "lucide-react";
@@ -59,6 +59,22 @@ function MainLayout({
 
   const openPanel = (panel) => setActivePanel(panel);
   const closePanel = () => setActivePanel("dashboard");
+
+  // 🔹 Όταν ανοίγουμε επεξεργασία ραντεβού από το Dashboard, θυμόμαστε να
+  // γυρίσουμε πίσω στο Dashboard μόλις κλείσει το modal.
+  const cameFromDashboardRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      cameFromDashboardRef.current &&
+      activePanel === "appointments" &&
+      !selectedTime &&
+      !editingAppointment
+    ) {
+      cameFromDashboardRef.current = false;
+      setActivePanel("dashboard");
+    }
+  }, [activePanel, selectedTime, editingAppointment]);
 
   useKeyboardShortcuts({
     goHome:          () => openPanel("dashboard"),
@@ -288,6 +304,7 @@ function MainLayout({
               products={productsWithExpDate}
               onShowAppointments={() => openPanel("appointments")}
               onEditAppointment={(appt) => {
+                cameFromDashboardRef.current = true;
                 onEditAppointment(appt);
                 openPanel("appointments");
               }}

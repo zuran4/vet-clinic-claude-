@@ -29,7 +29,7 @@ function ProductsPage({ onClose }) {
               <button
                 type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent("openProductModal"))}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" /> Νέο Προϊόν
               </button>
@@ -60,13 +60,13 @@ function ProductsPage({ onClose }) {
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-xl transition-all ${
+              className={`flex items-center gap-[4.4px] sm:gap-2 px-[11px] sm:px-4 py-[6.6px] sm:py-2 text-[13.2px] sm:text-sm font-medium rounded-t-xl transition-all ${
                 activeTab === key
                   ? "bg-white text-orange-600 shadow-sm"
                   : "text-white/70 hover:text-white hover:bg-white/10"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-[15.4px] h-[15.4px] sm:w-4 sm:h-4" />
               {label}
             </button>
           ))}

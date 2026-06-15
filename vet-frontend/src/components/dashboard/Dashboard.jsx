@@ -136,20 +136,6 @@ const Dashboard = ({
 
       {/* Registry section */}
       <section className="pt-2">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PawPrint className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            <div>
-              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Μητρώο κατοικιδίων
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-300">
-                Αναζήτηση microchip και εμφάνιση στοιχείων από το εθνικό μητρώο.
-              </div>
-            </div>
-          </div>
-        </div>
-
         <RegistryMicrochipSearchBlock />
       </section>
     </div>
