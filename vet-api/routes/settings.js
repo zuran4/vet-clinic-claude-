@@ -9,6 +9,13 @@ console.log("📡 settings.js loaded");
 
 const router = express.Router();
 
+// 🔒 Δεν επιστρέφουμε ποτέ το SMTP password στον client (αποφυγή credential leak)
+function sanitizeSettings(settings) {
+  const obj = settings.toObject();
+  if (obj.emailConfig) obj.emailConfig = { ...obj.emailConfig, password: "" };
+  return obj;
+}
+
 // ==========================
 // 🔹 GET /api/settings
 // ==========================
@@ -19,7 +26,7 @@ router.get("/", async (req, res) => {
       settings = new Settings();
       await settings.save();
     }
-    res.json(settings);
+    res.json(sanitizeSettings(settings));
   } catch (err) {
     console.error("❌ Σφάλμα κατά την ανάγνωση ρυθμίσεων:", err);
     res.status(500).json({ error: "❌ Σφάλμα κατά την ανάγνωση ρυθμίσεων" });
@@ -69,12 +76,20 @@ router.put("/", async (req, res) => {
       if (registryWorkerHeadless !== undefined) settings.registryWorkerHeadless = registryWorkerHeadless;
       if (staff !== undefined) settings.staff = staff;
       if (darkMode !== undefined) settings.darkMode = darkMode;
-      if (emailConfig !== undefined) settings.emailConfig = emailConfig;
+      if (emailConfig !== undefined) {
+        // Το GET δεν επιστρέφει ποτέ το πραγματικό password, οπότε ένα κενό
+        // password εδώ σημαίνει "δεν το άλλαξε ο χρήστης" — κρατάμε το παλιό.
+        const existingPassword = settings.emailConfig?.password || "";
+        settings.emailConfig = {
+          ...emailConfig,
+          password: emailConfig.password || existingPassword,
+        };
+      }
     }
 
     await settings.save();
     emitChange("settings");
-    res.json(settings);
+    res.json(sanitizeSettings(settings));
   } catch (err) {
     console.error("❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων:", err);
     res.status(500).json({ error: "❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων" });

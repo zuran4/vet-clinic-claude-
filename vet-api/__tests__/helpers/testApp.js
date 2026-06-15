@@ -10,6 +10,8 @@ import reminderRoutes from "../../routes/reminders.js";
 import purchaseRoutes from "../../routes/purchases.js";
 import prescriptionRoutes from "../../routes/prescriptionRoutes.js";
 import auditRoutes from "../../routes/audit/index.js";
+import uploadRoutes from "../../routes/uploadRoutes.js";
+import settingsRoutes from "../../routes/settings.js";
 import healthRoutes from "../../routes/health.js";
 import attachRequestId from "../../middlewares/requestId.js";
 import auditLog from "../../middlewares/auditLog.js";
@@ -42,6 +44,8 @@ export function buildTestApp({ user = { userId: "tester", role: "admin", name: "
   app.use("/api/purchases", purchaseRoutes);
   app.use("/api/prescriptions", prescriptionRoutes);
   app.use("/api/audit", auditRoutes);
+  app.use("/api/upload", uploadRoutes);
+  app.use("/api/settings", settingsRoutes);
 
   app.use(errorHandler);
 
