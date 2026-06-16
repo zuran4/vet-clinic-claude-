@@ -67,20 +67,31 @@ const CustomerList = () => {
           placeholder="Αναζήτηση (όνομα, τηλέφωνο, email)"
           className="flex-1"
         />
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowImportModal(true)}
-          >
-            <Upload className="w-4 h-4" /> Εισαγωγή CSV
-          </Button>
-          <Button
-            variant="primary"
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
             onClick={() => { setEditingCustomer(null); setShowCustomerModal(true); }}
+            className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
           >
             <Plus className="w-4 h-4" /> Νέος Πελάτης
-          </Button>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            title="Εισαγωγή πελατών από CSV"
+            aria-label="Εισαγωγή CSV"
+            className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-xl text-sm font-medium shadow-sm border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-700 dark:hover:bg-indigo-900/60 active:scale-95 transition"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Εισαγωγή CSV</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { setEditingCustomer(null); setShowCustomerModal(true); }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
+          >
+            <Plus className="w-4 h-4" /> Νέος Πελάτης
+          </button>
         </div>
       </div>
 

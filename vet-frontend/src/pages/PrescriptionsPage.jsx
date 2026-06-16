@@ -17,7 +17,7 @@ function PrescriptionsPage({ onClose }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("openPrescriptionForm"))}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-3 py-1.5 rounded-xl transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-violet-600 hover:bg-violet-50 text-sm font-semibold shadow-sm transition-colors"
             >
               <Plus className="w-4 h-4" /> Νέα Συνταγή
             </button>

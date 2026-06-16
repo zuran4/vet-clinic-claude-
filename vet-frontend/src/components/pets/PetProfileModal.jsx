@@ -1,8 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, PawPrint } from "lucide-react";
 import PetProfile from "./PetProfile";
 
 const PetProfileModal = ({ petId, onClose, initialTab }) => {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
   if (!petId) return null;
 
   return (

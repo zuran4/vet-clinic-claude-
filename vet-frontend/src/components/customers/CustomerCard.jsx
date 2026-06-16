@@ -1,9 +1,61 @@
-import React, { useState } from "react";
-import { Trash2, Pencil, PawPrint, ShoppingBag, ChevronRight, Phone, Mail, MapPin, StickyNote } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Trash2, Pencil, PawPrint, ShoppingBag, ChevronRight, Phone, Mail, MapPin, StickyNote, AlertTriangle } from "lucide-react";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
+
+const DeleteConfirmModal = ({ name, onConfirm, onCancel }) => {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onCancel}>
+      <div
+        className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-win-surface"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-gradient-to-r from-red-500 to-rose-500 px-5 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Επιβεβαίωση</p>
+            <p className="text-white font-bold text-sm leading-tight mt-0.5">Διαγραφή Πελάτη</p>
+          </div>
+        </div>
+        <div className="px-5 py-5">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
+            Είσαι σίγουρος ότι θέλεις να διαγράψεις τον πελάτη{" "}
+            <span className="font-bold text-gray-900 dark:text-gray-100">{name}</span>;
+          </p>
+          <p className="text-xs text-red-500 mt-1.5">Η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-win-border text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors"
+          >
+            Ακύρωση
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-semibold hover:from-red-600 hover:to-rose-600 transition-colors shadow-sm"
+          >
+            Διαγραφή
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onView }) => {
   const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
     <li className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
@@ -84,7 +136,7 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
           </button>
           <button
             title="Διαγραφή"
-            onClick={() => onDelete(customer._id)}
+            onClick={() => setConfirmDelete(true)}
             className="p-1.5 rounded-xl hover:bg-red-50 text-red-400 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
@@ -97,6 +149,14 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
         <div className="border-t border-gray-50 dark:border-win-border px-4 py-3 bg-indigo-50/30 dark:bg-indigo-900/10">
           <CustomerPetsExpanded ownerId={customer._id} />
         </div>
+      )}
+
+      {confirmDelete && (
+        <DeleteConfirmModal
+          name={customer.name}
+          onConfirm={() => { setConfirmDelete(false); onDelete(customer._id); }}
+          onCancel={() => setConfirmDelete(false)}
+        />
       )}
     </li>
   );

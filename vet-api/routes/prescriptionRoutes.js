@@ -1,20 +1,15 @@
 import express from "express";
 
 import Prescription from "../models/Prescription.js";
-
+import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
 
-// 🔹 Δημιουργία νέας συνταγής
-router.post("/", async (req, res) => {
+router.post("/", requirePermission("prescriptions:write"), async (req, res) => {
   try {
-    // ✅ Βεβαιωνόμαστε ότι στέλνονται animalId + animalName
     if (!req.body.animalId || !req.body.animalName) {
-      return res
-        .status(400)
-        .json({ error: "animalId και animalName είναι υποχρεωτικά" });
+      return res.status(400).json({ error: "animalId και animalName είναι υποχρεωτικά" });
     }
-
     const newPrescription = new Prescription(req.body);
     const saved = await newPrescription.save();
     res.status(201).json(saved);
@@ -24,13 +19,11 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 🔹 Λήψη όλων των συνταγών
-router.get("/", async (req, res) => {
+router.get("/", requirePermission("prescriptions:read"), async (req, res) => {
   try {
     const prescriptions = await Prescription.find()
-      .populate("animalId", "name type breed owner") // φέρνει τα βασικά πεδία κατοικιδίου
+      .populate("animalId", "name type breed owner")
       .sort({ createdAt: -1 });
-
     res.json(prescriptions);
   } catch (err) {
     console.error("❌ Σφάλμα φόρτωσης συνταγών:", err);
@@ -38,15 +31,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🔹 Λήψη συνταγών για συγκεκριμένο ζώο
-router.get("/by-animal/:animalId", async (req, res) => {
+router.get("/by-animal/:animalId", requirePermission("prescriptions:read"), async (req, res) => {
   try {
-    const prescriptions = await Prescription.find({
-      animalId: req.params.animalId,
-    })
+    const prescriptions = await Prescription.find({ animalId: req.params.animalId })
       .populate("animalId", "name type breed owner")
       .sort({ createdAt: -1 });
-
     res.json(prescriptions);
   } catch (err) {
     console.error("❌ Σφάλμα λήψης συνταγών:", err);

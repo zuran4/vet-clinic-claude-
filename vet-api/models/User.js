@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    role: { type: String, enum: ["admin","assistant"], default: "assistant", index: true },
+    role: { type: String, enum: ["admin", "vet", "secretary", "groomer", "assistant"], default: "secretary", index: true },
     // ❌ αφαιρέθηκε το legacy `pin`
     pinHash: { type: String, required: true, index: true },
     isActive: { type: Boolean, default: true, index: true },

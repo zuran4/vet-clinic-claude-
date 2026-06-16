@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, User, Phone, Mail, MapPin, Home, FileText, StickyNote, Bell, ShoppingBag, Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
@@ -33,6 +33,15 @@ const IconField = ({ icon: Icon, label, value }) => {
 };
 
 const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
   if (!customer) return null;
 
   const { _id, name, phone, email, address, city, afm, notes, notifications } = customer;

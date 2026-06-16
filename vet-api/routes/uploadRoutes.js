@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 
 import multer from "multer";
 import express from "express";
+import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,7 +53,7 @@ const upload = multer({
 });
 
 // ✅ Route για ανέβασμα logo
-router.post("/logo", (req, res) => {
+router.post("/logo", requirePermission("settings:write"), (req, res) => {
   upload.single("logo")(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {

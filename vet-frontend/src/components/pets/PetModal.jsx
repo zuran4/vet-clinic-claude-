@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PawPrint, X, AlertTriangle } from "lucide-react";
 import PetForm from "./PetForm.jsx";
 
 const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
   const [isDirty, setIsDirty] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
 
   const handleClose = () => {
     if (isDirty) setShowConfirm(true);

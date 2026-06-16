@@ -4,6 +4,7 @@ import request from "supertest";
 import { connectTestDb, disconnectTestDb, clearCollections } from "../helpers/testDb.js";
 import { buildTestApp } from "../helpers/testApp.js";
 import Settings from "../../models/Settings.js";
+import { decrypt } from "../../utils/crypto.js";
 
 let app;
 
@@ -43,10 +44,11 @@ describe("PUT /api/settings", () => {
     expect(res.body.emailConfig.password).toBe(""); // δεν επιστρέφεται ποτέ στον client
 
     const stored = await Settings.findOne();
-    expect(stored.emailConfig.password).toBe("super-secret"); // αλλά παραμένει στη DB
+    // Το password παραμένει στη DB (ακόμα plaintext γιατί δεν πέρασε από το PUT)
+    expect(stored.emailConfig.password).toBe("super-secret");
   });
 
-  it("ενημερώνει το password όταν ο client στείλει νέη τιμή", async () => {
+  it("ενημερώνει το password κρυπτογραφημένο όταν ο client στείλει νέα τιμή", async () => {
     await Settings.create({
       emailConfig: { host: "smtp.gmail.com", user: "clinic@gmail.com", password: "old-secret" },
     });
@@ -56,10 +58,12 @@ describe("PUT /api/settings", () => {
       .send({ emailConfig: { host: "smtp.gmail.com", user: "clinic@gmail.com", password: "new-secret" } });
 
     expect(res.status).toBe(200);
-    expect(res.body.emailConfig.password).toBe("");
+    expect(res.body.emailConfig.password).toBe(""); // ποτέ στον client
 
     const stored = await Settings.findOne();
-    expect(stored.emailConfig.password).toBe("new-secret");
+    // Το νέο password αποθηκεύεται κρυπτογραφημένο
+    expect(stored.emailConfig.password).toMatch(/^enc:/);
+    expect(decrypt(stored.emailConfig.password)).toBe("new-secret");
   });
 
 });

@@ -87,8 +87,9 @@ const isDev = !isProd;
 // -----------------------------------------------
 // Required vars (fail-fast)
 // -----------------------------------------------
-const mongoUri = requireEnv("MONGO_URI");
-const jwtSecret = requireEnv("JWT_SECRET");
+const mongoUri      = requireEnv("MONGO_URI");
+const jwtSecret     = requireEnv("JWT_SECRET");
+const encryptionKey = requireEnv("ENCRYPTION_KEY");
 
 // CORS: σε production θέλουμε explicit allowlist
 const corsOrigins = toList(process.env.CORS_ORIGINS);
@@ -103,7 +104,7 @@ if (isProd && corsOrigins.length === 0) {
 const port = toInt(process.env.PORT, 5000);
 const logLevel = optionalEnv("LOG_LEVEL", "info");
 
-const jwtExpiresIn = optionalEnv("JWT_EXPIRES_IN", "7d");
+const jwtExpiresIn = optionalEnv("JWT_EXPIRES_IN", "15m");
 
 const redisUrl = optionalEnv("REDIS_URL", "");
 
@@ -145,6 +146,7 @@ const config = Object.freeze({
   mongoUri,
   jwtSecret,
   jwtExpiresIn,
+  encryptionKey,
 
   redisUrl,
 

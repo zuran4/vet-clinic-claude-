@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "./button";
 
 const Modal = ({ isOpen, onClose, children, preventBackdropClose = false }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

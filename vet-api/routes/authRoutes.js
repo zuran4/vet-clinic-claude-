@@ -6,6 +6,8 @@ import validateBody from "../validators/validateBody.js";
 import loginSchema from "../validators/auth/loginSchema.js";
 import { login } from "../controllers/auth/login.js";
 import { me } from "../controllers/auth/me.js";
+import { refresh } from "../controllers/auth/refresh.js";
+import { logout } from "../controllers/auth/logout.js";
 import requireAuth from "../middlewares/auth/requireAuth.js";
 
 const router = express.Router();
@@ -28,6 +30,8 @@ const loginLimiter = rateLimit({
 });
 
 router.post("/login", loginLimiter, validateBody(loginSchema), login);
+router.post("/refresh", refresh);
+router.post("/logout", logout);
 router.get("/me", requireAuth, me);
 
 export default router;

@@ -18,7 +18,7 @@ const UserManagement = ({ getAuthHeaders }) => {
   const [editForm, setEditForm] = useState({
     name: "",
     pin: "",
-    role: "user",
+    role: "secretary",
   });
 
   const handleEditClick = (user) => {
@@ -78,8 +78,10 @@ const UserManagement = ({ getAuthHeaders }) => {
                 onChange={handleEditChange}
                 className={INPUT}
               >
-                <option value="user">user</option>
-                <option value="admin">admin</option>
+                <option value="vet">Κτηνίατρος</option>
+                <option value="secretary">Γραμματέας</option>
+                <option value="groomer">Groomer</option>
+                <option value="admin">Admin</option>
               </select>
 
               <div className="flex gap-2">

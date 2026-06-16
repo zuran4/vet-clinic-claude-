@@ -1,9 +1,51 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Edit, Trash2, Eye, PawPrint, User, Search, X, Cpu } from "lucide-react";
+import { Edit, Trash2, Eye, PawPrint, User, Search, X, Cpu, Plus, AlertTriangle } from "lucide-react";
 import PetModal from "./PetModal.jsx";
 import PetProfileModal from "./PetProfileModal.jsx";
 import PetDetailsModal from "../registry/PetDetailsModal.jsx";
 import { usePetList } from "../../hooks/usePetList.jsx";
+
+const DeleteConfirmModal = ({ name, onConfirm, onCancel }) => {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onCancel}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-win-surface" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-red-500 to-rose-500 px-5 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Επιβεβαίωση</p>
+            <p className="text-white font-bold text-sm leading-tight mt-0.5">Διαγραφή Κατοικιδίου</p>
+          </div>
+        </div>
+        <div className="px-5 py-5">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
+            Είσαι σίγουρος ότι θέλεις να διαγράψεις το κατοικίδιο{" "}
+            <span className="font-bold text-gray-900 dark:text-gray-100">{name}</span>;
+          </p>
+          <p className="text-xs text-red-500 mt-1.5">Η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <button onClick={onCancel} className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-win-border text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors">
+            Ακύρωση
+          </button>
+          <button onClick={onConfirm} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-semibold hover:from-red-600 hover:to-rose-600 transition-colors shadow-sm">
+            Διαγραφή
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SPECIES_STYLE = {
   "Σκύλος": "bg-sky-50 text-sky-700",
@@ -21,9 +63,10 @@ const PetList = () => {
   const { pets, loading, error, deletePet, savePet } = usePetList();
   const [showModal, setShowModal] = useState(false);
   const [editingPet, setEditingPet] = useState(null);
-  const [viewingSnapshot, setViewingSnapshot] = useState(null); // για PetDetailsModal
+  const [viewingSnapshot, setViewingSnapshot] = useState(null);
   const [viewingPet, setViewingPet] = useState(null);
   const [query, setQuery] = useState("");
+  const [confirmDeletePet, setConfirmDeletePet] = useState(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,24 +98,33 @@ const PetList = () => {
 
   return (
     <>
-      {/* Search bar */}
-      <div className="mb-3 relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Αναζήτηση με όνομα, microchip ή ιδιοκτήτη..."
-          className="w-full pl-9 pr-9 py-2.5 rounded-2xl border border-gray-200 dark:border-win-border-light bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+      {/* Search bar + mobile button */}
+      <div className="mb-3 flex flex-col gap-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Αναζήτηση με όνομα, microchip ή ιδιοκτήτη..."
+            className="w-full pl-9 pr-9 py-2.5 rounded-2xl border border-gray-200 dark:border-win-border-light bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 placeholder-gray-400 dark:placeholder-gray-500"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => document.dispatchEvent(new CustomEvent("openPetModal"))}
+          className="sm:hidden w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
+        >
+          <Plus className="w-4 h-4" /> Νέο Κατοικίδιο
+        </button>
       </div>
 
       <div className="overflow-x-auto bg-white dark:bg-win-surface rounded-2xl shadow-sm border border-gray-100 dark:border-win-border">
@@ -146,7 +198,7 @@ const PetList = () => {
                       </button>
                       <button
                         title="Διαγραφή"
-                        onClick={() => deletePet(pet._id)}
+                        onClick={() => setConfirmDeletePet(pet)}
                         className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -172,6 +224,14 @@ const PetList = () => {
         <PetProfileModal
           petId={viewingPet}
           onClose={() => setViewingPet(null)}
+        />
+      )}
+
+      {confirmDeletePet && (
+        <DeleteConfirmModal
+          name={confirmDeletePet.name}
+          onConfirm={() => { deletePet(confirmDeletePet._id); setConfirmDeletePet(null); }}
+          onCancel={() => setConfirmDeletePet(null)}
         />
       )}
 

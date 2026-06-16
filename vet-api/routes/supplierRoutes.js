@@ -1,10 +1,10 @@
 import express from "express";
 
 import Supplier from "../models/Supplier.js";
+import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
 
-// Επιτρεπτά πεδία — αποφεύγουμε mass-assignment
 const ALLOWED = ["name", "contact", "phone", "email", "website", "address", "notes"];
 const pick = (obj) =>
   ALLOWED.reduce((acc, k) => {
@@ -12,20 +12,14 @@ const pick = (obj) =>
     return acc;
   }, {});
 
-// ==========================
-// 📦 GET: Όλοι οι προμηθευτές
-// ==========================
-router.get("/", async (req, res, next) => {
+router.get("/", requirePermission("suppliers:read"), async (req, res, next) => {
   try {
     const suppliers = await Supplier.find().sort({ name: 1 });
     res.json(suppliers);
   } catch (err) { next(err); }
 });
 
-// ==========================
-// ➕ POST: Δημιουργία νέου
-// ==========================
-router.post("/", async (req, res, next) => {
+router.post("/", requirePermission("suppliers:write"), async (req, res, next) => {
   try {
     const data = pick(req.body);
     if (!data.name) return res.status(400).json({ message: "Το όνομα είναι υποχρεωτικό." });
@@ -34,10 +28,7 @@ router.post("/", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ==========================
-// 📥 POST: Bulk import από CSV
-// ==========================
-router.post("/import", async (req, res, next) => {
+router.post("/import", requirePermission("suppliers:write"), async (req, res, next) => {
   try {
     const rows = req.body?.suppliers;
     if (!Array.isArray(rows) || rows.length === 0)
@@ -61,10 +52,7 @@ router.post("/import", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ==========================
-// ✏️ PUT: Ενημέρωση
-// ==========================
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requirePermission("suppliers:write"), async (req, res, next) => {
   try {
     const data = pick(req.body);
     if (!data.name) return res.status(400).json({ message: "Το όνομα είναι υποχρεωτικό." });
@@ -74,10 +62,7 @@ router.put("/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ==========================
-// 🗑️ DELETE: Διαγραφή
-// ==========================
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requirePermission("suppliers:delete"), async (req, res, next) => {
   try {
     await Supplier.findByIdAndDelete(req.params.id);
     res.json({ message: "Ο προμηθευτής διαγράφηκε." });

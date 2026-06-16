@@ -85,11 +85,6 @@ export function useCustomers() {
   // 6️⃣ Διαγραφή πελάτη
   // -------------------------------------
   const deleteCustomer = async (id) => {
-    const confirmDelete = window.confirm(
-      "❗ Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον πελάτη;"
-    );
-    if (!confirmDelete) return;
-
     try {
       await customersApi.deleteCustomer(id);
       setCustomers((prev) => prev.filter((c) => c._id !== id));

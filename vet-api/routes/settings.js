@@ -4,7 +4,8 @@ import Settings from "../models/Settings.js";
 import { sendEmail } from "../services/emailService.js";
 import { testEmailHtml } from "../services/emailTemplates.js";
 import { emitChange } from "../utils/realtime.js";
-import requireRole from "../middlewares/auth/requireRole.js";
+import requirePermission from "../middlewares/auth/requirePermission.js";
+import { encrypt } from "../utils/crypto.js";
 
 console.log("📡 settings.js loaded");
 
@@ -81,10 +82,11 @@ router.put("/", async (req, res) => {
         // Το GET δεν επιστρέφει ποτέ το πραγματικό password, οπότε ένα κενό
         // password εδώ σημαίνει "δεν το άλλαξε ο χρήστης" — κρατάμε το παλιό.
         const existingPassword = settings.emailConfig?.password || "";
-        settings.emailConfig = {
-          ...emailConfig,
-          password: emailConfig.password || existingPassword,
-        };
+        const incomingPassword = emailConfig.password;
+        const newPassword = incomingPassword
+          ? encrypt(incomingPassword)   // νέο password → κρυπτογράφηση
+          : existingPassword;           // κενό → κρατάμε το υπάρχον (ήδη κρυπτογραφημένο)
+        settings.emailConfig = { ...emailConfig, password: newPassword };
       }
     }
 
@@ -101,7 +103,7 @@ router.put("/", async (req, res) => {
 // ==========================
 // 🔹 POST /api/settings/test-email (μόνο admin)
 // ==========================
-router.post("/test-email", requireRole("admin"), async (req, res) => {
+router.post("/test-email", requirePermission("settings:write"), async (req, res) => {
   try {
     const { to } = req.body;
     if (!to) return res.status(400).json({ error: "Το πεδίο 'to' είναι υποχρεωτικό." });

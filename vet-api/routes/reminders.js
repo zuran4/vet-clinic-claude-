@@ -3,14 +3,11 @@ import express from "express";
 import Reminder from "../models/Reminder.js";
 import Customer from "../models/Customer.js";
 import logger from "../utils/logger.js";
+import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
 
-// ──────────────────────────────────────────────
-// POST /api/reminders
-// Δημιουργία νέας υπενθύμισης
-// ──────────────────────────────────────────────
-router.post("/", async (req, res) => {
+router.post("/", requirePermission("reminders:write"), async (req, res) => {
   try {
     const { customerId, reminderDate, note, productNames } = req.body;
 
@@ -31,9 +28,7 @@ router.post("/", async (req, res) => {
     });
 
     await reminder.save();
-
     logger.info(`🔔 Υπενθύμιση δημιουργήθηκε για ${customer.name} — ${reminderDate}`);
-
     res.status(201).json({ ok: true, reminder });
   } catch (err) {
     logger.error("❌ Σφάλμα δημιουργίας reminder:", err.message);
@@ -41,16 +36,11 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ──────────────────────────────────────────────
-// GET /api/reminders
-// Λίστα όλων των reminders (για admin panel)
-// ──────────────────────────────────────────────
-router.get("/", async (req, res) => {
+router.get("/", requirePermission("reminders:read"), async (req, res) => {
   try {
     const reminders = await Reminder.find()
       .populate("customer", "name email phone")
       .sort({ reminderDate: 1 });
-
     res.json(reminders);
   } catch (err) {
     logger.error("❌ Σφάλμα λήψης reminders:", err.message);
@@ -58,11 +48,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ──────────────────────────────────────────────
-// DELETE /api/reminders/:id
-// Διαγραφή reminder
-// ──────────────────────────────────────────────
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requirePermission("reminders:delete"), async (req, res) => {
   try {
     await Reminder.findByIdAndDelete(req.params.id);
     res.json({ ok: true });

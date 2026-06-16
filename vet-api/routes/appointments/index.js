@@ -1,10 +1,8 @@
 import express from "express";
 
-// 1) Validator πρώτος
 import validateBody from "../../validators/appointments/validateBody.js";
-// 2) Overlap middleware
 import checkOverlap from "../../middlewares/appointments/checkOverlap.js";
-// 3) Λεπτός controller
+import requirePermission from "../../middlewares/auth/requirePermission.js";
 import {
   getAllAppointments,
   createAppointment,
@@ -15,19 +13,10 @@ import {
 
 const router = express.Router();
 
-// 🔍 Αναζήτηση ιστορικού (πριν το "/:id")
-router.get("/search", searchAppointmentsHandler);
-
-// 📅 Όλα τα ραντεβού
-router.get("/", getAllAppointments);
-
-// ➕ Δημιουργία (validate → overlap → controller)
-router.post("/", validateBody, checkOverlap, createAppointment);
-
-// ✏️ Ενημέρωση (validate → overlap → controller)
-router.put("/:id", validateBody, checkOverlap, updateAppointment);
-
-// 🗑️ Διαγραφή
-router.delete("/:id", deleteAppointment);
+router.get("/search", requirePermission("appointments:read"),   searchAppointmentsHandler);
+router.get("/",       requirePermission("appointments:read"),   getAllAppointments);
+router.post("/",      requirePermission("appointments:write"),  validateBody, checkOverlap, createAppointment);
+router.put("/:id",    requirePermission("appointments:write"),  validateBody, checkOverlap, updateAppointment);
+router.delete("/:id", requirePermission("appointments:delete"), deleteAppointment);
 
 export default router;

@@ -9,6 +9,8 @@ import { signToken } from "../../utils/jwt.js";
 import logger from "../../utils/logger.js";
 
 import { comparePin } from "./pinCrypto.js";
+import { generateRefreshToken, saveRefreshToken } from "./tokenService.js";
+import { getPermissions } from "../../config/roles.js";
 
 /**
  * Login με PIN:
@@ -36,8 +38,10 @@ export async function loginWithPin(pin) {
     const ok = await comparePin(q, u.pinHash);
     if (ok) {
       const token = signToken({ userId: u._id, name: u.name, role: u.role });
+      const rawRefresh = generateRefreshToken();
+      await saveRefreshToken(u._id, rawRefresh);
       logger.info(`login ok: ${u.name} (${u.role})`);
-      return { token, name: u.name, role: u.role };
+      return { token, refreshToken: rawRefresh, name: u.name, role: u.role, permissions: getPermissions(u.role) };
     }
   }
 

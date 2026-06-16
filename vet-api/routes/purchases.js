@@ -2,21 +2,19 @@ import express from "express";
 
 import Product from "../models/Product.js";
 import Customer from "../models/Customer.js";
-import Purchase from "../models/Purchase.js"; // 🆕 νέο μοντέλο
+import Purchase from "../models/Purchase.js";
+import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
 
-// POST /api/purchases
-router.post("/", async (req, res) => {
+router.post("/", requirePermission("purchases:write"), async (req, res) => {
   try {
-    const { customerId, items } = req.body; 
-    // items = [ { productId, quantity } ]
+    const { customerId, items } = req.body;
 
     if (!customerId || !items || items.length === 0) {
       return res.status(400).json({ error: "Λείπουν στοιχεία αγοράς" });
     }
 
-    // Βρίσκουμε τον πελάτη
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return res.status(404).json({ error: "Ο πελάτης δεν βρέθηκε" });
@@ -31,27 +29,16 @@ router.post("/", async (req, res) => {
       }
 
       if (product.quantity < item.quantity) {
-        return res
-          .status(400)
-          .json({ error: `Μη επαρκές απόθεμα για ${product.name}` });
+        return res.status(400).json({ error: `Μη επαρκές απόθεμα για ${product.name}` });
       }
 
-      // ✅ Αφαιρούμε από το σωστό πεδίο
       product.quantity -= item.quantity;
       await product.save();
 
-      updatedProducts.push({
-        product: product._id,
-        name: product.name,
-        quantity: item.quantity,
-      });
+      updatedProducts.push({ product: product._id, name: product.name, quantity: item.quantity });
     }
 
-    // Δημιουργούμε καταγραφή αγοράς
-    const purchase = new Purchase({
-      customer: customer._id,
-      items: updatedProducts,
-    });
+    const purchase = new Purchase({ customer: customer._id, items: updatedProducts });
     await purchase.save();
 
     res.json({ message: "Η αγορά καταχωρήθηκε", purchase });

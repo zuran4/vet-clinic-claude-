@@ -5,7 +5,7 @@ import { getStockStatus } from "@/utils/stock.js";
  * Badge ποσότητας με χρώμα ανά στάθμη.
  * Δέχεται optional `config` (π.χ. { low: 10, ok: 30 }) για overrides.
  */
-export default function StockBadge({ qty, config }) {
+export default function StockBadge({ qty, config, mobileStack = false }) {
   const { key, label } = getStockStatus(qty, config);
 
   const styles = {
@@ -21,7 +21,8 @@ export default function StockBadge({ qty, config }) {
   return (
     <span
       className={[
-        "inline-flex items-center rounded-2xl px-2.5 py-0.5",
+        "inline-flex rounded-2xl px-2.5 py-0.5",
+        mobileStack ? "flex-col items-start sm:flex-row sm:items-center" : "items-center",
         "text-xs font-medium tracking-tight",
         "ring-1 ring-black/5 dark:ring-white/10",
         "select-none tabular-nums",
@@ -31,7 +32,7 @@ export default function StockBadge({ qty, config }) {
       aria-label={`${label}, ποσότητα ${qtyInt}`}
     >
       {label}
-      <span className="ml-1 opacity-90">{qtyInt}</span>
+      <span className={mobileStack ? "sm:ml-1 opacity-90" : "ml-1 opacity-90"}>{qtyInt}</span>
     </span>
   );
 }

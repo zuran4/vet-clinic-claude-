@@ -39,7 +39,7 @@ const LoginForm = ({ onLogin }) => {
         body: { pin },
       });
 
-      onLogin({ token: data.token, name: data.name, role: data.role });
+      onLogin({ token: data.token, refreshToken: data.refreshToken, name: data.name, role: data.role, permissions: data.permissions });
     } catch (err) {
       console.error("❌ Σφάλμα σύνδεσης:", err);
       setError(friendlyError(err));

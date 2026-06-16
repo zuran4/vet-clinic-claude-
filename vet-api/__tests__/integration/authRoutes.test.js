@@ -25,7 +25,7 @@ describe("POST /api/auth/login", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(
-      expect.objectContaining({ token: expect.any(String), name: "Δρ. Παπαδάκη", role: "admin" })
+      expect.objectContaining({ token: expect.any(String), refreshToken: expect.any(String), name: "Δρ. Παπαδάκη", role: "admin" })
     );
   });
 

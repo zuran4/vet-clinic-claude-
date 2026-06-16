@@ -25,13 +25,6 @@ export function usePetList() {
 
   // 🔹 Διαγραφή
   const deletePet = async (id) => {
-    if (
-      !window.confirm(
-        "Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτό το κατοικίδιο;"
-      )
-    )
-      return;
-
     try {
       // 👉 DELETE μέσω apiClient
       await request(`/pets/${id}`, { method: "DELETE" });

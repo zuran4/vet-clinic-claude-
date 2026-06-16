@@ -38,7 +38,7 @@ function ProductsPage({ onClose }) {
               <button
                 type="button"
                 onClick={() => { setEditingSupplier(null); setShowSupplierForm(true); }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" /> Νέος Προμηθευτής
               </button>

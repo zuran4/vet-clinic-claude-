@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 
 import Settings from "../models/Settings.js";
 import logger from "../utils/logger.js";
+import { decrypt } from "../utils/crypto.js";
 
 /**
  * Δημιουργεί nodemailer transporter από τις ρυθμίσεις της βάσης.
@@ -25,7 +26,7 @@ async function createTransporter() {
       secure: cfg.port === 465,
       auth: {
         user: cfg.user,
-        pass: cfg.password,
+        pass: decrypt(cfg.password),
       },
     }),
     from: cfg.fromName

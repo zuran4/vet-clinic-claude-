@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Trash2, Edit, Truck, Phone, Mail, Globe, StickyNote, Upload, Loader2 } from "lucide-react";
+import { Trash2, Edit, Truck, Phone, Mail, Globe, StickyNote, Upload, Loader2, Plus } from "lucide-react";
 import SupplierModal from "./SupplierModal.jsx";
 import SupplierImportModal from "./SupplierImportModal.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
@@ -32,10 +32,19 @@ const SupplierList = ({ showForm, setShowForm, editingSupplier, setEditingSuppli
           placeholder="Αναζήτηση (όνομα, υπεύθυνος, email…)"
           className="w-full sm:w-80"
         />
-        <Button variant="secondary" size="sm" onClick={() => setShowImport(true)}>
-          <Upload className="w-3.5 h-3.5" />
-          Εισαγωγή CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => { setEditingSupplier(null); setShowForm(true); }}
+            className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
+          >
+            <Plus className="w-4 h-4" /> Νέος Προμηθευτής
+          </button>
+          <Button variant="secondary" size="sm" onClick={() => setShowImport(true)}>
+            <Upload className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Εισαγωγή CSV</span>
+          </Button>
+        </div>
       </div>
 
       {error && (
