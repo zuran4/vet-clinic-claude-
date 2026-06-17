@@ -1,8 +1,10 @@
 // src/pages/SettingsPage.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Settings, Building2, Users, Clock, Monitor, Bell, Shield,
+  Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
+  ChevronRight, ArrowLeft, Download, FileText, Phone, MapPin,
+  Hash, Lock, Activity,
 } from "lucide-react";
 import LogoUpload from "../components/ui/LogoUpload";
 import WorkingHoursSection from "../components/settings/WorkingHoursSection";
@@ -12,28 +14,34 @@ import KeyboardShortcutsSection from "../components/settings/KeyboardShortcutsSe
 import { useSettingsPage } from "../hooks/useSettingsPage";
 import request from "../api/apiClient";
 
-/* ─── Sidebar navigation ──────────────────────────────────── */
 const NAV_GROUPS = [
   {
     group: "ΚΛΙΝΙΚΗ",
     items: [
-      { id: "clinic", label: "Στοιχεία",  icon: Building2 },
-      { id: "staff",  label: "Προσωπικό", icon: Users     },
-      { id: "hours",  label: "Ωράριο",    icon: Clock     },
+      { id: "clinic", label: "Στοιχεία",  icon: Building2, desc: "Όνομα, λογότυπο, επικοινωνία",          iconBg: "bg-indigo-100 dark:bg-indigo-900/40",    iconColor: "text-indigo-500 dark:text-indigo-400" },
+      { id: "staff",  label: "Προσωπικό", icon: Users,     desc: "Μέλη ομάδας και ρόλοι",                iconBg: "bg-violet-100 dark:bg-violet-900/40",    iconColor: "text-violet-500 dark:text-violet-400" },
+      { id: "hours",  label: "Ωράριο",    icon: Clock,     desc: "Ωράριο ιατρείου και grooming",         iconBg: "bg-sky-100 dark:bg-sky-900/40",          iconColor: "text-sky-500 dark:text-sky-400" },
     ],
   },
   {
     group: "ΣΥΣΤΗΜΑ",
     items: [
-      { id: "ui",            label: "Εμφάνιση",      icon: Monitor  },
-      { id: "notifications", label: "Email",          icon: Mail     },
-      { id: "shortcuts",     label: "Συντομεύσεις",  icon: Keyboard },
-      { id: "admin",         label: "Admin",          icon: Shield   },
+      { id: "ui",            label: "Εμφάνιση",     icon: Monitor,   desc: "Θέμα και stock thresholds",           iconBg: "bg-orange-100 dark:bg-orange-900/40",   iconColor: "text-orange-500 dark:text-orange-400" },
+      { id: "notifications", label: "Email",         icon: Mail,      desc: "SMTP και αυτόματες ειδοποιήσεις",    iconBg: "bg-teal-100 dark:bg-teal-900/40",       iconColor: "text-teal-500 dark:text-teal-400" },
+      { id: "shortcuts",     label: "Συντομεύσεις", icon: Keyboard,  desc: "Πλήκτρα γρήγορης πρόσβασης",        iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-500 dark:text-emerald-400" },
+    ],
+  },
+  {
+    group: "ΔΙΑΧΕΙΡΙΣΗ",
+    items: [
+      { id: "account", label: "Λογαριασμός", icon: Lock,     desc: "Αλλαγή PIN σύνδεσης",              iconBg: "bg-amber-100 dark:bg-amber-900/40",      iconColor: "text-amber-500 dark:text-amber-400" },
+      { id: "export",  label: "Εξαγωγή",     icon: Download, desc: "Λήψη δεδομένων σε CSV",            iconBg: "bg-cyan-100 dark:bg-cyan-900/40",        iconColor: "text-cyan-500 dark:text-cyan-400" },
+      { id: "audit",   label: "Audit Log",   icon: Activity, desc: "Ιστορικό ενεργειών συστήματος",    iconBg: "bg-rose-100 dark:bg-rose-900/40",        iconColor: "text-rose-500 dark:text-rose-400" },
+      { id: "admin",   label: "Admin",        icon: Shield,   desc: "Ρυθμίσεις registry worker",        iconBg: "bg-slate-100 dark:bg-slate-800/60",      iconColor: "text-slate-500 dark:text-slate-400" },
     ],
   },
 ];
 
-/* ─── Staff helpers ───────────────────────────────────────── */
 const ROLES = ["Κτηνίατρος", "Βοηθός Κτηνιάτρου", "Groomer"];
 const ROLE_STYLE = {
   "Κτηνίατρος":         "bg-violet-100 text-violet-700",
@@ -41,7 +49,6 @@ const ROLE_STYLE = {
   "Groomer":            "bg-teal-100 text-teal-700",
 };
 
-/* ─── Working hours default ───────────────────────────────── */
 const defaultWorkingHours = () => ({
   monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
   tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
@@ -57,7 +64,6 @@ const getSupportedTimeZones = () => {
   catch { return ["Europe/Athens", "UTC", "Europe/London", "America/New_York"]; }
 };
 
-/* ─── Section wrapper ─────────────────────────────────────── */
 const Section = ({ title, description, children, onSave, saving, saved, saveError }) => (
   <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
     <div className="px-6 py-4 border-b border-gray-100 dark:border-win-border">
@@ -68,14 +74,10 @@ const Section = ({ title, description, children, onSave, saving, saved, saveErro
     {onSave && (
       <div className="px-6 py-3 bg-gray-50 dark:bg-win-elevated/50 border-t border-gray-100 dark:border-win-border flex items-center justify-between">
         <div>
-          {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">✓ Αποθηκεύτηκε</span>}
+          {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Αποθηκεύτηκε</span>}
           {saveError && <span className="text-xs text-red-500 dark:text-red-400">{saveError}</span>}
         </div>
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-60"
-        >
+        <button onClick={onSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
           <Save className="w-3.5 h-3.5" />
           {saving ? "Αποθήκευση..." : "Αποθήκευση"}
         </button>
@@ -84,27 +86,146 @@ const Section = ({ title, description, children, onSave, saving, saved, saveErro
   </div>
 );
 
-/* ─── Input helpers ───────────────────────────────────────── */
 const LABEL = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5";
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
+const ICON_INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 
-/* ─── Main component ──────────────────────────────────────── */
+function NotifToggle({ label, desc, icon, value, onChange }) {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-win-elevated/50 border border-gray-100 dark:border-win-border/50">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-lg flex-shrink-0">{icon}</span>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{label}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{desc}</p>
+        </div>
+      </div>
+      <button type="button" onClick={() => onChange(!value)}
+        className={`flex-shrink-0 ml-3 relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value ? "bg-emerald-500" : "bg-gray-300 dark:bg-win-elevated2"}`}
+      >
+        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${value ? "translate-x-5" : "translate-x-1"}`} />
+      </button>
+    </div>
+  );
+}
+
+const AUDIT_RESOURCE_COLORS = {
+  customers:    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+  pets:         "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
+  appointments: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  products:     "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  settings:     "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
+  auth:         "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
+};
+const AUDIT_ACTION_COLORS = {
+  CREATE:        "text-emerald-600 dark:text-emerald-400",
+  UPDATE:        "text-indigo-600 dark:text-indigo-400",
+  DELETE:        "text-red-500 dark:text-red-400",
+  LOGIN_SUCCESS: "text-sky-600 dark:text-sky-400",
+  LOGIN_FAILURE: "text-rose-600 dark:text-rose-400",
+};
+
+function AuditLogViewer() {
+  const [logs, setLogs]         = useState([]);
+  const [total, setTotal]       = useState(0);
+  const [page, setPage]         = useState(1);
+  const [loading, setLoading]   = useState(false);
+  const [filterResource, setFilterResource] = useState("");
+
+  const fetchLogs = useCallback(async (p = 1, resource = "") => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page: p, pageSize: 15 });
+      if (resource) params.set("resource", resource);
+      const data = await request(`/audit?${params}`);
+      setLogs(data.data || []);
+      setTotal(data.total || 0);
+      setPage(p);
+    } catch {
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchLogs(1, filterResource); }, [filterResource]);
+
+  const totalPages = Math.ceil(total / 15);
+
+  const fmt = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return `${d.toLocaleDateString("el-GR")} ${d.toLocaleTimeString("el-GR", { hour: "2-digit", minute: "2-digit" })}`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <select value={filterResource} onChange={(e) => setFilterResource(e.target.value)} className={INPUT + " max-w-[180px]"}>
+          <option value="">Όλα τα resources</option>
+          {["customers","pets","appointments","products","settings","auth","prescriptions","suppliers"].map(r => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <button onClick={() => fetchLogs(page, filterResource)} className="px-3 py-2 rounded-xl border border-gray-200 dark:border-win-border text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors">
+          Ανανέωση
+        </button>
+        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">{total} εγγραφές σύνολο</span>
+      </div>
+
+      <div className="rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
+        {loading ? (
+          <div className="py-12 text-center text-sm text-gray-400">Φόρτωση...</div>
+        ) : logs.length === 0 ? (
+          <div className="py-12 text-center text-sm text-gray-400 dark:text-gray-500">Δεν βρέθηκαν εγγραφές.</div>
+        ) : (
+          <div className="divide-y divide-gray-50 dark:divide-win-border/50">
+            {logs.map((log) => (
+              <div key={log._id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-win-elevated/30 transition-colors">
+                <div className="flex-shrink-0 w-28 text-[11px] text-gray-400 dark:text-gray-500 font-mono">{fmt(log.createdAt)}</div>
+                <span className={`flex-shrink-0 text-xs font-bold ${AUDIT_ACTION_COLORS[log.action] || "text-gray-500"}`}>{log.action}</span>
+                {log.resource && (
+                  <span className={`flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${AUDIT_RESOURCE_COLORS[log.resource] || "bg-gray-100 text-gray-600"}`}>{log.resource}</span>
+                )}
+                <span className="flex-1 min-w-0 text-xs text-gray-500 dark:text-gray-400 truncate">{log.userName ? `${log.userName} (${log.userRole})` : log.ip || "—"}</span>
+                {log.statusCode && (
+                  <span className={`flex-shrink-0 text-xs font-mono ${log.statusCode >= 400 ? "text-red-400" : "text-emerald-500"}`}>{log.statusCode}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <button onClick={() => fetchLogs(page - 1, filterResource)} disabled={page <= 1} className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-win-border text-sm text-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors">← Προηγ.</button>
+          <span className="text-xs text-gray-400 dark:text-gray-500">Σελίδα {page} / {totalPages}</span>
+          <button onClick={() => fetchLogs(page + 1, filterResource)} disabled={page >= totalPages} className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-win-border text-sm text-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors">Επόμ. →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const SettingsPage = ({ onClose }) => {
   const { settings, setSettings, updateSettings, uploadLogo, loading, error } = useSettingsPage();
   const [activeSection, setActiveSection] = useState("clinic");
-
-  /* Κεντρικό local state — μια πηγή αλήθειας για όλα τα sections */
-  const [form, setForm] = useState(null);
+  const [mobileView, setMobileView]       = useState("menu");
+  const [form, setForm]                   = useState(null);
 
   useEffect(() => {
     if (settings && !form) {
       setForm({
         clinicName: "",
-        logo: "",
-        language: "el",
-        timezone: "Europe/Athens",
-        staff: [],
-        clinicWorkingHours: defaultWorkingHours(),
+        logo:       "",
+        language:   "el",
+        timezone:   "Europe/Athens",
+        phone:      "",
+        address:    "",
+        afm:        "",
+        staff:      [],
+        clinicWorkingHours:   defaultWorkingHours(),
         groomingWorkingHours: defaultWorkingHours(),
         registryWorkerHeadless: true,
         ...settings,
@@ -117,64 +238,51 @@ const SettingsPage = ({ onClose }) => {
           fromEmail: "",
           ...(settings.emailConfig || {}),
         },
+        notifications: {
+          appointmentReminder: true,
+          vaccineReminder:     true,
+          birthdayReminder:    false,
+          ...(settings.notifications || {}),
+        },
       });
     }
   }, [settings]);
 
-  /* Save state */
-  const [saving, setSaving]       = useState(false);
-  const [saved, setSaved]         = useState(false);
-  const [saveError, setSaveError] = useState(null);
-
-  /* Staff form state */
-  const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState("Κτηνίατρος");
-
-  /* Registry worker state */
+  const [saving, setSaving]         = useState(false);
+  const [saved, setSaved]           = useState(false);
+  const [saveError, setSaveError]   = useState(null);
+  const [newName, setNewName]       = useState("");
+  const [newRole, setNewRole]       = useState("Κτηνίατρος");
   const [workerChanging, setWorkerChanging] = useState(false);
   const [workerError, setWorkerError]       = useState(null);
-
-  /* Email test state */
-  const [testEmailTo, setTestEmailTo]       = useState("");
+  const [testEmailTo, setTestEmailTo]           = useState("");
   const [testEmailSending, setTestEmailSending] = useState(false);
-  const [testEmailResult, setTestEmailResult]   = useState(null); // {ok, msg}
+  const [testEmailResult, setTestEmailResult]   = useState(null);
   const [showPassword, setShowPassword]         = useState(false);
+  const [pinOld, setPinOld]           = useState("");
+  const [pinNew, setPinNew]           = useState("");
+  const [pinConfirm, setPinConfirm]   = useState("");
+  const [pinSaving, setPinSaving]     = useState(false);
+  const [pinResult, setPinResult]     = useState(null);
+  const [showOldPin, setShowOldPin]   = useState(false);
+  const [showNewPin, setShowNewPin]   = useState(false);
 
   const timeZones = useMemo(getSupportedTimeZones, []);
 
-  /* ── Helpers ── */
-  const patch = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    setSaved(false);
-    setSaveError(null);
-  };
+  const patch      = (f, v) => { setForm(p => ({ ...p, [f]: v })); setSaved(false); setSaveError(null); };
+  const patchEmail = (f, v) => { setForm(p => ({ ...p, emailConfig: { ...p.emailConfig, [f]: v } })); setSaved(false); setSaveError(null); };
+  const patchNotif = (f, v) => { setForm(p => ({ ...p, notifications: { ...p.notifications, [f]: v } })); setSaved(false); setSaveError(null); };
 
   const handleSave = async () => {
     try {
-      setSaving(true);
-      setSaveError(null);
+      setSaving(true); setSaveError(null);
       const data = await updateSettings(form);
       if (data) {
         setSettings(data);
-
-        // Sync localStorage so AppointmentSlots picks up grooming/clinic hours
-        const defaultHours = () => ({
-          monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-          tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-          wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-          thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-          friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-          saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
-          sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
-        });
-        localStorage.setItem("clinicWorkingHours",   JSON.stringify(data.clinicWorkingHours   || defaultHours()));
-        localStorage.setItem("groomingWorkingHours", JSON.stringify(data.groomingWorkingHours || defaultHours()));
-
+        localStorage.setItem("clinicWorkingHours",   JSON.stringify(data.clinicWorkingHours   || defaultWorkingHours()));
+        localStorage.setItem("groomingWorkingHours", JSON.stringify(data.groomingWorkingHours || defaultWorkingHours()));
         window.dispatchEvent(new CustomEvent("settings:workingHoursChanged", {
-          detail: {
-            clinicWorkingHours:   data.clinicWorkingHours,
-            groomingWorkingHours: data.groomingWorkingHours,
-          },
+          detail: { clinicWorkingHours: data.clinicWorkingHours, groomingWorkingHours: data.groomingWorkingHours },
         }));
       }
       setSaved(true);
@@ -186,21 +294,9 @@ const SettingsPage = ({ onClose }) => {
     }
   };
 
-  /* Email config patch */
-  const patchEmail = (field, value) => {
-    setForm(prev => ({
-      ...prev,
-      emailConfig: { ...prev.emailConfig, [field]: value },
-    }));
-    setSaved(false);
-    setSaveError(null);
-  };
-
-  /* Test email */
   const handleTestEmail = async () => {
     if (!testEmailTo) return;
-    setTestEmailSending(true);
-    setTestEmailResult(null);
+    setTestEmailSending(true); setTestEmailResult(null);
     try {
       await request("/settings/test-email", { method: "POST", body: { to: testEmailTo } });
       setTestEmailResult({ ok: true, msg: "✅ Το δοκιμαστικό email στάλθηκε επιτυχώς!" });
@@ -211,51 +307,58 @@ const SettingsPage = ({ onClose }) => {
     }
   };
 
-  /* Working hours */
-  const updateClinicDay = (dayKey, p) =>
-    setForm(prev => ({
-      ...prev,
-      clinicWorkingHours: {
-        ...prev.clinicWorkingHours,
-        [dayKey]: { ...prev.clinicWorkingHours[dayKey], ...p },
-      },
-    }));
-
-  const updateGroomingDay = (dayKey, p) =>
-    setForm(prev => ({
-      ...prev,
-      groomingWorkingHours: {
-        ...prev.groomingWorkingHours,
-        [dayKey]: { ...prev.groomingWorkingHours[dayKey], ...p },
-      },
-    }));
-
-  /* Staff */
-  const addStaff = () => {
-    const name = newName.trim();
-    if (!name) return;
-    patch("staff", [...(form.staff || []), { name, role: newRole }]);
-    setNewName("");
-    setNewRole("Κτηνίατρος");
+  const handleChangePin = async () => {
+    if (!pinOld || !pinNew) return;
+    if (pinNew !== pinConfirm) { setPinResult({ ok: false, msg: "❌ Τα νέα PIN δεν ταιριάζουν." }); return; }
+    if (pinNew.length < 4) { setPinResult({ ok: false, msg: "❌ Το νέο PIN πρέπει να έχει τουλάχιστον 4 χαρακτήρες." }); return; }
+    setPinSaving(true); setPinResult(null);
+    try {
+      await request("/auth/change-pin", { method: "POST", body: { oldPin: pinOld, newPin: pinNew } });
+      setPinResult({ ok: true, msg: "✅ Το PIN άλλαξε επιτυχώς!" });
+      setPinOld(""); setPinNew(""); setPinConfirm("");
+    } catch (err) {
+      setPinResult({ ok: false, msg: `❌ ${err.message}` });
+    } finally {
+      setPinSaving(false);
+    }
   };
+
+  const handleDownloadCsv = (type) => {
+    const token = localStorage.getItem("token");
+    const apiBase = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
+    fetch(`${apiBase}/export/${type}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${type}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+  };
+
+  const updateClinicDay   = (d, p) => setForm(prev => ({ ...prev, clinicWorkingHours:   { ...prev.clinicWorkingHours,   [d]: { ...prev.clinicWorkingHours[d],   ...p } } }));
+  const updateGroomingDay = (d, p) => setForm(prev => ({ ...prev, groomingWorkingHours: { ...prev.groomingWorkingHours, [d]: { ...prev.groomingWorkingHours[d], ...p } } }));
+
+  const addStaff    = () => { const name = newName.trim(); if (!name) return; patch("staff", [...(form.staff || []), { name, role: newRole }]); setNewName(""); setNewRole("Κτηνίατρος"); };
   const removeStaff = (i) => patch("staff", form.staff.filter((_, idx) => idx !== i));
 
-  /* Registry worker */
   const handleToggleHeadless = async () => {
     if (workerChanging) return;
     const newValue = !form.registryWorkerHeadless;
-    const updated = { ...form, registryWorkerHeadless: newValue };
-    setWorkerError(null);
-    setWorkerChanging(true);
+    const updated  = { ...form, registryWorkerHeadless: newValue };
+    setWorkerError(null); setWorkerChanging(true);
     try {
       await updateSettings(updated);
-      setForm(updated);
-      setSettings(updated);
+      setForm(updated); setSettings(updated);
       const token = localStorage.getItem("token");
-      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
-      const stop = await fetch("/api/registry/worker/stop", { method: "POST", headers: authHeaders });
-      if (!stop.ok) throw new Error("Αποτυχία τερματισμού worker.");
-      const start = await fetch("/api/registry/worker/start", { method: "POST", headers: authHeaders });
+      const authH = token ? { Authorization: `Bearer ${token}` } : {};
+      const stop  = await fetch("/api/registry/worker/stop",  { method: "POST", headers: authH });
+      if (!stop.ok)  throw new Error("Αποτυχία τερματισμού worker.");
+      const start = await fetch("/api/registry/worker/start", { method: "POST", headers: authH });
       if (!start.ok) throw new Error("Αποτυχία εκκίνησης worker.");
     } catch (err) {
       setWorkerError(err?.message || "Σφάλμα κατά την αλλαγή.");
@@ -264,7 +367,6 @@ const SettingsPage = ({ onClose }) => {
     }
   };
 
-  /* ── Loading / error states ── */
   if (loading || !form) {
     return (
       <div className="py-16 text-center">
@@ -273,16 +375,328 @@ const SettingsPage = ({ onClose }) => {
       </div>
     );
   }
-  if (error) {
-    return <div className="py-12 text-center text-sm text-red-500">{error}</div>;
-  }
+  if (error) return <div className="py-12 text-center text-sm text-red-500">{error}</div>;
 
   const saveProps = { onSave: handleSave, saving, saved, saveError };
+
+  const sections = (
+    <div className="space-y-4">
+
+      {/* ── Στοιχεία ── */}
+      <div className={activeSection !== "clinic" ? "hidden" : ""}>
+        <Section title="Στοιχεία Κλινικής" description="Βασικές πληροφορίες εμφάνισης και επικοινωνίας." {...saveProps}>
+          <div>
+            <label className={LABEL}>Λογότυπο</label>
+            <LogoUpload value={form.logo} onUploadFile={async (file) => { const url = await uploadLogo(file); patch("logo", url); }} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Όνομα Κτηνιατρείου</label>
+              <input type="text" value={form.clinicName || ""} onChange={(e) => patch("clinicName", e.target.value)} placeholder="π.χ. Ιατρείο Μικρών Ζώων" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Τηλέφωνο</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                <input type="tel" value={form.phone || ""} onChange={(e) => patch("phone", e.target.value)} placeholder="210 1234567" className={ICON_INPUT} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className={LABEL}>Διεύθυνση</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+              <input type="text" value={form.address || ""} onChange={(e) => patch("address", e.target.value)} placeholder="π.χ. Λεωφ. Μαραθώνος 12, Άγιος Στέφανος" className={ICON_INPUT} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>ΑΦΜ</label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                <input type="text" value={form.afm || ""} onChange={(e) => patch("afm", e.target.value)} placeholder="123456789" className={ICON_INPUT} />
+              </div>
+            </div>
+            <div>
+              <label className={LABEL}>Γλώσσα</label>
+              <select value={form.language || "el"} onChange={(e) => patch("language", e.target.value)} className={INPUT}>
+                <option value="el">🇬🇷 Ελληνικά</option>
+                <option value="en">🇬🇧 English</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={LABEL}>Ζώνη Ώρας</label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+              <select value={form.timezone || "Europe/Athens"} onChange={(e) => patch("timezone", e.target.value)} className={ICON_INPUT}>
+                {timeZones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+              </select>
+            </div>
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Προσωπικό ── */}
+      <div className={activeSection !== "staff" ? "hidden" : ""}>
+        <Section title="Προσωπικό" description="Διαχείριση μελών ομάδας και ρόλων." {...saveProps}>
+          <div className="rounded-2xl border border-gray-200 dark:border-win-border overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 border-b border-gray-200 dark:border-win-border px-5 py-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Μέλη Ομάδας</span>
+              {(form.staff || []).length > 0 && (
+                <span className="ml-1 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full">{form.staff.length}</span>
+              )}
+            </div>
+            {(form.staff || []).length > 0 ? (
+              <div className="divide-y divide-gray-100 dark:divide-win-border">
+                {form.staff.map((member, i) => (
+                  <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-win-elevated/50 transition-colors group">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <span className="text-sm font-bold text-white">{member.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{member.name}</p>
+                    </div>
+                    <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 text-gray-600"}`}>{member.role}</span>
+                    <button type="button" onClick={() => removeStaff(i)} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 hover:text-red-500 transition-all flex-shrink-0">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-5 py-10 text-center">
+                <Users className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
+                <p className="text-sm text-gray-400 dark:text-gray-500">Δεν έχει καταχωρηθεί προσωπικό ακόμα.</p>
+              </div>
+            )}
+            <div className="border-t border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-elevated/50 px-5 py-3">
+              <div className="flex gap-2">
+                <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addStaff()} placeholder="Όνομα μέλους..." className="flex-1 border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                <select value={newRole} onChange={(e) => setNewRole(e.target.value)} className="border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <button type="button" onClick={addStaff} disabled={!newName.trim()} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex-shrink-0">
+                  <UserPlus className="w-4 h-4" /> Προσθήκη
+                </button>
+              </div>
+            </div>
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Ωράριο ── */}
+      <div className={activeSection !== "hours" ? "hidden" : ""}>
+        <Section title="Ωράριο Λειτουργίας" description="Ρύθμιση ωρών για ιατρείο και grooming." {...saveProps}>
+          <WorkingHoursSection title="Ωράριο Ιατρείου"  workingHours={form.clinicWorkingHours}   updateDay={updateClinicDay} />
+          <WorkingHoursSection title="Ωράριο Grooming"  workingHours={form.groomingWorkingHours} updateDay={updateGroomingDay} />
+        </Section>
+      </div>
+
+      {/* ── Εμφάνιση ── */}
+      <div className={activeSection !== "ui" ? "hidden" : ""}>
+        <Section title="Εμφάνιση" description="Θέμα εμφάνισης και όρια αποθέματος.">
+          <div>
+            <p className={LABEL}>Θέμα</p>
+            <DarkModeToggle settings={form} setSettings={setForm} updateSettings={updateSettings} />
+          </div>
+          <div className="border-t border-gray-100 dark:border-win-border pt-5">
+            <p className={LABEL + " mb-3"}>Stock Thresholds</p>
+            <StockThresholdsPanel />
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Email / Ειδοποιήσεις ── */}
+      <div className={activeSection !== "notifications" ? "hidden" : ""}>
+        <Section title="Ρυθμίσεις Email (SMTP)" description="Στοιχεία SMTP για αυτόματη αποστολή email." {...saveProps}>
+          <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
+            <Mail className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
+              Για Gmail χρησιμοποίησε <strong>smtp.gmail.com</strong>, port <strong>587</strong>. Χρειάζεσαι <strong>App Password</strong> από το Google Account.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>SMTP Host</label>
+              <input type="text" value={form.emailConfig?.host || ""} onChange={(e) => patchEmail("host", e.target.value)} placeholder="smtp.gmail.com" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Port</label>
+              <input type="number" value={form.emailConfig?.port || 587} onChange={(e) => patchEmail("port", parseInt(e.target.value) || 587)} className={INPUT} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Email χρήστη</label>
+              <input type="email" value={form.emailConfig?.user || ""} onChange={(e) => patchEmail("user", e.target.value)} placeholder="clinic@gmail.com" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Κωδικός / App Password</label>
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} value={form.emailConfig?.password || ""} onChange={(e) => patchEmail("password", e.target.value)} placeholder="••••••••••••••••" className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Όνομα αποστολέα</label>
+              <input type="text" value={form.emailConfig?.fromName || ""} onChange={(e) => patchEmail("fromName", e.target.value)} placeholder="Κτηνιατρείο Άγιος Στέφανος" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Email αποστολέα</label>
+              <input type="email" value={form.emailConfig?.fromEmail || ""} onChange={(e) => patchEmail("fromEmail", e.target.value)} placeholder="clinic@gmail.com" className={INPUT} />
+            </div>
+          </div>
+        </Section>
+
+        <div className="mt-4">
+          <Section title="Δοκιμαστικό Email">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <label className={LABEL}>Αποστολή σε</label>
+                <input type="email" value={testEmailTo} onChange={(e) => { setTestEmailTo(e.target.value); setTestEmailResult(null); }} placeholder="email@example.com" className={INPUT} onKeyDown={(e) => e.key === "Enter" && handleTestEmail()} />
+              </div>
+              <button type="button" onClick={handleTestEmail} disabled={!testEmailTo || testEmailSending} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex-shrink-0">
+                <Send className="w-3.5 h-3.5" /> {testEmailSending ? "Αποστολή..." : "Αποστολή"}
+              </button>
+            </div>
+            {testEmailResult && (
+              <div className={`mt-2 px-4 py-2.5 rounded-xl text-sm font-medium ${testEmailResult.ok ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
+                {testEmailResult.msg}
+              </div>
+            )}
+          </Section>
+        </div>
+
+        <div className="mt-4">
+          <Section title="Αυτόματες Ειδοποιήσεις" description="Ενεργοποίησε/απενεργοποίησε αυτόματες αποστολές." {...saveProps}>
+            <div className="space-y-2">
+              <NotifToggle icon="📅" label="Υπενθύμιση ραντεβού"  desc="1 μέρα πριν — 08:00"  value={form.notifications?.appointmentReminder ?? true}  onChange={(v) => patchNotif("appointmentReminder", v)} />
+              <NotifToggle icon="💉" label="Υπενθύμιση εμβολίου"  desc="7 και 1 μέρα πριν — 09:00" value={form.notifications?.vaccineReminder ?? true}   onChange={(v) => patchNotif("vaccineReminder", v)} />
+              <NotifToggle icon="🎂" label="Γενέθλια κατοικιδίου" desc="Ημέρα γενεθλίων — 10:00"   value={form.notifications?.birthdayReminder ?? false}  onChange={(v) => patchNotif("birthdayReminder", v)} />
+            </div>
+          </Section>
+        </div>
+      </div>
+
+      {/* ── Συντομεύσεις ── */}
+      <div className={activeSection !== "shortcuts" ? "hidden" : ""}>
+        <Section title="Συντομεύσεις Πληκτρολογίου" description="Προσαρμογή πλήκτρων για γρήγορη πλοήγηση.">
+          <KeyboardShortcutsSection />
+        </Section>
+      </div>
+
+      {/* ── Λογαριασμός / Αλλαγή PIN ── */}
+      <div className={activeSection !== "account" ? "hidden" : ""}>
+        <Section title="Αλλαγή PIN Σύνδεσης" description="Αλλαγή του προσωπικού σου PIN για είσοδο στο σύστημα.">
+          <div className="space-y-4">
+            <div>
+              <label className={LABEL}>Τρέχον PIN</label>
+              <div className="relative">
+                <input type={showOldPin ? "text" : "password"} value={pinOld} onChange={(e) => { setPinOld(e.target.value); setPinResult(null); }} placeholder="••••" className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400" />
+                <button type="button" onClick={() => setShowOldPin(!showOldPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+                  {showOldPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={LABEL}>Νέο PIN</label>
+                <div className="relative">
+                  <input type={showNewPin ? "text" : "password"} value={pinNew} onChange={(e) => { setPinNew(e.target.value); setPinResult(null); }} placeholder="••••" className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400" />
+                  <button type="button" onClick={() => setShowNewPin(!showNewPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+                    {showNewPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className={LABEL}>Επιβεβαίωση νέου PIN</label>
+                <input type="password" value={pinConfirm} onChange={(e) => { setPinConfirm(e.target.value); setPinResult(null); }} placeholder="••••" className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400" />
+              </div>
+            </div>
+            {pinResult && (
+              <div className={`px-4 py-2.5 rounded-xl text-sm font-medium ${pinResult.ok ? "bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700/50" : "bg-red-50 text-red-600 border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700/50"}`}>
+                {pinResult.msg}
+              </div>
+            )}
+            <button type="button" onClick={handleChangePin} disabled={!pinOld || !pinNew || !pinConfirm || pinSaving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors disabled:opacity-40">
+              <Lock className="w-4 h-4" /> {pinSaving ? "Αλλαγή..." : "Αλλαγή PIN"}
+            </button>
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Εξαγωγή Δεδομένων ── */}
+      <div className={activeSection !== "export" ? "hidden" : ""}>
+        <Section title="Εξαγωγή Δεδομένων" description="Λήψη δεδομένων σε CSV — άνοιγμα με Excel ή Google Sheets.">
+          <div className="space-y-3">
+            {[
+              { key: "customers",    label: "Πελάτες",    desc: "Όνομα, τηλέφωνο, email, διεύθυνση",     icon: "👥", bg: "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700/50", text: "text-indigo-700 dark:text-indigo-300", btn: "bg-indigo-100 dark:bg-indigo-900/40 hover:bg-indigo-200 dark:hover:bg-indigo-900/60" },
+              { key: "pets",         label: "Κατοικίδια", desc: "Στοιχεία ζώου, ιδιοκτήτης, microchip",  icon: "🐾", bg: "bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-700/50",         text: "text-sky-700 dark:text-sky-300",     btn: "bg-sky-100 dark:bg-sky-900/40 hover:bg-sky-200 dark:hover:bg-sky-900/60" },
+              { key: "appointments", label: "Ραντεβού",   desc: "Ημερομηνία, ώρα, ζώο, τύπος, ιατρός",  icon: "📅", bg: "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/50", text: "text-violet-700 dark:text-violet-300", btn: "bg-violet-100 dark:bg-violet-900/40 hover:bg-violet-200 dark:hover:bg-violet-900/60" },
+            ].map(({ key, label, desc, icon, bg, text, btn }) => (
+              <div key={key} className={`flex items-center gap-4 p-4 rounded-2xl border ${bg}`}>
+                <span className="text-2xl flex-shrink-0">{icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold ${text}`}>{label}</p>
+                  <p className={`text-xs mt-0.5 opacity-70 ${text}`}>{desc}</p>
+                </div>
+                <button type="button" onClick={() => handleDownloadCsv(key)} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex-shrink-0 ${btn} ${text}`}>
+                  <Download className="w-4 h-4" /> CSV
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 p-3 bg-gray-50 dark:bg-win-elevated/50 rounded-xl border border-gray-100 dark:border-win-border/50 flex items-start gap-2">
+            <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-400 dark:text-gray-500">Τα αρχεία CSV περιέχουν BOM (UTF-8) για σωστή εμφάνιση ελληνικών στο Excel. Στο Google Sheets: File → Import.</p>
+          </div>
+        </Section>
+      </div>
+
+      {/* ── Audit Log ── */}
+      <div className={activeSection !== "audit" ? "hidden" : ""}>
+        <Section title="Audit Log" description="Ιστορικό ενεργειών — 90 ημέρες διατήρηση. Μόνο για admin.">
+          <AuditLogViewer />
+        </Section>
+      </div>
+
+      {/* ── Admin ── */}
+      <div className={activeSection !== "admin" ? "hidden" : ""}>
+        <Section title="Admin" description="Ρυθμίσεις για τον Playwright registry worker (gov.gr).">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-win-elevated flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Headless Registry Worker</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Όταν ενεργό, ο Chromium τρέχει χωρίς ορατό παράθυρο.</p>
+              </div>
+            </div>
+            <button type="button" onClick={handleToggleHeadless} disabled={workerChanging}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300 dark:bg-win-elevated2"} ${workerChanging ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${form.registryWorkerHeadless ? "translate-x-5" : "translate-x-1"}`} />
+            </button>
+          </div>
+          {workerChanging && <p className="text-xs text-gray-400 dark:text-gray-500">Επανεκκίνηση worker...</p>}
+          {workerError && <p className="text-xs text-red-500">{workerError}</p>}
+        </Section>
+      </div>
+
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-6">
 
-      {/* ── Top bar ── */}
+      {/* Top bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-sm">
@@ -294,29 +708,62 @@ const SettingsPage = ({ onClose }) => {
           </div>
         </div>
         {onClose && (
-          <button
-            onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-win-border-light text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors"
-          >
+          <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-win-border-light text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated transition-colors">
             <X className="w-4 h-4" /> Κλείσιμο
           </button>
         )}
       </div>
 
-      {/* ── Body ── */}
-      <div className="flex gap-6 items-start">
+      {/* ── Mobile: Navigation Menu ── */}
+      <div className={`sm:hidden ${mobileView === "menu" ? "block" : "hidden"}`}>
+        <div className="space-y-4">
+          {NAV_GROUPS.map(({ group, items }) => (
+            <div key={group}>
+              <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-2 px-1">{group}</p>
+              <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
+                {items.map(({ id, label, icon: Icon, desc, iconBg, iconColor }) => (
+                  <button key={id} type="button"
+                    onClick={() => { setActiveSection(id); setMobileView("content"); }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-win-elevated active:bg-gray-100 transition-colors border-b border-gray-50 dark:border-win-border/50 last:border-0"
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+                      <Icon className={`w-5 h-5 ${iconColor}`} />
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{label}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{desc}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {/* Sidebar */}
-        <div className="w-44 flex-shrink-0 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden py-3">
+      {/* ── Mobile: Back button ── */}
+      {mobileView === "content" && (
+        <button type="button" onClick={() => setMobileView("menu")}
+          className="sm:hidden flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm font-semibold hover:text-indigo-700 transition-colors -mb-2"
+        >
+          <ArrowLeft className="w-4 h-4" /> Πίσω στις ρυθμίσεις
+        </button>
+      )}
+
+      {/* ── Mobile: Content ── */}
+      <div className={mobileView === "content" ? "sm:hidden" : "hidden"}>
+        {sections}
+      </div>
+
+      {/* ── Desktop: Sidebar + Content ── */}
+      <div className="hidden sm:flex gap-6 items-start">
+        <div className="w-48 flex-shrink-0 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden py-3">
           {NAV_GROUPS.map(({ group, items }) => (
             <div key={group} className="mb-4 last:mb-0">
-              <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-1 px-4">
-                {group}
-              </p>
+              <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-1 px-4">{group}</p>
               {items.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveSection(id)}
+                <button key={id} onClick={() => setActiveSection(id)}
                   className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm font-medium transition-colors text-left ${
                     activeSection === id
                       ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-r-2 border-indigo-500"
@@ -330,405 +777,11 @@ const SettingsPage = ({ onClose }) => {
             </div>
           ))}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-4">
-
-          {/* ── ΣΤΟΙΧΕΙΑ ΚΛΙΝΙΚΗΣ ── */}
-          <div className={activeSection !== "clinic" ? "hidden" : ""}>
-            <Section
-              title="Στοιχεία Κλινικής"
-              description="Βασικές πληροφορίες εμφάνισης και τοπικών ρυθμίσεων."
-              {...saveProps}
-            >
-              <div>
-                <label className={LABEL}>Λογότυπο</label>
-                <LogoUpload
-                  value={form.logo}
-                  onUploadFile={async (file) => {
-                    const url = await uploadLogo(file);
-                    patch("logo", url);
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={LABEL}>Όνομα Κτηνιατρείου</label>
-                  <input
-                    type="text"
-                    value={form.clinicName || ""}
-                    onChange={(e) => patch("clinicName", e.target.value)}
-                    placeholder="π.χ. Ιατρείο Μικρών Ζώων"
-                    className={INPUT}
-                  />
-                </div>
-                <div>
-                  <label className={LABEL}>Γλώσσα</label>
-                  <select
-                    value={form.language || "el"}
-                    onChange={(e) => patch("language", e.target.value)}
-                    className={INPUT}
-                  >
-                    <option value="el">🇬🇷 Ελληνικά</option>
-                    <option value="en">🇬🇧 English</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className={LABEL}>Ζώνη Ώρας</label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
-                  <select
-                    value={form.timezone || "Europe/Athens"}
-                    onChange={(e) => patch("timezone", e.target.value)}
-                    className="w-full border border-gray-200 dark:border-win-border-light rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
-                  >
-                    {timeZones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                  </select>
-                </div>
-              </div>
-            </Section>
-          </div>
-
-          {/* ── ΠΡΟΣΩΠΙΚΟ ── */}
-          <div className={activeSection !== "staff" ? "hidden" : ""}>
-            <Section
-              title="Προσωπικό"
-              description="Διαχείριση μελών ομάδας και ρόλων."
-              {...saveProps}
-            >
-              <div className="rounded-2xl border border-gray-200 dark:border-win-border overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 border-b border-gray-200 dark:border-win-border px-5 py-3 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-                  <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Μέλη Ομάδας</span>
-                  {(form.staff || []).length > 0 && (
-                    <span className="ml-1 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded-full">
-                      {form.staff.length}
-                    </span>
-                  )}
-                </div>
-
-                {/* List */}
-                {(form.staff || []).length > 0 ? (
-                  <div className="divide-y divide-gray-100 dark:divide-win-border">
-                    {form.staff.map((member, i) => (
-                      <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-win-elevated/50 transition-colors group">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <span className="text-sm font-bold text-white">
-                            {member.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{member.name}</p>
-                        </div>
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${ROLE_STYLE[member.role] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-400"}`}>
-                          {member.role}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeStaff(i)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-all flex-shrink-0"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="px-5 py-10 text-center">
-                    <Users className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400 dark:text-gray-500">Δεν έχει καταχωρηθεί προσωπικό ακόμα.</p>
-                  </div>
-                )}
-
-                {/* Add form */}
-                <div className="border-t border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-elevated/50 px-5 py-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addStaff()}
-                      placeholder="Όνομα μέλους..."
-                      className="flex-1 border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    />
-                    <select
-                      value={newRole}
-                      onChange={(e) => setNewRole(e.target.value)}
-                      className="border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    >
-                      {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={addStaff}
-                      disabled={!newName.trim()}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      Προσθήκη
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Section>
-          </div>
-
-          {/* ── ΩΡΑΡΙΟ ── */}
-          <div className={activeSection !== "hours" ? "hidden" : ""}>
-            <Section
-              title="Ωράριο Λειτουργίας"
-              description="Ρύθμιση ωρών για ιατρείο και grooming."
-              {...saveProps}
-            >
-              <WorkingHoursSection
-                title="Ωράριο Ιατρείου"
-                workingHours={form.clinicWorkingHours}
-                updateDay={updateClinicDay}
-              />
-              <WorkingHoursSection
-                title="Ωράριο Grooming"
-                workingHours={form.groomingWorkingHours}
-                updateDay={updateGroomingDay}
-              />
-            </Section>
-          </div>
-
-          {/* ── ΕΜΦΑΝΙΣΗ ── */}
-          <div className={activeSection !== "ui" ? "hidden" : ""}>
-            <Section title="Εμφάνιση" description="Θέμα εμφάνισης και όρια αποθέματος.">
-              <div>
-                <p className={LABEL}>Θέμα</p>
-                <DarkModeToggle
-                  settings={form}
-                  setSettings={setForm}
-                  updateSettings={updateSettings}
-                />
-              </div>
-              <div className="border-t border-gray-100 dark:border-win-border pt-5">
-                <p className={LABEL + " mb-3"}>Stock Thresholds</p>
-                <StockThresholdsPanel />
-              </div>
-            </Section>
-          </div>
-
-          {/* ── EMAIL / SMTP ── */}
-          <div className={activeSection !== "notifications" ? "hidden" : ""}>
-            {/* SMTP Config */}
-            <Section
-              title="Ρυθμίσεις Email (SMTP)"
-              description="Συμπλήρωσε τα στοιχεία SMTP για αυτόματες ειδοποιήσεις σε πελάτες."
-              {...saveProps}
-            >
-              {/* Info banner */}
-              <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
-                <Mail className="w-4 h-4 text-sky-400 dark:text-sky-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
-                  Για Gmail χρησιμοποίησε <strong>smtp.gmail.com</strong>, port <strong>587</strong>.
-                  Πρέπει να δημιουργήσεις <strong>App Password</strong> από το Google Account σου
-                  (Google Account → Security → 2-Step Verification → App Passwords).
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={LABEL}>SMTP Host</label>
-                  <input
-                    type="text"
-                    value={form.emailConfig?.host || ""}
-                    onChange={(e) => patchEmail("host", e.target.value)}
-                    placeholder="smtp.gmail.com"
-                    className={INPUT}
-                  />
-                </div>
-                <div>
-                  <label className={LABEL}>Port</label>
-                  <input
-                    type="number"
-                    value={form.emailConfig?.port || 587}
-                    onChange={(e) => patchEmail("port", parseInt(e.target.value) || 587)}
-                    placeholder="587"
-                    className={INPUT}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={LABEL}>Email χρήστη (user)</label>
-                  <input
-                    type="email"
-                    value={form.emailConfig?.user || ""}
-                    onChange={(e) => patchEmail("user", e.target.value)}
-                    placeholder="clinic@gmail.com"
-                    className={INPUT}
-                  />
-                </div>
-                <div>
-                  <label className={LABEL}>Κωδικός / App Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={form.emailConfig?.password || ""}
-                      onChange={(e) => patchEmail("password", e.target.value)}
-                      placeholder="••••••••••••••••"
-                      className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-100 dark:border-win-border pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={LABEL}>Όνομα αποστολέα</label>
-                  <input
-                    type="text"
-                    value={form.emailConfig?.fromName || ""}
-                    onChange={(e) => patchEmail("fromName", e.target.value)}
-                    placeholder="Κτηνιατρείο Άγιος Στέφανος"
-                    className={INPUT}
-                  />
-                </div>
-                <div>
-                  <label className={LABEL}>Email αποστολέα (from)</label>
-                  <input
-                    type="email"
-                    value={form.emailConfig?.fromEmail || ""}
-                    onChange={(e) => patchEmail("fromEmail", e.target.value)}
-                    placeholder="clinic@gmail.com"
-                    className={INPUT}
-                  />
-                </div>
-              </div>
-            </Section>
-
-            {/* Test Email */}
-            <div className="mt-4">
-              <Section
-                title="Δοκιμαστικό Email"
-                description="Έλεγξε αν η σύνδεση SMTP λειτουργεί σωστά."
-              >
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <label className={LABEL}>Αποστολή σε</label>
-                    <input
-                      type="email"
-                      value={testEmailTo}
-                      onChange={(e) => {
-                        setTestEmailTo(e.target.value);
-                        setTestEmailResult(null);
-                      }}
-                      placeholder="email@example.com"
-                      className={INPUT}
-                      onKeyDown={(e) => e.key === "Enter" && handleTestEmail()}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleTestEmail}
-                    disabled={!testEmailTo || testEmailSending}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    {testEmailSending ? "Αποστολή..." : "Αποστολή"}
-                  </button>
-                </div>
-
-                {testEmailResult && (
-                  <div className={`mt-2 px-4 py-2.5 rounded-xl text-sm font-medium ${
-                    testEmailResult.ok
-                      ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-700/50"
-                      : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-700/50"
-                  }`}>
-                    {testEmailResult.msg}
-                  </div>
-                )}
-
-                {/* Αυτόματες ειδοποιήσεις info */}
-                <div className="mt-4 border-t border-gray-100 dark:border-win-border pt-4">
-                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Αυτόματες Ειδοποιήσεις</p>
-                  <div className="space-y-2">
-                    {[
-                      { icon: "📅", label: "Υπενθύμιση ραντεβού",   desc: "Αποστολή 1 μέρα πριν — κάθε μέρα 08:00", active: true },
-                      { icon: "💉", label: "Υπενθύμιση εμβολίου",   desc: "7 και 1 μέρα πριν — κάθε μέρα 09:00",   active: true },
-                      { icon: "🎂", label: "Γενέθλια κατοικιδίου",  desc: "Την ημέρα των γενεθλίων",               active: false },
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-win-elevated/50 rounded-xl">
-                        <span className="text-lg flex-shrink-0">{item.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{item.label}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500">{item.desc}</p>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                          item.active ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-gray-100 dark:bg-win-elevated text-gray-400 dark:text-gray-500"
-                        }`}>
-                          {item.active ? "ΕΝΕΡΓΟ" : "ΣΧΕΔΙΑΣΜΟΣ"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Section>
-            </div>
-          </div>
-
-          {/* ── ΣΥΝΤΟΜΕΥΣΕΙΣ ── */}
-          <div className={activeSection !== "shortcuts" ? "hidden" : ""}>
-            <Section
-              title="Συντομεύσεις Πληκτρολογίου"
-              description="Προσαρμογή πλήκτρων για γρήγορη πλοήγηση στην εφαρμογή."
-            >
-              <KeyboardShortcutsSection />
-            </Section>
-          </div>
-
-          {/* ── ADMIN ── */}
-          <div className={activeSection !== "admin" ? "hidden" : ""}>
-            <Section title="Admin" description="Ρυθμίσεις για τον Playwright registry worker (gov.gr).">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-win-elevated flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Headless Registry Worker</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      Όταν ενεργό, ο Chromium τρέχει χωρίς ορατό παράθυρο.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleToggleHeadless}
-                  disabled={workerChanging}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                    form.registryWorkerHeadless ? "bg-emerald-500" : "bg-gray-300 dark:bg-win-elevated2"
-                  } ${workerChanging ? "opacity-60 cursor-not-allowed" : ""}`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                    form.registryWorkerHeadless ? "translate-x-5" : "translate-x-1"
-                  }`} />
-                </button>
-              </div>
-              {workerChanging && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">Επανεκκίνηση worker με τη νέα ρύθμιση...</p>
-              )}
-              {workerError && (
-                <p className="text-xs text-red-500">{workerError}</p>
-              )}
-            </Section>
-          </div>
-
+        <div className="flex-1 min-w-0">
+          {sections}
         </div>
       </div>
+
     </div>
   );
 };

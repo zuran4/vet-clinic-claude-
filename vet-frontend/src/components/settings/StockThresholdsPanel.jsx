@@ -1,6 +1,3 @@
-// src/components/settings/StockThresholdsPanel.jsx
-console.log("StockThresholdsPanel mounted");
-
 import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useStockThresholds } from "@/hooks";
@@ -30,7 +27,6 @@ export default function StockThresholdsPanel({ categories = [] }) {
 
   // Συγχρονισμός όταν φορτώνουν/αλλάζουν τα global από storage
   useEffect(() => {
-    console.log("StockThresholdsPanel mounted");
     setGlobalLow(String(thresholds?._global?.low ?? 5));
     setGlobalOk(String(thresholds?._global?.ok ?? 20));
   }, [thresholds?._global?.low, thresholds?._global?.ok]);

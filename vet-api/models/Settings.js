@@ -52,6 +52,18 @@ const settingsSchema = new mongoose.Schema({
     default: [],
   },
 
+  // 🔹 Στοιχεία επικοινωνίας κλινικής
+  phone:   { type: String, default: "" },
+  address: { type: String, default: "" },
+  afm:     { type: String, default: "" },
+
+  // 🔹 Ειδοποιήσεις email
+  notifications: {
+    appointmentReminder: { type: Boolean, default: true },
+    vaccineReminder:     { type: Boolean, default: true },
+    birthdayReminder:    { type: Boolean, default: false },
+  },
+
   // 🔹 Registry worker (headless / visible)
   registryWorkerHeadless: { type: Boolean, default: true },
 

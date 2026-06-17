@@ -45,12 +45,16 @@ router.put("/", async (req, res) => {
       logo,
       language,
       timezone,
+      phone,
+      address,
+      afm,
       clinicWorkingHours,
       groomingWorkingHours,
       registryWorkerHeadless,
       staff,
       darkMode,
       emailConfig,
+      notifications,
     } = req.body;
 
     let settings = await Settings.findOne();
@@ -61,23 +65,31 @@ router.put("/", async (req, res) => {
         logo,
         language,
         timezone,
+        phone:    phone    || "",
+        address:  address  || "",
+        afm:      afm      || "",
         clinicWorkingHours,
         groomingWorkingHours,
         registryWorkerHeadless,
-        staff:       staff       || [],
-        darkMode:    darkMode    || false,
-        emailConfig: emailConfig || {},
+        staff:         staff         || [],
+        darkMode:      darkMode      || false,
+        emailConfig:   emailConfig   || {},
+        notifications: notifications || {},
       });
     } else {
       if (clinicName   !== undefined) settings.clinicName = clinicName;
       if (logo         !== undefined) settings.logo = logo;
       if (language     !== undefined) settings.language = language;
       if (timezone     !== undefined) settings.timezone = timezone;
+      if (phone        !== undefined) settings.phone = phone;
+      if (address      !== undefined) settings.address = address;
+      if (afm          !== undefined) settings.afm = afm;
       if (clinicWorkingHours !== undefined) settings.clinicWorkingHours = clinicWorkingHours;
       if (groomingWorkingHours !== undefined) settings.groomingWorkingHours = groomingWorkingHours;
       if (registryWorkerHeadless !== undefined) settings.registryWorkerHeadless = registryWorkerHeadless;
       if (staff !== undefined) settings.staff = staff;
       if (darkMode !== undefined) settings.darkMode = darkMode;
+      if (notifications !== undefined) settings.notifications = { ...settings.notifications, ...notifications };
       if (emailConfig !== undefined) {
         // Το GET δεν επιστρέφει ποτέ το πραγματικό password, οπότε ένα κενό
         // password εδώ σημαίνει "δεν το άλλαξε ο χρήστης" — κρατάμε το παλιό.

@@ -9,6 +9,8 @@ import { me } from "../controllers/auth/me.js";
 import { refresh } from "../controllers/auth/refresh.js";
 import { logout } from "../controllers/auth/logout.js";
 import requireAuth from "../middlewares/auth/requireAuth.js";
+import User from "../models/User.js";
+import { comparePin, hashPin } from "../services/auth/pinCrypto.js";
 
 const router = express.Router();
 
@@ -33,5 +35,27 @@ router.post("/login", loginLimiter, validateBody(loginSchema), login);
 router.post("/refresh", refresh);
 router.post("/logout", logout);
 router.get("/me", requireAuth, me);
+
+// 🔒 Αλλαγή PIN — απαιτεί σύνδεση
+router.post("/change-pin", requireAuth, async (req, res) => {
+  try {
+    const { oldPin, newPin } = req.body;
+    if (!oldPin || !newPin) return res.status(400).json({ error: "Απαιτούνται oldPin και newPin." });
+    if (String(newPin).length < 4) return res.status(400).json({ error: "Το νέο PIN πρέπει να έχει τουλάχιστον 4 ψηφία." });
+
+    const user = await User.findById(req.user.userId).select("pinHash").lean();
+    if (!user) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε." });
+
+    const valid = await comparePin(String(oldPin), user.pinHash);
+    if (!valid) return res.status(401).json({ error: "Λανθασμένο τρέχον PIN." });
+
+    const newHash = await hashPin(String(newPin));
+    await User.findByIdAndUpdate(req.user.userId, { pinHash: newHash });
+
+    res.json({ ok: true, message: "Το PIN άλλαξε επιτυχώς." });
+  } catch (err) {
+    res.status(500).json({ error: "Σφάλμα αλλαγής PIN." });
+  }
+});
 
 export default router;

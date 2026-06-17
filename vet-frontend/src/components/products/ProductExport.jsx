@@ -50,16 +50,16 @@ const ProductExport = () => {
   }, [productQuery]);
 
   useEffect(() => {
-    if (!showCustomerResults) return;
+    if (debouncedCustomerQuery.trim().length === 0) return;
     let cancelled = false;
     const doFetch = async () => {
       try {
         setLoadingCustomers(true);
-        const url = debouncedCustomerQuery.trim().length > 0
-          ? `/customers?search=${encodeURIComponent(debouncedCustomerQuery)}`
-          : `/customers?limit=100`;
-        const data = await request(url);
-        if (!cancelled) setCustomerResults(Array.isArray(data) ? data : (data.data ?? []));
+        const data = await request(`/customers?search=${encodeURIComponent(debouncedCustomerQuery)}`);
+        if (!cancelled) {
+          setCustomerResults(Array.isArray(data) ? data : (data.data ?? []));
+          setShowCustomerResults(true);
+        }
       } catch {
         if (!cancelled) setCustomerResults([]);
       } finally {
@@ -68,19 +68,19 @@ const ProductExport = () => {
     };
     doFetch();
     return () => { cancelled = true; };
-  }, [debouncedCustomerQuery, showCustomerResults]);
+  }, [debouncedCustomerQuery]);
 
   useEffect(() => {
-    if (!showProductResults) return;
+    if (debouncedProductQuery.trim().length === 0) return;
     let cancelled = false;
     const doFetch = async () => {
       try {
         setLoadingProducts(true);
-        const url = debouncedProductQuery.trim().length > 0
-          ? `/products?search=${encodeURIComponent(debouncedProductQuery)}`
-          : `/products`;
-        const data = await request(url);
-        if (!cancelled) setProductResults(Array.isArray(data) ? data : (data.data ?? []));
+        const data = await request(`/products?search=${encodeURIComponent(debouncedProductQuery)}`);
+        if (!cancelled) {
+          setProductResults(Array.isArray(data) ? data : (data.data ?? []));
+          setShowProductResults(true);
+        }
       } catch {
         if (!cancelled) setProductResults([]);
       } finally {
@@ -89,7 +89,7 @@ const ProductExport = () => {
     };
     doFetch();
     return () => { cancelled = true; };
-  }, [debouncedProductQuery, showProductResults]);
+  }, [debouncedProductQuery]);
 
   const addToCart = (prod) => {
     setCart((prev) => {
@@ -169,8 +169,8 @@ const ProductExport = () => {
     <div className="space-y-3 max-w-3xl mx-auto">
 
       {/* ── Πελάτης ── */}
-      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/20 border-b border-indigo-100 dark:border-indigo-700/50 px-4 py-3 flex items-center gap-2">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm">
+        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/20 border-b border-indigo-100 dark:border-indigo-700/50 px-4 py-3 flex items-center gap-2 rounded-t-2xl">
           <User className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
           <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Πελάτης</span>
         </div>
@@ -213,9 +213,9 @@ const ProductExport = () => {
                   onChange={(e) => {
                     const v = e.target.value;
                     setCustomerQuery(v);
-                    setShowCustomerResults(v.trim().length > 0);
-                    if (v.trim().length === 0) setCustomerResults([]);
+                    if (v.trim().length === 0) { setCustomerResults([]); setShowCustomerResults(false); }
                   }}
+                  onFocus={() => { if (customerQuery.trim().length > 0 && customerResults.length > 0) setShowCustomerResults(true); }}
                   placeholder="Αναζήτηση πελάτη..."
                   className={`${INPUT} focus:ring-indigo-300`}
                 />
@@ -255,8 +255,8 @@ const ProductExport = () => {
       </div>
 
       {/* ── Προϊόντα ── */}
-      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border-b border-emerald-100 dark:border-emerald-700/50 px-4 py-3 flex items-center justify-between">
+      <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border-b border-emerald-100 dark:border-emerald-700/50 px-4 py-3 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-2">
             <PackageSearch className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
             <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Προϊόντα</span>
@@ -277,9 +277,9 @@ const ProductExport = () => {
               onChange={(e) => {
                 const v = e.target.value;
                 setProductQuery(v);
-                setShowProductResults(v.trim().length > 0);
-                if (v.trim().length === 0) setProductResults([]);
+                if (v.trim().length === 0) { setProductResults([]); setShowProductResults(false); }
               }}
+              onFocus={() => { if (productQuery.trim().length > 0 && productResults.length > 0) setShowProductResults(true); }}
               placeholder={cart.length > 0 ? "Προσθήκη άλλου προϊόντος..." : "Αναζήτηση προϊόντος..."}
               className={`${INPUT} focus:ring-emerald-300`}
             />

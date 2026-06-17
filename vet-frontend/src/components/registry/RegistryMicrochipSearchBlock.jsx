@@ -114,10 +114,10 @@ export default function RegistryMicrochipSearchBlock() {
   }, [cardData, microchip, existingSearch]);
 
   return (
-    <section className="w-full rounded-2xl overflow-hidden border border-violet-100 dark:border-violet-700/40 shadow-sm">
+    <section className="w-full rounded-2xl overflow-hidden border border-teal-100 dark:border-teal-700/40 shadow-sm">
 
       {/* Gradient Header */}
-      <div className="bg-gradient-to-r from-violet-500 to-indigo-400 px-5 pt-4 pb-4">
+      <div className="bg-gradient-to-r from-teal-500 to-cyan-400 px-5 pt-4 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">

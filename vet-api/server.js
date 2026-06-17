@@ -26,6 +26,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import purchaseRoutes from "./routes/purchases.js";
 import reminderRoutes from "./routes/reminders.js";
+import exportRoutes from "./routes/export.js";
 import registryRoutes from "./routes/registry/index.js";
 import healthRoutes from "./routes/health.js";
 import attachRequestId from "./middlewares/requestId.js";
@@ -190,6 +191,7 @@ app.use("/api/suppliers", supplierRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/registry", registryRoutes);
+app.use("/api/export", exportRoutes);
 
 // ==============================
 // 🌐 Health Check
