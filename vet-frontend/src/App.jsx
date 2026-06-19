@@ -17,7 +17,7 @@ import settingsApi from "./api/settingsApi";
 dayjs.locale("el");
 
 function App() {
-  const { user, authLoading, login, logout, getAuthHeaders } = useAuth();
+  const { user, authLoading, login, logout } = useAuth();
   const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState("Ιατρείο");

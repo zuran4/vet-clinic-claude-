@@ -10,6 +10,7 @@ const Dashboard = ({
   appointments = [],
   pets = [],
   products = [],
+  customersCount = 0,
   onShowAppointments,
   onEditAppointment,
   onJumpToDate,
@@ -35,7 +36,7 @@ const Dashboard = ({
       {
         key: "customers",
         title: "Πελάτες",
-        description: "Διαχείριση πελατών και ιστορικού",
+        description: `Πελάτες: ${customersCount}`,
         icon: Users,
         onClick: onShowCustomers,
         iconBg: "bg-indigo-100 dark:bg-indigo-900/40",
@@ -77,7 +78,7 @@ const Dashboard = ({
         ring: "group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/10",
       },
     ],
-    [onShowProducts, onShowCustomers, onShowPets, onShowPrescriptions, onShowExportPanel, products.length, pets.length]
+    [onShowProducts, onShowCustomers, onShowPets, onShowPrescriptions, onShowExportPanel, products.length, pets.length, customersCount]
   );
 
   return (

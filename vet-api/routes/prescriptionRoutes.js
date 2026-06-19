@@ -2,6 +2,7 @@ import express from "express";
 
 import Prescription from "../models/Prescription.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.post("/", requirePermission("prescriptions:write"), async (req, res) => {
     const saved = await newPrescription.save();
     res.status(201).json(saved);
   } catch (err) {
-    console.error("❌ Σφάλμα καταχώρησης συνταγής:", err);
+    logger.error("❌ Σφάλμα καταχώρησης συνταγής:", err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -26,7 +27,7 @@ router.get("/", requirePermission("prescriptions:read"), async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(prescriptions);
   } catch (err) {
-    console.error("❌ Σφάλμα φόρτωσης συνταγών:", err);
+    logger.error("❌ Σφάλμα φόρτωσης συνταγών:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -38,7 +39,7 @@ router.get("/by-animal/:animalId", requirePermission("prescriptions:read"), asyn
       .sort({ createdAt: -1 });
     res.json(prescriptions);
   } catch (err) {
-    console.error("❌ Σφάλμα λήψης συνταγών:", err);
+    logger.error("❌ Σφάλμα λήψης συνταγών:", err);
     res.status(500).json({ error: err.message });
   }
 });

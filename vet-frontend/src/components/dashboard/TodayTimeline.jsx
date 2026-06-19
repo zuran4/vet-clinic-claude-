@@ -1,9 +1,10 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
+import AppointmentPreviewModal from "../appointments/AppointmentPreviewModal.jsx";
 
 registerLocale("el", el);
 
@@ -73,22 +74,32 @@ const TYPE_DOT = {
 function getTypeColor(type) { return TYPE_COLORS[type] || "bg-gray-100 text-gray-600"; }
 function getTypeDot(type)   { return TYPE_DOT[type]    || "bg-gray-400"; }
 
-function AppointmentItem({ appt, onClick }) {
+function AppointmentItem({ appt, onClick, onConsult }) {
   return (
-    <li
-      onClick={onClick}
-      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/30 dark:hover:border-indigo-700/50 transition-colors group"
-    >
+    <li className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50 transition-colors group">
       <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
-      <span className="text-sm font-bold text-gray-700 dark:text-gray-200 w-12 flex-shrink-0">{appt.time}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{appt.animalName}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
-      </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
-        {appt.type}
-      </span>
-      <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 group-hover:text-indigo-400 transition-colors flex-shrink-0" />
+      <button
+        type="button"
+        onClick={onConsult}
+        className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+      >
+        <span className="text-sm font-bold text-gray-700 dark:text-gray-200 w-12 flex-shrink-0">{appt.time}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{appt.animalName}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
+        </div>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
+          {appt.type}
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={onClick}
+        title="Επεξεργασία"
+        className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center flex-shrink-0 transition-colors"
+      >
+        <Pencil className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+      </button>
     </li>
   );
 }
@@ -108,7 +119,7 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
 
 const MAX_VISIBLE = 4;
 
-function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAll, onEditAppointment, extra }) {
+function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAll, onEditAppointment, onConsult, extra }) {
   const visible = appointments.slice(0, MAX_VISIBLE);
   const remaining = appointments.length - MAX_VISIBLE;
 
@@ -147,7 +158,12 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAl
           <>
             <ul className="space-y-2">
               {visible.map((appt) => (
-                <AppointmentItem key={appt._id} appt={appt} onClick={() => onEditAppointment?.(appt)} />
+                <AppointmentItem
+                  key={appt._id}
+                  appt={appt}
+                  onClick={() => onEditAppointment?.(appt)}
+                  onConsult={() => onConsult?.(appt)}
+                />
               ))}
             </ul>
             {remaining > 0 && (
@@ -166,6 +182,8 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAl
 }
 
 export default function TodayTimeline({ appointments = [], onShowAppointments, onEditAppointment, onJumpToDate }) {
+  const [consultAppt, setConsultAppt] = useState(null);
+
   const today = new Date().toISOString().split("T")[0];
   const todayLabel = dayjs().locale("el").format("dddd D MMMM");
 
@@ -177,6 +195,13 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
   const groomingAppts = todaysAppointments.filter((a) => a.doctor === "Grooming");
 
   return (
+    <>
+    <AppointmentPreviewModal
+      isOpen={!!consultAppt}
+      appointment={consultAppt}
+      onClose={() => setConsultAppt(null)}
+      initialTab="consult"
+    />
     <div className="bg-white dark:bg-win-bg/30 border border-gray-200 dark:border-win-border rounded-2xl shadow-sm overflow-hidden">
 
       {/* Gradient Header */}
@@ -210,6 +235,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             emptyText="Κανένα ραντεβού ιατρείου"
             onShowAll={onShowAppointments}
             onEditAppointment={onEditAppointment}
+            onConsult={setConsultAppt}
             extra={
               onJumpToDate && (
                 <DatePicker
@@ -233,6 +259,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             emptyText="Κανένα ραντεβού grooming"
             onShowAll={onShowAppointments}
             onEditAppointment={onEditAppointment}
+            onConsult={setConsultAppt}
             extra={
               onJumpToDate && (
                 <DatePicker
@@ -250,5 +277,6 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
         </div>
       </div>
     </div>
+    </>
   );
 }

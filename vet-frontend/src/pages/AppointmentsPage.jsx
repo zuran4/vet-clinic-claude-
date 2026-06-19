@@ -124,6 +124,7 @@ function AppointmentsPage({
       {/* Modal για ραντεβού */}
       <Modal
         isOpen={!!selectedTime}
+        noPadding
         onClose={() => {
           setSelectedTime(null);
           setEditingAppointment(null);

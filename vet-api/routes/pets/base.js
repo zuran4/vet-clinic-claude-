@@ -7,6 +7,7 @@ import requirePermission from "../../middlewares/auth/requirePermission.js";
 const router = express.Router();
 
 router.post("/",                         requirePermission("pets:write"),  pets.createPet);
+router.get("/count",                     requirePermission("pets:read"),   pets.getPetsCount);
 router.get("/",                          requirePermission("pets:read"),   pets.getAllPets);
 router.get("/by-owner/:ownerId",         requirePermission("pets:read"),   pets.getPetsByOwner);
 router.patch("/snapshot/:microchip",     requirePermission("pets:write"),  pets.updateRegistrySnapshot);

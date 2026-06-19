@@ -12,6 +12,7 @@ export { default as deletePet } from "./deletePet.js";
 export { default as updatePetOwner } from "./updatePetOwner.js";
 
 export { default as updateRegistrySnapshot } from "./updateRegistrySnapshot.js";
+export { default as getPetsCount } from "./getPetsCount.js";
 
 // 📜 Ιστορικό Κατοικιδίων
 export { default as addHistoryEntry } from "./history/addHistoryEntry.js";

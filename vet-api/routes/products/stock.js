@@ -14,6 +14,6 @@ const router = express.Router();
 
 router.get("/:id/batches",  validateObjectId, requirePermission("products:read"),  getBatches);
 router.put("/:id/batches",  validateObjectId, validateBody(batchesSchema), requirePermission("products:write"), updateBatches);
-router.post("/export",      validateBody(exportSchema), requirePermission("products:read"), exportStock);
+router.post("/export",      validateBody(exportSchema), requirePermission("products:write"), exportStock);
 
 export default router;

@@ -7,7 +7,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
-import { rateLimit, ipKeyGenerator } from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { Server } from "socket.io";
 
 import settingsRoutes from "./routes/settings.js";
@@ -61,7 +61,7 @@ const devFallbackOrigins = [
 
 const allowedOrigins =
   config.corsOrigins.length > 0
-    ? [...config.corsOrigins, ...devFallbackOrigins]
+    ? config.isDev ? [...config.corsOrigins, ...devFallbackOrigins] : config.corsOrigins
     : devFallbackOrigins;
 
 // Σε development, επιτρέπουμε επίσης πρόσβαση από συσκευές του τοπικού δικτύου
@@ -72,7 +72,9 @@ function corsOriginCheck(origin, callback) {
   if (!origin) return callback(null, true);
   if (allowedOrigins.includes(origin)) return callback(null, true);
   if (config.isDev && lanOriginPattern.test(origin)) return callback(null, true);
-  return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+  const corsErr = new Error(`CORS blocked for origin: ${origin}`);
+  corsErr.status = 403;
+  return callback(corsErr, false);
 }
 
 // ==============================
@@ -133,7 +135,7 @@ const limiter = rateLimit({
   max: 120,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: (req) => req.ip ?? req.socket?.remoteAddress ?? "unknown",
   handler: (req, res) => {
     const requestId = req.requestId || null;
     return res.status(429).json({

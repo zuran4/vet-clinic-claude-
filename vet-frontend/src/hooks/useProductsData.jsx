@@ -1,18 +1,12 @@
 import { useState, useCallback } from "react";
-import { API_URL } from "@/api/api"; // ✅ κεντρικό base URL από το alias "@"
+import request from "@/api/apiClient";
 
 export function useProductsData() {
   const [products, setProducts] = useState([]);
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/products`);
-
-      if (!res.ok) {
-        throw new Error(`Σφάλμα φόρτωσης προϊόντων (${res.status})`);
-      }
-
-      const data = await res.json();
+      const data = await request("/products");
       setProducts(data);
     } catch (err) {
       console.error("❌ Σφάλμα φόρτωσης προϊόντων:", err);

@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import express from "express";
 import requirePermission from "../middlewares/auth/requirePermission.js";
+import logger from "../utils/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,7 +71,7 @@ router.post("/logo", requirePermission("settings:write"), (req, res) => {
     const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
     const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
-    console.log("✅ Logo uploaded:", req.file.filename);
+    logger.info("✅ Logo uploaded:", req.file.filename);
     res.json({ url: fileUrl });
   });
 });

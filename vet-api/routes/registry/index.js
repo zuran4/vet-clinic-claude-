@@ -5,6 +5,7 @@ import crypto from "crypto";
 import express from "express";
 
 import ApiError from "../../utils/apiError.js";
+import requireRole from "../../middlewares/auth/requireRole.js";
 import { getSession } from "../../controllers/registry/getSession.js";
 import { startWorker } from "../../controllers/registry/startWorker.js";
 import { stopWorker } from "../../controllers/registry/stopWorker.js";
@@ -74,12 +75,12 @@ function validateMicrochipQuery(req, _res, next) {
 /**
  * POST /api/registry/worker/start
  */
-router.post("/worker/start", asyncHandler(startWorker));
+router.post("/worker/start", requireRole("admin"), asyncHandler(startWorker));
 
 /**
  * POST /api/registry/worker/stop
  */
-router.post("/worker/stop", asyncHandler(stopWorker));
+router.post("/worker/stop", requireRole("admin"), asyncHandler(stopWorker));
 
 /**
  * GET /api/registry/worker/state

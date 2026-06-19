@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/el";
-import { AlertTriangle, Activity } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import HeaderBar from "../components/ui/HeaderBar";
 import Dashboard from "../components/dashboard/Dashboard";
 import RegistryStatus from "../components/registry/RegistryStatus";
@@ -21,8 +21,7 @@ import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useRefetchOnFocus } from "../hooks/useRefetchOnFocus";
 import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
-// ✅ Κεντρικό API URL
-import { API_URL } from "../api/api.js";
+import request from "../api/apiClient.js";
 
 dayjs.locale("el");
 
@@ -48,14 +47,13 @@ function MainLayout({
   // "dashboard" | "appointments" | "products" | "customers" | "pets" | "prescriptions" | "export" | "settings"
   const [activePanel, setActivePanel] = useState("dashboard");
   const [petsCount, setPetsCount] = useState(0);
+  const [customersCount, setCustomersCount] = useState(0);
 
   // ✅ Settings state
   const [settings, setSettings] = useState(null);
 
   // 🔹 Κατάσταση μητρώου / worker
   const [registryStatus, setRegistryStatus] = useState("UNKNOWN");
-  const [registryBusy, setRegistryBusy] = useState(false);
-  const [registryActivityMessage, setRegistryActivityMessage] = useState("");
 
   const openPanel = (panel) => setActivePanel(panel);
   const closePanel = () => setActivePanel("dashboard");
@@ -93,22 +91,26 @@ function MainLayout({
 
   // 🔹 Φόρτωση αριθμού κατοικιδίων για Dashboard
   const loadPetsCount = useCallback(() => {
-    fetch(`${API_URL}/pets`)
-      .then((r) => r.json())
-      .then((data) => setPetsCount(Array.isArray(data) ? data.length : 0))
+    request("/pets/count")
+      .then((data) => setPetsCount(data.total ?? 0))
+      .catch(() => {});
+  }, []);
+
+  const loadCustomersCount = useCallback(() => {
+    request("/customers?page=1&pageSize=1")
+      .then((data) => setCustomersCount(data.total ?? 0))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     loadPetsCount();
-  }, [loadPetsCount]);
+    loadCustomersCount();
+  }, [loadPetsCount, loadCustomersCount]);
 
-  // 🔹 Φόρτωση settings από backend (με API_URL)
+  // 🔹 Φόρτωση settings από backend
   const loadSettings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/settings`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await request("/settings");
       setSettings(data);
     } catch (err) {
       console.error("⚠️ Error loading settings", err);
@@ -123,12 +125,14 @@ function MainLayout({
   useRefetchOnFocus(() => {
     loadSettings();
     loadPetsCount();
+    loadCustomersCount();
   });
 
   // 🔹 Real-time ενημέρωση όταν αλλάζουν δεδομένα από άλλη συσκευή
   useRealtimeSync({
     settings: loadSettings,
     pets: loadPetsCount,
+    customers: loadCustomersCount,
   });
 
   // 🔹 Live αλλαγή γλώσσας όταν αλλάζουν τα settings
@@ -145,36 +149,9 @@ function MainLayout({
     else document.documentElement.classList.remove("dark");
   }, [settings?.darkMode]);
 
-  // 🔹 Μήνυμα δραστηριότητας ανά status worker
-  const getRegistryStatusActivityMessage = (status) => {
-    switch (status) {
-      case "NO_PAGE":
-        return "Worker: δεν έχει ανοίξει ακόμα σελίδα";
-      case "PRE_LOGIN":
-        return "Worker: στην αρχική, πριν τη σύνδεση";
-      case "NEEDS_LOGIN":
-        return "Worker: απαιτεί σύνδεση (gov.gr / TAXIS)";
-      case "SESSION_EXPIRED":
-        return "Worker: η συνεδρία έληξε";
-      case "LOGGED_IN":
-        return "";
-      default:
-        return "Worker: άγνωστη κατάσταση";
-    }
-  };
-
   // 🔹 Ενημέρωση όταν αλλάζει το status του μητρώου
   const handleRegistryStatusChange = (newStatus) => {
-    const normalized = newStatus || "UNKNOWN";
-    setRegistryStatus(normalized);
-
-    if (normalized && normalized !== "LOGGED_IN") {
-      setRegistryBusy(true);
-      setRegistryActivityMessage(getRegistryStatusActivityMessage(normalized));
-    } else {
-      setRegistryActivityMessage("");
-      setRegistryBusy(false);
-    }
+    setRegistryStatus(newStatus || "UNKNOWN");
   };
 
   // ✅ Προσθέτουμε expirationDate από τα batches (πιο κοντινή)
@@ -300,7 +277,7 @@ function MainLayout({
             <Dashboard
               appointments={appointments}
               pets={Array(petsCount).fill(null)}
-              clients={[]} // TODO: σύνδεση clients
+              customersCount={customersCount}
               products={productsWithExpDate}
               onShowAppointments={() => openPanel("appointments")}
               onEditAppointment={(appt) => {

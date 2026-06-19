@@ -12,10 +12,12 @@ import { useProductList } from "../../hooks/useProductList.jsx";
 import StockBadge from "@/components/ui/StockBadge.jsx";
 import { getStockStatus } from "@/utils/stock.js";
 import { useStockThresholds } from "@/hooks";
+import { useAuth } from "../../hooks/useAuth.jsx";
 
 const ProductList = () => {
   const { products, setProducts, fetchProducts, handleDeleteProduct, importProducts } = useProductList();
   const { getThresholdForCategory } = useStockThresholds();
+  const { canDo } = useAuth();
 
   const [showForm, setShowForm]           = useState(false);
   const [productId, setProductId]         = useState(null);
@@ -151,13 +153,15 @@ const ProductList = () => {
         {/* Δεξιά: actions */}
         <div className="flex items-center gap-2 ml-auto w-full sm:w-auto">
           {/* Mobile only: Νέο Προϊόν (μετακινήθηκε εδώ από το header) */}
-          <button
-            type="button"
-            onClick={() => { setProductId(null); setInitialTab("info"); setShowForm(true); }}
-            className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
-          >
-            <Plus className="w-4 h-4" /> Νέο Προϊόν
-          </button>
+          {canDo("products:write") && (
+            <button
+              type="button"
+              onClick={() => { setProductId(null); setInitialTab("info"); setShowForm(true); }}
+              className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
+            >
+              <Plus className="w-4 h-4" /> Νέο Προϊόν
+            </button>
+          )}
 
           <button
             type="button"
@@ -238,35 +242,41 @@ const ProductList = () => {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex gap-1.5 justify-end">
-                          <button
-                            title="Προσθήκη Αποθέματος"
-                            onClick={() => {
-                              if (BATCHED_CATEGORIES.includes(product.category)) {
-                                setProductId(product._id);
-                                setInitialTab("stock");
-                                setShowForm(true);
-                              } else {
-                                setQuickStockProduct(product);
-                              }
-                            }}
-                            className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 text-orange-500 dark:text-orange-400 transition-colors"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                          <button
-                            title="Επεξεργασία"
-                            onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
-                            className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            title="Διαγραφή"
-                            onClick={() => handleDeleteProduct(product._id)}
-                            className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {canDo("products:write") && (
+                            <button
+                              title="Προσθήκη Αποθέματος"
+                              onClick={() => {
+                                if (BATCHED_CATEGORIES.includes(product.category)) {
+                                  setProductId(product._id);
+                                  setInitialTab("stock");
+                                  setShowForm(true);
+                                } else {
+                                  setQuickStockProduct(product);
+                                }
+                              }}
+                              className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 text-orange-500 dark:text-orange-400 transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          )}
+                          {canDo("products:write") && (
+                            <button
+                              title="Επεξεργασία"
+                              onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
+                              className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                          {canDo("products:delete") && (
+                            <button
+                              title="Διαγραφή"
+                              onClick={() => handleDeleteProduct(product._id)}
+                              className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -336,35 +346,41 @@ const ProductList = () => {
                   </button>
 
                   <div className="flex gap-1.5 flex-shrink-0">
-                    <button
-                      title="Προσθήκη Αποθέματος"
-                      onClick={() => {
-                        if (BATCHED_CATEGORIES.includes(product.category)) {
-                          setProductId(product._id);
-                          setInitialTab("stock");
-                          setShowForm(true);
-                        } else {
-                          setQuickStockProduct(product);
-                        }
-                      }}
-                      className="p-2 rounded-xl bg-orange-100/70 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      title="Επεξεργασία"
-                      onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
-                      className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      title="Διαγραφή"
-                      onClick={() => handleDeleteProduct(product._id)}
-                      className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {canDo("products:write") && (
+                      <button
+                        title="Προσθήκη Αποθέματος"
+                        onClick={() => {
+                          if (BATCHED_CATEGORIES.includes(product.category)) {
+                            setProductId(product._id);
+                            setInitialTab("stock");
+                            setShowForm(true);
+                          } else {
+                            setQuickStockProduct(product);
+                          }
+                        }}
+                        className="p-2 rounded-xl bg-orange-100/70 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    )}
+                    {canDo("products:write") && (
+                      <button
+                        title="Επεξεργασία"
+                        onClick={() => { setProductId(product._id); setInitialTab("info"); setShowForm(true); }}
+                        className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    )}
+                    {canDo("products:delete") && (
+                      <button
+                        title="Διαγραφή"
+                        onClick={() => handleDeleteProduct(product._id)}
+                        className="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

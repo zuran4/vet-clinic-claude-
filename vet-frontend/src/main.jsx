@@ -24,11 +24,14 @@ if (sentryDsn) {
 }
 
 // Προσθέτει αυτόματα το auth token σε ΟΛΕΣ τις fetch κλήσεις προς το δικό μας API
+const _apiBase = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 const _originalFetch = window.fetch;
 window.fetch = function (url, options = {}) {
   const isOwnApi =
     typeof url === "string" &&
-    (url.startsWith("/api") || /:5000\/api/.test(url));
+    (url.startsWith("/api") ||
+     /:5000\/api/.test(url) ||
+     (_apiBase && url.startsWith(_apiBase)));
 
   if (isOwnApi) {
     const token = localStorage.getItem("token");

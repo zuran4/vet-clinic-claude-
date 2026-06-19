@@ -6,8 +6,7 @@ import { testEmailHtml } from "../services/emailTemplates.js";
 import { emitChange } from "../utils/realtime.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
 import { encrypt } from "../utils/crypto.js";
-
-console.log("📡 settings.js loaded");
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -30,7 +29,7 @@ router.get("/", async (req, res) => {
     }
     res.json(sanitizeSettings(settings));
   } catch (err) {
-    console.error("❌ Σφάλμα κατά την ανάγνωση ρυθμίσεων:", err);
+    logger.error("❌ Σφάλμα κατά την ανάγνωση ρυθμίσεων:", err);
     res.status(500).json({ error: "❌ Σφάλμα κατά την ανάγνωση ρυθμίσεων" });
   }
 });
@@ -38,7 +37,7 @@ router.get("/", async (req, res) => {
 // ==========================
 // 🔹 PUT /api/settings
 // ==========================
-router.put("/", async (req, res) => {
+router.put("/", requirePermission("settings:write"), async (req, res) => {
   try {
     const {
       clinicName,
@@ -73,7 +72,9 @@ router.put("/", async (req, res) => {
         registryWorkerHeadless,
         staff:         staff         || [],
         darkMode:      darkMode      || false,
-        emailConfig:   emailConfig   || {},
+        emailConfig:   emailConfig
+          ? { ...emailConfig, password: emailConfig.password ? encrypt(emailConfig.password) : "" }
+          : {},
         notifications: notifications || {},
       });
     } else {
@@ -106,7 +107,7 @@ router.put("/", async (req, res) => {
     emitChange("settings");
     res.json(sanitizeSettings(settings));
   } catch (err) {
-    console.error("❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων:", err);
+    logger.error("❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων:", err);
     res.status(500).json({ error: "❌ Σφάλμα κατά την αποθήκευση ρυθμίσεων" });
   }
 });

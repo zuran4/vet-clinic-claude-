@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   User, Phone, Calendar, Clock, Stethoscope, Scissors,
   StickyNote, PawPrint, ShoppingBag, Pill, X,
+  Plus, ChevronDown, ChevronUp, Activity, ChevronRight, ArrowLeft,
 } from "lucide-react";
+import dayjs from "dayjs";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
 import PetProfile from "../pets/PetProfile";
 import InlinePurchases from "./InlinePurchases.jsx";
 import InlinePrescriptions from "./InlinePrescriptions.jsx";
+import { addPetHistoryEntry, getPetsByOwner } from "../../api/petsApi.js";
 
 const TYPE_COLORS = {
   "Εξέταση":            "bg-indigo-100 text-indigo-700",
@@ -28,15 +31,44 @@ const InfoRow = ({ icon: Icon, label, value, iconColor = "text-gray-400" }) => (
   </div>
 );
 
+const Empty = ({ text }) => (
+  <div className="py-10 text-center">
+    <p className="text-sm text-gray-400">{text}</p>
+  </div>
+);
+
+const Row = ({ label, value }) => (
+  <div className="flex gap-2 text-sm">
+    <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0">{label}</span>
+    <span className="text-gray-800 dark:text-gray-100 font-medium">{value}</span>
+  </div>
+);
+
+const emptyConsultForm = {
+  reason: "", result: "", weight: "", temperature: "", heartRate: "", diagnosis: "", treatment: "",
+};
+
+const inputClass =
+  "border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full";
+
 const TABS = [
-  { key: "overview",       label: "Επισκόπηση", icon: Calendar },
-  { key: "purchases",      label: "Αγορές",     icon: ShoppingBag },
-  { key: "prescriptions",  label: "Συνταγές",   icon: Pill },
-  { key: "pet",            label: "Κατοικίδιο", icon: PawPrint },
+  { key: "consult",       label: "Εξέταση",     icon: Stethoscope },
+  { key: "overview",      label: "Επισκόπηση",  icon: Calendar },
+  { key: "purchases",     label: "Αγορές",      icon: ShoppingBag },
+  { key: "prescriptions", label: "Συνταγές",    icon: Pill },
+  { key: "pet",           label: "Κατοικίδιο",  icon: PawPrint },
 ];
 
-const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
-  const [activeTab, setActiveTab] = useState("overview");
+const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "overview" }) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Consult tab state
+  const [consultForm, setConsultForm] = useState(emptyConsultForm);
+  const [showClinical, setShowClinical] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [recentHistory, setRecentHistory] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState(null);
 
   const ownerId = typeof appointment?.owner === "object"
     ? appointment?.owner._id
@@ -47,6 +79,41 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
     (p) => p.name?.toLowerCase() === appointment?.animalName?.toLowerCase()
   ) || pets[0] || null;
 
+  // Sync initialTab when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+      setConsultForm(emptyConsultForm);
+      setSaved(false);
+      setShowClinical(false);
+      setFullPet(null);
+      setRecentHistory([]);
+      setSelectedEntry(null);
+    }
+  }, [isOpen, initialTab]);
+
+  // Fetch full pet (with history) separately — useCustomerPets omits history in select
+  const [fullPet, setFullPet] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen || !ownerId) return;
+    let cancelled = false;
+    getPetsByOwner(ownerId).then((allPets) => {
+      if (cancelled) return;
+      const match = allPets.find(
+        (p) => p.name?.toLowerCase() === appointment?.animalName?.toLowerCase()
+      ) || allPets[0] || null;
+      setFullPet(match);
+      if (match?.history) {
+        const sorted = [...match.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+        setRecentHistory(sorted.slice(0, 3));
+      } else {
+        setRecentHistory([]);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [isOpen, ownerId, appointment?.animalName]);
+
   if (!isOpen || !appointment) return null;
 
   const isGrooming = appointment.doctor === "Grooming";
@@ -54,13 +121,53 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
     ? "bg-gradient-to-r from-blue-500 to-cyan-400"
     : "bg-gradient-to-r from-green-500 to-emerald-400";
 
+  const handleConsultChange = (e) => {
+    const { name, value } = e.target;
+    setConsultForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleConsultSave = async (e) => {
+    e.preventDefault();
+    if (!consultForm.reason.trim() || !fullPet) return;
+    try {
+      setSaving(true);
+      const payload = {
+        reason: consultForm.reason,
+        result: consultForm.result || undefined,
+        weight: consultForm.weight ? parseFloat(consultForm.weight) : undefined,
+        temperature: consultForm.temperature ? parseFloat(consultForm.temperature) : undefined,
+        heartRate: consultForm.heartRate ? parseInt(consultForm.heartRate) : undefined,
+        diagnosis: consultForm.diagnosis || undefined,
+        treatment: consultForm.treatment || undefined,
+      };
+      await addPetHistoryEntry(fullPet._id, payload);
+      setConsultForm(emptyConsultForm);
+      setShowClinical(false);
+      setSaved(true);
+      // Refresh history display
+      if (ownerId) {
+        const freshPets = await getPetsByOwner(ownerId);
+        const fresh = freshPets.find((p) => p._id === fullPet._id);
+        if (fresh?.history) {
+          const sorted = [...fresh.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+          setRecentHistory(sorted.slice(0, 3));
+          setFullPet(fresh);
+        }
+      }
+    } catch (err) {
+      alert("❌ " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative w-full min-w-0 max-w-2xl rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh]">
 
-        {/* Gradient Header — σταθερό */}
+        {/* Gradient Header */}
         <div className={`${headerBg} px-5 pt-5 pb-0 flex-shrink-0`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2 text-white">
@@ -85,7 +192,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
             </div>
           </div>
 
-          {/* Tabs μέσα στο header */}
+          {/* Tabs */}
           <div className="flex gap-1 overflow-x-auto no-scrollbar -mx-5 px-5 sm:mx-0 sm:px-0">
             {TABS.map(({ key, label, icon: Icon }) => (
               <button
@@ -104,8 +211,171 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
           </div>
         </div>
 
-        {/* Content — scrollable */}
+        {/* Content */}
         <div className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1">
+
+          {/* ΕΞΕΤΑΣΗ */}
+          {activeTab === "consult" && (
+            <div className="p-4 space-y-4">
+
+              {/* ── Detail view επίσκεψης ── */}
+              {selectedEntry ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setSelectedEntry(null)}
+                    className="flex items-center gap-1.5 text-sm font-medium text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Επιστροφή
+                  </button>
+
+                  <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light overflow-hidden">
+                    {/* Date header */}
+                    <div className="bg-gray-50 dark:bg-win-elevated/80 px-4 py-3 border-b border-gray-100 dark:border-win-border-light flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        {dayjs(selectedEntry.date).format("dddd, DD MMMM YYYY")}
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-3 space-y-3">
+                      {/* Κλινικά badges */}
+                      {(selectedEntry.weight || selectedEntry.temperature || selectedEntry.heartRate) && (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedEntry.weight && (
+                            <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2.5 py-1 rounded-lg font-medium">
+                              ⚖ {selectedEntry.weight} kg
+                            </span>
+                          )}
+                          {selectedEntry.temperature && (
+                            <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-2.5 py-1 rounded-lg font-medium">
+                              🌡 {selectedEntry.temperature}°C
+                            </span>
+                          )}
+                          {selectedEntry.heartRate && (
+                            <span className="text-xs bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-300 px-2.5 py-1 rounded-lg font-medium">
+                              ♥ {selectedEntry.heartRate} bpm
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Row label="Λόγος" value={selectedEntry.reason} />
+                        {selectedEntry.result    && <Row label="Αποτέλεσμα" value={selectedEntry.result} />}
+                        {selectedEntry.diagnosis && <Row label="Διάγνωση"   value={selectedEntry.diagnosis} />}
+                        {selectedEntry.treatment && <Row label="Αγωγή"      value={selectedEntry.treatment} />}
+                        {selectedEntry.vet       && <Row label="Κτηνίατρος" value={selectedEntry.vet} />}
+                        {selectedEntry.nextVisit && (
+                          <Row label="Επόμενη" value={dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY")} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              ) : (
+                /* ── Κανονική λίστα ── */
+                <>
+                  {!fullPet && (
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-xl px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+                      Το ζώο δεν βρέθηκε στο μητρώο. Δεν είναι δυνατή η καταχώριση.
+                    </div>
+                  )}
+
+                  {/* Τελευταίες επισκέψεις */}
+                  {fullPet && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                        Τελευταίες Επισκέψεις
+                      </p>
+                      {recentHistory.length === 0 ? (
+                        <div className="bg-white dark:bg-win-elevated/30 rounded-xl px-4 py-5 text-center border border-gray-100 dark:border-win-border-light">
+                          <Clock className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto mb-1" />
+                          <p className="text-xs text-gray-400">Δεν υπάρχουν προηγούμενες επισκέψεις</p>
+                        </div>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {recentHistory.map((entry) => (
+                            <li key={entry._id}>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedEntry(entry)}
+                                className="w-full text-left bg-white dark:bg-win-elevated/40 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-win-border-light hover:border-indigo-200 dark:hover:border-indigo-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group"
+                              >
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                  <span className="text-xs text-gray-400 flex-1">
+                                    {dayjs(entry.date).format("DD/MM/YYYY")}
+                                  </span>
+                                  {entry.weight && (
+                                    <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-md">
+                                      {entry.weight} kg
+                                    </span>
+                                  )}
+                                  {entry.temperature && (
+                                    <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-1.5 py-0.5 rounded-md">
+                                      {entry.temperature}°C
+                                    </span>
+                                  )}
+                                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-indigo-400 transition-colors flex-shrink-0" />
+                                </div>
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{entry.reason}</p>
+                                {entry.diagnosis && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                                    {entry.diagnosis}
+                                  </p>
+                                )}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Φόρμα καταχώρισης */}
+                  {fullPet && (
+                    <form
+                      onSubmit={handleConsultSave}
+                      className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-700/40 p-4 space-y-3"
+                    >
+                      <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wide">
+                        Καταχώριση Σημερινής Επίσκεψης
+                      </p>
+
+                      <input name="reason" type="text" placeholder="Λόγος επίσκεψης *" value={consultForm.reason} onChange={handleConsultChange} required className={inputClass} />
+                      <input name="result" type="text" placeholder="Αποτέλεσμα / Σχόλια" value={consultForm.result} onChange={handleConsultChange} className={inputClass} />
+
+                      <button type="button" onClick={() => setShowClinical((v) => !v)} className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+                        <Activity className="w-3.5 h-3.5" />
+                        Κλινικά Στοιχεία
+                        {showClinical ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </button>
+
+                      {showClinical && (
+                        <div className="grid grid-cols-3 gap-2">
+                          <input name="weight"      type="number" step="0.1" min="0" placeholder="Βάρος kg"       value={consultForm.weight}      onChange={handleConsultChange} className={inputClass} />
+                          <input name="temperature" type="number" step="0.1" min="0" placeholder="Θερμ. °C"       value={consultForm.temperature} onChange={handleConsultChange} className={inputClass} />
+                          <input name="heartRate"   type="number"             min="0" placeholder="bpm"            value={consultForm.heartRate}   onChange={handleConsultChange} className={inputClass} />
+                          <input name="diagnosis"   type="text"                       placeholder="Διάγνωση"       value={consultForm.diagnosis}   onChange={handleConsultChange} className={`col-span-3 ${inputClass}`} />
+                          <input name="treatment"   type="text"                       placeholder="Αγωγή / Φάρμακα" value={consultForm.treatment}  onChange={handleConsultChange} className={`col-span-3 ${inputClass}`} />
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1">
+                        {saved && <span className="text-xs text-green-600 dark:text-green-400 font-medium">✓ Αποθηκεύτηκε</span>}
+                        <button type="submit" disabled={saving || !consultForm.reason.trim()} className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+                          <Plus className="w-4 h-4" />
+                          {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {/* ΕΠΙΣΚΟΠΗΣΗ */}
           {activeTab === "overview" && (
@@ -191,195 +461,5 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment }) => {
     </div>
   );
 };
-
-const PurchasesInline_UNUSED = ({ customerId }) => {
-  const [purchases, setPurchases] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [cart, setCart] = React.useState([]);
-  const [productQuery, setProductQuery] = React.useState("");
-  const [productResults, setProductResults] = React.useState([]);
-  const [loadingProducts, setLoadingProducts] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const searchRef = React.useRef(null);
-
-  const showDropdown = productQuery.trim().length > 0;
-
-  const fetchPurchases = async () => {
-    try {
-      setLoading(true);
-      const data = await request(`/customers/${customerId}/purchases`);
-      setPurchases(data.purchases || []);
-    } catch { }
-    finally { setLoading(false); }
-  };
-
-  React.useEffect(() => { fetchPurchases(); }, [customerId]);
-
-  React.useEffect(() => {
-    if (productQuery.trim().length === 0) { setProductResults([]); return; }
-    let cancelled = false;
-    const t = setTimeout(async () => {
-      try {
-        setLoadingProducts(true);
-        const data = await request(`/products?search=${encodeURIComponent(productQuery.trim())}`);
-        if (!cancelled) setProductResults(Array.isArray(data) ? data : (data.data ?? []));
-      } catch { if (!cancelled) setProductResults([]); }
-      finally { if (!cancelled) setLoadingProducts(false); }
-    }, 300);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [productQuery]);
-
-  React.useEffect(() => {
-    const handler = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) setProductQuery("");
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const addToCart = (prod) => {
-    setCart((prev) => {
-      const exists = prev.find((p) => p.id === prod._id);
-      if (exists) return prev.map((p) => p.id === prod._id ? { ...p, quantity: p.quantity + 1 } : p);
-      return [...prev, { id: prod._id, name: prod.name, quantity: 1 }];
-    });
-    setProductQuery(""); setProductResults([]);
-  };
-
-  const handleSave = async () => {
-    if (cart.length === 0) return;
-    try {
-      setSaving(true);
-      await request(`/customers/${customerId}/purchases`, {
-        method: "POST",
-        body: { products: cart.map((p) => ({ product: p.id, quantity: p.quantity })) },
-      });
-      setCart([]);
-      await fetchPurchases();
-    } catch (err) {
-      alert("❌ " + (err.message || "Αποτυχία αποθήκευσης"));
-    } finally { setSaving(false); }
-  };
-
-  return (
-    <div className="space-y-3">
-
-      {/* Φόρμα νέας αγοράς */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 px-4 py-2.5 flex items-center gap-2">
-          <PackageSearch className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm font-semibold text-emerald-700">Νέα Αγορά</span>
-        </div>
-        <div className="p-3 space-y-2">
-          {/* Product search */}
-          <div className="relative" ref={searchRef}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-            <input
-              type="text"
-              value={productQuery}
-              onChange={(e) => setProductQuery(e.target.value)}
-              placeholder="Αναζήτηση προϊόντος..."
-              className="w-full border border-gray-200 rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
-            />
-            {showDropdown && (
-              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden">
-                {loadingProducts ? (
-                  <div className="p-3 text-xs text-gray-400 text-center">Αναζήτηση...</div>
-                ) : productResults.length > 0 ? (
-                  <ul className="max-h-40 overflow-y-auto divide-y divide-gray-50">
-                    {productResults.map((prod) => (
-                      <li key={prod._id}>
-                        <button type="button" onClick={() => addToCart(prod)}
-                          className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 transition-colors flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-800">{prod.name}</span>
-                          <span className="text-xs text-gray-400">απόθ.: {prod.quantity ?? 0}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="p-3 text-xs text-gray-400 text-center">Δεν βρέθηκαν προϊόντα.</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Cart */}
-          {cart.length > 0 && (
-            <>
-              <div className="rounded-2xl border border-emerald-100 overflow-hidden">
-                <ul className="divide-y divide-emerald-50">
-                  {cart.map((p) => (
-                    <li key={p.id} className="flex items-center justify-between px-3 py-2 bg-white">
-                      <span className="text-sm font-medium text-gray-800 flex-1 truncate pr-2">{p.name}</span>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <button onClick={() => setCart((prev) => prev.map((x) => x.id === p.id && x.quantity > 1 ? { ...x, quantity: x.quantity - 1 } : x))}
-                          className="w-6 h-6 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-                          <Minus className="w-3 h-3 text-gray-600" />
-                        </button>
-                        <span className="w-7 text-center text-sm font-semibold">{p.quantity}</span>
-                        <button onClick={() => setCart((prev) => prev.map((x) => x.id === p.id ? { ...x, quantity: x.quantity + 1 } : x))}
-                          className="w-6 h-6 rounded-lg bg-emerald-100 hover:bg-emerald-200 flex items-center justify-center">
-                          <Plus className="w-3 h-3 text-emerald-700" />
-                        </button>
-                        <button onClick={() => setCart((prev) => prev.filter((x) => x.id !== p.id))}
-                          className="w-6 h-6 rounded-lg hover:bg-red-50 flex items-center justify-center ml-1">
-                          <Trash2 className="w-3 h-3 text-red-400" />
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex justify-end">
-                <button onClick={handleSave} disabled={saving}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors disabled:opacity-60">
-                  <Check className="w-4 h-4" />
-                  {saving ? "Αποθήκευση..." : "Καταχώρηση Αγοράς"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Ιστορικό */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-100 px-4 py-2.5 flex items-center gap-2">
-          <ShoppingBag className="w-4 h-4 text-gray-400" />
-          <span className="text-sm font-semibold text-gray-600">Ιστορικό Αγορών</span>
-        </div>
-        {loading ? (
-          <div className="py-6 text-center text-sm text-gray-400">Φόρτωση...</div>
-        ) : purchases.length === 0 ? (
-          <div className="py-6 text-center text-sm text-gray-400">Δεν υπάρχουν αγορές ακόμα.</div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {purchases.map((p) => (
-              <div key={p._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                    <ShoppingBag className="w-3.5 h-3.5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{p.product?.name || "Άγνωστο προϊόν"}</p>
-                    <p className="text-xs text-gray-400">{p.date ? new Date(p.date).toLocaleDateString("el-GR") : "—"}</p>
-                  </div>
-                </div>
-                <span className="text-sm font-semibold text-gray-500">×{p.quantity}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const Empty = ({ text }) => (
-  <div className="py-10 text-center">
-    <p className="text-sm text-gray-400">{text}</p>
-  </div>
-);
 
 export default AppointmentPreviewModal;

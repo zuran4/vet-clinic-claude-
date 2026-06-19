@@ -50,8 +50,15 @@ const petSchema = new mongoose.Schema({
   history: [
     {
       date: { type: Date, default: Date.now },
-      reason: { type: String, required: true }, // λόγος επίσκεψης
-      result: { type: String }, // τι έγινε / διάγνωση / αποτέλεσμα
+      reason: { type: String, required: true },
+      result: { type: String },
+      weight: { type: Number },       // kg
+      temperature: { type: Number },  // °C
+      heartRate: { type: Number },    // bpm
+      diagnosis: { type: String },
+      treatment: { type: String },
+      nextVisit: { type: Date },
+      vet: { type: String },
     },
   ],
 

@@ -140,6 +140,13 @@ export async function addHistoryEntry(petId, entryData) {
       date: entryData.date || new Date(),
       reason: entryData.reason,
       result: entryData.result,
+      weight: entryData.weight,
+      temperature: entryData.temperature,
+      heartRate: entryData.heartRate,
+      diagnosis: entryData.diagnosis,
+      treatment: entryData.treatment,
+      nextVisit: entryData.nextVisit,
+      vet: entryData.vet,
     };
 
     pet.history.push(newEntry);
