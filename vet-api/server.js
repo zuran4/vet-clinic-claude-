@@ -135,7 +135,6 @@ const limiter = rateLimit({
   max: 120,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip ?? req.socket?.remoteAddress ?? "unknown",
   handler: (req, res) => {
     const requestId = req.requestId || null;
     return res.status(429).json({
