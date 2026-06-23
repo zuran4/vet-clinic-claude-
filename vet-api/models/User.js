@@ -14,5 +14,6 @@ const userSchema = new mongoose.Schema(
 
 // ❌ αφαιρέθηκε το userSchema.index({ pinHash: 1 }, ...)
 // Σημείωση: Μην βάλεις unique στο pinHash. Με bcrypt υπάρχει salt, άρα ίδιο PIN ≠ ίδιο hash.
+export { userSchema };
 const User = mongoose.model("User", userSchema);
 export default User;

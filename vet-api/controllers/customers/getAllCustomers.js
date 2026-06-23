@@ -5,15 +5,12 @@
 // 2) Pagination: GET /api/customers?page=1&pageSize=9 -> { data, total, ... }
 // ===============================================
 
-import Customer from "../../models/Customer.js"; // ✅ ενοποιημένο μονοπάτι
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
 export const getAllCustomers = async (req, res, next) => {
   try {
-    // --------------------------
-    // 1) SEARCH MODE
-    // --------------------------
+    const { Customer } = req.models;
     const raw = (req.query.search ?? req.query.q ?? "").trim();
     if (raw.length >= 2) {
       const safe = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

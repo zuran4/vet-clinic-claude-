@@ -42,5 +42,6 @@ const reminderSchema = new mongoose.Schema(
 // Index για γρήγορη εύρεση ανεξάρτητων reminders
 reminderSchema.index({ reminderDate: 1, sent: 1 });
 
+export { reminderSchema };
 const Reminder = mongoose.model("Reminder", reminderSchema);
 export default Reminder;

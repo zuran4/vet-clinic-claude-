@@ -1,5 +1,4 @@
 // controllers/products/updateBatches.js
-import Product from "../../models/Product.js";
 import { emitChange } from "../../utils/realtime.js";
 
 // Ασφαλής μετατροπή σε αριθμό
@@ -25,6 +24,7 @@ function toNum(n) {
  */
 export async function updateBatches(req, res, next) {
   try {
+    const { Product } = req.models;
     const { id } = req.params;
     const { action } = req.body;
 

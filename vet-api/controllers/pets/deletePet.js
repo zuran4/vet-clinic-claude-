@@ -6,7 +6,7 @@ import { emitChange } from "../../utils/realtime.js";
 export default async function deletePet(req, res, next) {
   try {
     const { id } = req.params;
-    const deleted = await petService.deletePet(id);
+    const deleted = await petService.deletePet(id, req.models);
 
     if (!deleted) {
       logger.warn(`⚠️ Απόπειρα διαγραφής μη υπαρκτού κατοικιδίου (id: ${id})`);

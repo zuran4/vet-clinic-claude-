@@ -1,7 +1,6 @@
-import Pet from "../../models/Pet.js";
-
 export default async function updateRegistrySnapshot(req, res, next) {
   try {
+    const { Pet } = req.models;
     const microchip = String(req.params.microchip || "").trim();
     const { snapshot } = req.body;
 

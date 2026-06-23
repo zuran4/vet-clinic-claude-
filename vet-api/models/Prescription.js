@@ -29,5 +29,6 @@ const prescriptionSchema = new mongoose.Schema(
   { timestamps: true } // createdAt, updatedAt αυτόματα
 );
 
+export { prescriptionSchema };
 const Prescription = mongoose.model("Prescription", prescriptionSchema);
 export default Prescription;

@@ -3,7 +3,6 @@
 // Περιγραφή: Διαγράφει συγκεκριμένη αγορά πελάτη
 // ===============================================
 
-import Customer from "../../../models/Customer.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
 
@@ -12,6 +11,7 @@ import logger from "../../../utils/logger.js";
 // ===============================
 export const deleteCustomerPurchase = async (req, res, next) => {
   try {
+    const { Customer } = req.models;
     const { customerId, purchaseId } = req.params;
 
     // 🔹 Εύρεση πελάτη

@@ -4,7 +4,7 @@ import { emitChange } from "../../utils/realtime.js";
 
 export default async function createPet(req, res, next) {
   try {
-    const pet = await petService.createPet(req.body);
+    const pet = await petService.createPet(req.body, req.models);
     logger.info(`🐾 Νέο κατοικίδιο δημιουργήθηκε: ${pet.name} (${pet.species})`);
     emitChange("pets");
     res.status(201).json(pet);

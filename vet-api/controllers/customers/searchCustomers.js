@@ -3,7 +3,6 @@
 // Περιγραφή: Αναζήτηση πελατών (σταθερό schema για UI)
 // ===============================================
 
-import Customer from "../../models/Customer.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
@@ -17,6 +16,7 @@ function escapeRegex(str = "") {
 // ===============================
 export const searchCustomers = async (req, res, next) => {
   try {
+    const { Customer } = req.models;
     const q = String(req.query.q || "").trim();
 
     // ✅ ΠΑΝΤΑ ίδιο schema: { items: [] }

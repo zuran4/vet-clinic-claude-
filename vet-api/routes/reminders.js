@@ -1,7 +1,5 @@
 import express from "express";
 
-import Reminder from "../models/Reminder.js";
-import Customer from "../models/Customer.js";
 import logger from "../utils/logger.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
 
@@ -9,6 +7,7 @@ const router = express.Router();
 
 router.post("/", requirePermission("reminders:write"), async (req, res) => {
   try {
+    const { Reminder, Customer } = req.models;
     const { customerId, reminderDate, note, productNames } = req.body;
 
     if (!customerId || !reminderDate) {
@@ -38,6 +37,7 @@ router.post("/", requirePermission("reminders:write"), async (req, res) => {
 
 router.get("/", requirePermission("reminders:read"), async (req, res) => {
   try {
+    const { Reminder } = req.models;
     const reminders = await Reminder.find()
       .populate("customer", "name email phone")
       .sort({ reminderDate: 1 });
@@ -50,6 +50,7 @@ router.get("/", requirePermission("reminders:read"), async (req, res) => {
 
 router.delete("/:id", requirePermission("reminders:delete"), async (req, res) => {
   try {
+    const { Reminder } = req.models;
     await Reminder.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
   } catch (err) {

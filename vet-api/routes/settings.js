@@ -1,6 +1,5 @@
 import express from "express";
 
-import Settings from "../models/Settings.js";
 import { sendEmail } from "../services/emailService.js";
 import { testEmailHtml } from "../services/emailTemplates.js";
 import { emitChange } from "../utils/realtime.js";
@@ -22,6 +21,7 @@ function sanitizeSettings(settings) {
 // ==========================
 router.get("/", async (req, res) => {
   try {
+    const { Settings } = req.models;
     let settings = await Settings.findOne();
     if (!settings) {
       settings = new Settings();
@@ -39,6 +39,7 @@ router.get("/", async (req, res) => {
 // ==========================
 router.put("/", requirePermission("settings:write"), async (req, res) => {
   try {
+    const { Settings } = req.models;
     const {
       clinicName,
       logo,
@@ -118,6 +119,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
 // ==========================
 router.post("/test-email", requirePermission("settings:write"), async (req, res) => {
   try {
+    const { Settings } = req.models;
     const { to } = req.body;
     if (!to) return res.status(400).json({ error: "Το πεδίο 'to' είναι υποχρεωτικό." });
 

@@ -3,7 +3,6 @@
 // Περιγραφή: Ενημερώνει στοιχεία υπάρχοντος πελάτη
 // ===============================================
 
-import Customer from "../../models/Customer.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
@@ -12,7 +11,7 @@ import logger from "../../utils/logger.js";
 // ===============================
 export const updateCustomer = async (req, res, next) => {
   try {
-    // 🔹 Ενημέρωση πελάτη
+    const { Customer } = req.models;
     const updated = await Customer.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });

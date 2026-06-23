@@ -25,5 +25,6 @@ const auditLogSchema = new mongoose.Schema(
 auditLogSchema.index({ createdAt: -1 });
 auditLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }); // TTL: 90 μέρες
 
+export { auditLogSchema };
 const AuditLog = mongoose.model("AuditLog", auditLogSchema);
 export default AuditLog;

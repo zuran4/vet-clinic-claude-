@@ -5,7 +5,7 @@ import logger from "../../utils/logger.js";
 export default async function getPetById(req, res, next) {
   try {
     const { id } = req.params;
-    const pet = await petService.getPetById(id);
+    const pet = await petService.getPetById(id, req.models);
 
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο με id: ${id}`);

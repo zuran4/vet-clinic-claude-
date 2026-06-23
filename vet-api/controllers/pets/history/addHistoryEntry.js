@@ -5,7 +5,7 @@ import logger from "../../../utils/logger.js";
 export default async function addHistoryEntry(req, res, next) {
   try {
     const { id } = req.params;
-    const pet = await petService.addHistoryEntry(id, req.body);
+    const pet = await petService.addHistoryEntry(id, req.body, req.models);
 
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για προσθήκη ιστορικού (id: ${id})`);

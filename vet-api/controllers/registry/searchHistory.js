@@ -1,13 +1,13 @@
 // vet-api/controllers/registry/searchHistory.js
 
 import ApiError from "../../utils/apiError.js";
-import RegistrySearchHistory from "../../models/RegistrySearchHistory.js";
 
 /**
  * GET /api/registry/history
  * Επιστρέφει το κοινό ιστορικό αναζητήσεων μητρώου (όλες οι συσκευές).
  */
 export async function getRegistryHistory(req, res) {
+  const { RegistrySearchHistory } = req.models;
   const entries = await RegistrySearchHistory.getEntries();
   return res.json({ ok: true, history: entries });
 }
@@ -18,6 +18,7 @@ export async function getRegistryHistory(req, res) {
  * Προσθέτει/ανανεώνει εγγραφή στο κοινό ιστορικό αναζητήσεων.
  */
 export async function addRegistryHistoryEntry(req, res) {
+  const { RegistrySearchHistory } = req.models;
   const microchip = String(req.body?.microchip || "").trim();
 
   if (!microchip) {

@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/node";
-
 import { verifyToken } from "../../utils/jwt.js";
 
 export default function requireAuth(req, res, next) {
@@ -11,9 +10,9 @@ export default function requireAuth(req, res, next) {
   }
   try {
     const payload = verifyToken(token);
-    req.user = payload; // { userId, name, role }
+    // payload: { userId, name, role, clinicId }
+    req.user = payload;
 
-    // Εμπλουτίζει τυχόν Sentry event από αυτό το request με τον χρήστη
     Sentry.setUser({ id: payload?.userId, username: payload?.name, role: payload?.role });
 
     next();

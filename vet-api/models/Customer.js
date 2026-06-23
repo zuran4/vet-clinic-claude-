@@ -66,5 +66,6 @@ const customerSchema = new mongoose.Schema(
 // 🔎 Indexes για ταχύτερα queries & search
 customerSchema.index({ name: 1, phone: 1 });
 
+export { customerSchema };
 const Customer = mongoose.model("Customer", customerSchema);
 export default Customer;

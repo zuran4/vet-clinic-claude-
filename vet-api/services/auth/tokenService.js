@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import RefreshToken from "../../models/RefreshToken.js";
 
 const EXPIRES_DAYS = 7;
 
@@ -11,14 +10,13 @@ function hashToken(raw) {
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
-export async function saveRefreshToken(userId, rawToken) {
+// Όλες οι συναρτήσεις δέχονται το RefreshToken model ως παράμετρο (dependency injection)
+export async function saveRefreshToken(userId, rawToken, RefreshToken) {
   const expiresAt = new Date(Date.now() + EXPIRES_DAYS * 24 * 60 * 60 * 1000);
   await RefreshToken.create({ userId, tokenHash: hashToken(rawToken), expiresAt });
 }
 
-// Επικυρώνει το refresh token, το διαγράφει (rotation) και επιστρέφει το userId.
-// Επιστρέφει null αν το token δεν υπάρχει ή έχει λήξει.
-export async function rotateRefreshToken(rawToken) {
+export async function rotateRefreshToken(rawToken, RefreshToken) {
   const hash = hashToken(rawToken);
   const record = await RefreshToken.findOneAndDelete({ tokenHash: hash });
   if (!record) return null;
@@ -26,11 +24,11 @@ export async function rotateRefreshToken(rawToken) {
   return record.userId;
 }
 
-export async function revokeRefreshToken(rawToken) {
+export async function revokeRefreshToken(rawToken, RefreshToken) {
   const hash = hashToken(rawToken);
   await RefreshToken.deleteOne({ tokenHash: hash });
 }
 
-export async function revokeAllForUser(userId) {
+export async function revokeAllForUser(userId, RefreshToken) {
   await RefreshToken.deleteMany({ userId });
 }

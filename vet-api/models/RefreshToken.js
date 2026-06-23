@@ -12,5 +12,6 @@ const refreshTokenSchema = new mongoose.Schema(
 // MongoDB TTL index — διαγράφει αυτόματα ληγμένα tokens
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+export { refreshTokenSchema };
 const RefreshToken = mongoose.model("RefreshToken", refreshTokenSchema);
 export default RefreshToken;

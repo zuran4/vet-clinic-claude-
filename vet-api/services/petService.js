@@ -1,13 +1,8 @@
-import Pet from "../models/Pet.js";
-import Customer from "../models/Customer.js";
-import logger from "../utils/logger.js"; // ✅ προσθήκη logger
+import logger from "../utils/logger.js";
 
-// ==========================
-// 🐾 CRUD ΛΕΙΤΟΥΡΓΙΕΣ ΚΑΤΟΙΚΙΔΙΩΝ
-// ==========================
+// Όλες οι συναρτήσεις δέχονται { Pet, Customer } ως δεύτερο όρισμα (dependency injection)
 
-// ➕ Δημιουργία κατοικιδίου
-export async function createPet(data) {
+export async function createPet(data, { Pet }) {
   try {
     const pet = new Pet(data);
     const saved = await pet.save();
@@ -19,8 +14,7 @@ export async function createPet(data) {
   }
 }
 
-// 📋 Λήψη όλων των κατοικιδίων
-export async function getAllPets() {
+export async function getAllPets({ Pet }) {
   try {
     const pets = await Pet.find().populate("owner").sort({ createdAt: -1 });
     logger.info(`📋 Επιστράφηκαν ${pets.length} κατοικίδια`);
@@ -31,8 +25,7 @@ export async function getAllPets() {
   }
 }
 
-// 📋 Λήψη κατοικιδίων για συγκεκριμένο πελάτη
-export async function getPetsByOwner(ownerId) {
+export async function getPetsByOwner(ownerId, { Pet }) {
   try {
     const pets = await Pet.find({ owner: ownerId }).sort({ createdAt: -1 });
     logger.info(`👤 Επιστράφηκαν ${pets.length} κατοικίδια για ownerId: ${ownerId}`);
@@ -43,8 +36,7 @@ export async function getPetsByOwner(ownerId) {
   }
 }
 
-// 📋 Λήψη κατοικιδίου με ID
-export async function getPetById(id) {
+export async function getPetById(id, { Pet }) {
   try {
     const pet = await Pet.findById(id).populate("owner");
     if (!pet) {
@@ -59,19 +51,16 @@ export async function getPetById(id) {
   }
 }
 
-// ✏️ Ενημέρωση κατοικιδίου
-export async function updatePet(id, data) {
+export async function updatePet(id, data, { Pet }) {
   try {
     const updated = await Pet.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     }).populate("owner");
-
     if (!updated) {
       logger.warn(`⚠️ Απόπειρα ενημέρωσης μη υπαρκτού κατοικιδίου (id: ${id})`);
       return null;
     }
-
     logger.info(`✏️ Ενημερώθηκε κατοικίδιο: ${updated.name}`);
     return updated;
   } catch (err) {
@@ -80,8 +69,7 @@ export async function updatePet(id, data) {
   }
 }
 
-// 🗑️ Διαγραφή κατοικιδίου
-export async function deletePet(id) {
+export async function deletePet(id, { Pet }) {
   try {
     const deleted = await Pet.findByIdAndDelete(id);
     if (!deleted) {
@@ -96,24 +84,20 @@ export async function deletePet(id) {
   }
 }
 
-// ✅ Αλλαγή ιδιοκτήτη κατοικιδίου
-export async function updatePetOwner(id, newOwnerId) {
+export async function updatePetOwner(id, newOwnerId, { Pet, Customer }) {
   try {
     const pet = await Pet.findById(id);
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για αλλαγή ιδιοκτήτη (id: ${id})`);
       return null;
     }
-
     const owner = await Customer.findById(newOwnerId);
     if (!owner) {
       logger.warn(`⚠️ Δεν βρέθηκε νέος ιδιοκτήτης με id: ${newOwnerId}`);
       return null;
     }
-
     pet.owner = newOwnerId;
     await pet.save();
-
     const updated = await Pet.findById(id).populate("owner");
     logger.info(`👥 Ενημερώθηκε ιδιοκτήτης κατοικιδίου: ${pet.name}`);
     return updated;
@@ -123,19 +107,13 @@ export async function updatePetOwner(id, newOwnerId) {
   }
 }
 
-// ==========================
-// 📜 ΙΣΤΟΡΙΚΟ ΚΑΤΟΙΚΙΔΙΩΝ
-// ==========================
-
-// ➕ Προσθήκη εγγραφής ιστορικού
-export async function addHistoryEntry(petId, entryData) {
+export async function addHistoryEntry(petId, entryData, { Pet }) {
   try {
     const pet = await Pet.findById(petId);
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για προσθήκη ιστορικού (id: ${petId})`);
       return null;
     }
-
     const newEntry = {
       date: entryData.date || new Date(),
       reason: entryData.reason,
@@ -148,7 +126,6 @@ export async function addHistoryEntry(petId, entryData) {
       nextVisit: entryData.nextVisit,
       vet: entryData.vet,
     };
-
     pet.history.push(newEntry);
     await pet.save();
     logger.info(`🩺 Προστέθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);
@@ -159,8 +136,7 @@ export async function addHistoryEntry(petId, entryData) {
   }
 }
 
-// 📋 Λήψη ιστορικού κατοικιδίου
-export async function getPetHistory(petId) {
+export async function getPetHistory(petId, { Pet }) {
   try {
     const pet = await Pet.findById(petId).populate("owner");
     if (!pet) {
@@ -175,19 +151,14 @@ export async function getPetHistory(petId) {
   }
 }
 
-// 🗑️ Διαγραφή εγγραφής ιστορικού
-export async function deleteHistoryEntry(petId, entryId) {
+export async function deleteHistoryEntry(petId, entryId, { Pet }) {
   try {
     const pet = await Pet.findById(petId);
     if (!pet) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για διαγραφή ιστορικού (id: ${petId})`);
       return null;
     }
-
-    pet.history = pet.history.filter(
-      (entry) => entry._id.toString() !== entryId
-    );
-
+    pet.history = pet.history.filter((entry) => entry._id.toString() !== entryId);
     await pet.save();
     logger.info(`🗑️ Διαγράφηκε εγγραφή ιστορικού για κατοικίδιο ${pet.name}`);
     return pet.history;

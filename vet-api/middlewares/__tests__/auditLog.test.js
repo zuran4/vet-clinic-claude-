@@ -68,7 +68,8 @@ describe("auditLog middleware", () => {
         userName: "Δρ. Παπαδάκη",
         userRole: "admin",
         requestId: "req-123",
-      })
+      }),
+      undefined  // AuditLog model — undefined στα unit tests (req.models δεν υπάρχει)
     );
   });
 

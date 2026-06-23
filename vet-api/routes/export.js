@@ -1,7 +1,4 @@
 import express from "express";
-import Customer from "../models/Customer.js";
-import Pet from "../models/Pet.js";
-import Appointment from "../models/appointmentModel.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
@@ -21,6 +18,7 @@ function toCsv(headers, rows) {
 // GET /api/export/customers
 router.get("/customers", requirePermission("customers:read"), async (req, res) => {
   try {
+    const { Customer } = req.models;
     const customers = await Customer.find().lean();
     const headers = ["Όνομα", "Τηλέφωνο", "Email", "Διεύθυνση", "Πόλη", "ΑΦΜ", "Σημειώσεις"];
     const rows = customers.map((c) => [c.name, c.phone, c.email, c.address, c.city, c.afm, c.notes]);
@@ -35,6 +33,7 @@ router.get("/customers", requirePermission("customers:read"), async (req, res) =
 // GET /api/export/pets
 router.get("/pets", requirePermission("pets:read"), async (req, res) => {
   try {
+    const { Pet } = req.models;
     const pets = await Pet.find().populate("owner", "name phone").lean();
     const headers = ["Όνομα", "Είδος", "Φύλο", "Ράτσα", "Microchip", "Ιδιοκτήτης", "Τηλέφωνο Ιδιοκτήτη", "Στειρωμένο", "Εμβολιασμένο"];
     const rows = pets.map((p) => [
@@ -59,6 +58,7 @@ router.get("/pets", requirePermission("pets:read"), async (req, res) => {
 // GET /api/export/appointments
 router.get("/appointments", requirePermission("appointments:read"), async (req, res) => {
   try {
+    const { Appointment } = req.models;
     const { from, to } = req.query;
     const filter = {};
     if (from) filter.date = { ...filter.date, $gte: from };

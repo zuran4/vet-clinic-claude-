@@ -6,7 +6,7 @@ import { emitChange } from "../../utils/realtime.js";
 export default async function updatePet(req, res, next) {
   try {
     const { id } = req.params;
-    const updated = await petService.updatePet(id, req.body);
+    const updated = await petService.updatePet(id, req.body, req.models);
 
     if (!updated) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για ενημέρωση (id: ${id})`);

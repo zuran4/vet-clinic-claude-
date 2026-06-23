@@ -3,7 +3,6 @@
 // Bulk import προϊόντων από CSV
 // ===============================================
 
-import Product from "../../models/Product.js";
 import logger from "../../utils/logger.js";
 
 const VALID_CATEGORIES = ["Φάρμακο", "Τροφή", "Παιχνίδι", "Αξεσουάρ", "Άλλο"];
@@ -27,6 +26,7 @@ const pick = (obj) =>
 
 export const importProducts = async (req, res, next) => {
   try {
+    const { Product } = req.models;
     const rows = req.body?.products;
 
     if (!Array.isArray(rows) || rows.length === 0)

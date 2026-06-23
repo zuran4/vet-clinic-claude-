@@ -1,14 +1,12 @@
 import express from "express";
 
-import Product from "../models/Product.js";
-import Customer from "../models/Customer.js";
-import Purchase from "../models/Purchase.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
 
 const router = express.Router();
 
 router.post("/", requirePermission("purchases:write"), async (req, res) => {
   try {
+    const { Product, Customer, Purchase } = req.models;
     const { customerId, items } = req.body;
 
     if (!customerId || !items || items.length === 0) {

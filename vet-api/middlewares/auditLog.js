@@ -7,24 +7,17 @@ const ACTION_BY_METHOD = {
   DELETE: "DELETE",
 };
 
-// "/api/customers/64f.../purchases" -> "customers"
 function deriveResource(req) {
   const segments = (req.baseUrl || req.originalUrl || "").split("/").filter(Boolean);
   return segments[1] || null;
 }
 
-/**
- * Καταγράφει αυτόματα κάθε επιτυχημένη CREATE/UPDATE/DELETE ενέργεια σε /api/*
- * (εκτός /api/auth — η σύνδεση καταγράφεται ξεχωριστά, με τη δική της σημασιολογία).
- * Τρέχει ΜΕΤΑ το requireAuth, άρα το req.user είναι διαθέσιμο.
- */
 export default function auditLog(req, res, next) {
   const action = ACTION_BY_METHOD[req.method];
 
   if (action) {
     res.on("finish", () => {
-      if (res.statusCode >= 400) return; // καταγράφουμε μόνο επιτυχημένες μεταβολές
-
+      if (res.statusCode >= 400) return;
       recordAudit({
         action,
         resource: deriveResource(req),
@@ -37,7 +30,7 @@ export default function auditLog(req, res, next) {
         userRole: req.user?.role || null,
         requestId: req.requestId || null,
         ip: req.ip,
-      });
+      }, req.models?.AuditLog);
     });
   }
 

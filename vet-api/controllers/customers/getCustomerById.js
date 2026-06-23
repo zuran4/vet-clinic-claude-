@@ -3,8 +3,6 @@
 // Περιγραφή: Επιστρέφει συγκεκριμένο πελάτη και τα κατοικίδιά του
 // ===============================================
 
-import Customer from "../../models/Customer.js";
-import Pet from "../../models/Pet.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
@@ -13,6 +11,7 @@ import logger from "../../utils/logger.js";
 // ===============================
 export const getCustomerById = async (req, res, next) => {
   try {
+    const { Customer, Pet } = req.models;
     const customer = await Customer.findById(req.params.id);
 
     if (!customer) {

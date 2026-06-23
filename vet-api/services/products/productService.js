@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
-
-import Product from "../../models/Product.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
-
 import { getProductQuantity, applyFIFO } from "./stockService.js";
 
-export async function listAll(search = "") {
+// Όλες οι συναρτήσεις δέχονται { Product } ως τελευταίο όρισμα (dependency injection)
+
+export async function listAll(search = "", { Product }) {
   const matchStage = search
     ? { $match: { $or: [
         { name: { $regex: search, $options: "i" } },
@@ -20,23 +19,10 @@ export async function listAll(search = "") {
     { $sort: { name: 1 } },
     {
       $project: {
-        _id: 1,
-        name: 1,
-        category: 1,
-        barcode: 1,
-        supplier: 1,
-        unit: 1,
-        threshold: 1,
-        retailPrice: 1,
-        expirationWarningDays: 1,
-        batches: 1,
-        createdAt: 1,
-        updatedAt: 1,
-
-        // πόσες παρτίδες έχει (για εμφάνιση expand στη λίστα)
+        _id: 1, name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
+        threshold: 1, retailPrice: 1, expirationWarningDays: 1, batches: 1,
+        createdAt: 1, updatedAt: 1,
         batchesCount: { $size: { $ifNull: ["$batches", []] } },
-
-        // συνολική ποσότητα
         stockTotal: {
           $let: {
             vars: { bs: { $ifNull: ["$batches", []] } },
@@ -54,28 +40,17 @@ export async function listAll(search = "") {
     { $addFields: { quantity: "$stockTotal" } }
   ];
 
-  const items = await Product.aggregate(pipeline).exec();
-  return items;
+  return Product.aggregate(pipeline).exec();
 }
 
-
-export async function getById(id) {
+export async function getById(id, { Product }) {
   const [doc] = await Product.aggregate([
     { $match: { _id: new mongoose.Types.ObjectId(id) } },
     {
       $project: {
-        name: 1,
-        category: 1,
-        barcode: 1,
-        supplier: 1,
-        unit: 1,
-        threshold: 1,
-        retailPrice: 1,
-        expirationWarningDays: 1,
-        notes: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        batches: 1, // κράτα το αν το χρειάζεσαι στο UI για expand
+        name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
+        threshold: 1, retailPrice: 1, expirationWarningDays: 1, notes: 1,
+        createdAt: 1, updatedAt: 1, batches: 1,
         stockTotal: {
           $let: {
             vars: { bs: { $ifNull: ["$batches", []] } },
@@ -98,40 +73,33 @@ export async function getById(id) {
   return doc;
 }
 
-export async function create(data) {
+export async function create(data, { Product }) {
   const newProduct = new Product(data);
   const saved = await newProduct.save();
   logger.info(`✅ Δημιουργήθηκε νέο προϊόν: ${saved.name}`);
   return { ...saved.toObject(), quantity: getProductQuantity(saved) };
 }
 
-export async function update(id, data) {
+export async function update(id, data, { Product }) {
   const updated = await Product.findByIdAndUpdate(id, data, { new: true, runValidators: true });
   if (!updated) throw new ApiError(404, "Το προϊόν δεν βρέθηκε");
   return { ...updated.toObject(), quantity: getProductQuantity(updated) };
 }
 
-export async function remove(id) {
+export async function remove(id, { Product }) {
   const deleted = await Product.findByIdAndDelete(id);
   if (!deleted) throw new ApiError(404, "Το προϊόν δεν βρέθηκε");
   logger.info(`🗑️ Διαγράφηκε προϊόν: ${deleted.name}`);
   return true;
 }
 
-/**
- * GET batches as array (κρατάμε shape για συμβατότητα με UI)
- */
-export async function getBatches(id) {
+export async function getBatches(id, { Product }) {
   const product = await Product.findById(id);
   if (!product) throw new ApiError(404, "Το προϊόν δεν βρέθηκε");
   return product.batches || [];
 }
 
-/**
- * Overwrite batches (παλιό flow). Παραμένει για συμβατότητα.
- * Το μοντέλο θα συγχρονίσει το quantity στο save.
- */
-export async function setBatches(id, batches) {
+export async function setBatches(id, batches, { Product }) {
   const product = await Product.findById(id);
   if (!product) throw new ApiError(404, "Το προϊόν δεν βρέθηκε");
   product.batches = batches || [];
@@ -139,13 +107,7 @@ export async function setBatches(id, batches) {
   return { ...product.toObject(), quantity: getProductQuantity(product) };
 }
 
-/**
- * Εξαγωγή αποθέματος:
- * - Αν υπάρχουν batches -> ΠΑΝΤΑ applyFIFO σε batches
- * - Αλλιώς -> μειώνουμε το product.quantity
- * Το μοντέλο/Hook θα συγχρονίσει σωστά το τελικό quantity.
- */
-export async function exportStock({ productId, quantity }) {
+export async function exportStock({ productId, quantity }, { Product }) {
   const product = await Product.findById(productId);
   if (!product) throw new ApiError(404, "Το προϊόν δεν βρέθηκε");
 
@@ -153,15 +115,12 @@ export async function exportStock({ productId, quantity }) {
   if (total < quantity) throw new ApiError(409, "Δεν υπάρχει αρκετό απόθεμα");
 
   if (product.batches && product.batches.length > 0) {
-    // FIFO κατανάλωση από παρτίδες για ΟΛΕΣ τις κατηγορίες όταν υπάρχουν batches
     applyFIFO(product, quantity);
   } else {
-    // Χωρίς παρτίδες -> άμεση αφαίρεση ποσότητας
     product.quantity = (Number(product.quantity) || 0) - quantity;
   }
 
   await product.save();
-
   logger.info(`📤 Εξαγωγή ${quantity} από προϊόν: ${product.name}`);
   return { ...product.toObject(), quantity: getProductQuantity(product) };
 }

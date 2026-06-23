@@ -80,5 +80,6 @@ const petSchema = new mongoose.Schema({
 // ✅ Index για αναζήτηση με όνομα + ιδιοκτήτη
 petSchema.index({ name: 1, owner: 1 });
 
+export { petSchema };
 const Pet = mongoose.model("Pet", petSchema);
 export default Pet;

@@ -7,7 +7,7 @@ export default async function updatePetOwner(req, res, next) {
     const { id } = req.params;
     const { newOwnerId } = req.body;
 
-    const updated = await petService.updatePetOwner(id, newOwnerId);
+    const updated = await petService.updatePetOwner(id, newOwnerId, req.models);
     if (!updated) {
       logger.warn(
         `⚠️ Αποτυχία ενημέρωσης ιδιοκτήτη (petId: ${id}, newOwnerId: ${newOwnerId})`

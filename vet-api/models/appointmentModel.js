@@ -19,5 +19,6 @@ const appointmentSchema = new mongoose.Schema({
 // ⚡ Index για γρήγορα same-day/same-doctor queries και ταξινόμηση ανά ώρα
 appointmentSchema.index({ date: 1, doctor: 1, time: 1 });
 
+export { appointmentSchema };
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 export default Appointment;

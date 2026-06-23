@@ -39,5 +39,6 @@ registrySearchHistorySchema.statics.addEntry = async function ({ microchip, petN
   return doc.entries;
 };
 
+export { registrySearchHistorySchema };
 const RegistrySearchHistory = mongoose.model("RegistrySearchHistory", registrySearchHistorySchema);
 export default RegistrySearchHistory;

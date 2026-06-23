@@ -3,8 +3,6 @@
 // Περιγραφή: Διαγράφει πελάτη βάσει ID
 // ===============================================
 
-import Customer from "../../models/Customer.js";
-import Pet from "../../models/Pet.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 
@@ -13,7 +11,7 @@ import logger from "../../utils/logger.js";
 // ===============================
 export const deleteCustomer = async (req, res, next) => {
   try {
-    // 🔹 Διαγραφή πελάτη
+    const { Customer, Pet } = req.models;
     const deleted = await Customer.findByIdAndDelete(req.params.id);
 
     if (!deleted) {

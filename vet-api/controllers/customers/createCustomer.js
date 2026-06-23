@@ -3,7 +3,6 @@
 // Περιγραφή: Δημιουργεί νέο πελάτη, με αποστολή email & SMS καλωσορίσματος
 // ===============================================
 
-import Customer from "../../models/Customer.js";
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 import { sendWelcomeEmail } from "../../utils/emailService.js";
@@ -14,6 +13,7 @@ import { sendSMS } from "../../utils/smsService.js";
 // ===============================
 export const createCustomer = async (req, res, next) => {
   try {
+    const { Customer } = req.models;
     const { name, phone } = req.body;
 
     // 🔹 Έλεγχος διπλότυπου: ίδιο όνομα ΚΑΙ τηλέφωνο

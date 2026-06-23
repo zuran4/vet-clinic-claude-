@@ -3,8 +3,6 @@
 // Περιγραφή: Καταχώρηση αγορών πελάτη και ενημέρωση αποθέματος προϊόντων
 // ===============================================
 
-import Customer from "../../../models/Customer.js";
-import Product from "../../../models/Product.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
 import { getProductQuantity, applyFIFO } from "../../../services/products/stockService.js";
@@ -14,6 +12,7 @@ import { getProductQuantity, applyFIFO } from "../../../services/products/stockS
 // ===============================
 export const createPurchase = async (req, res, next) => {
   try {
+    const { Customer, Product } = req.models;
     const customerId = req.params.id;
     const { products } = req.body;
 

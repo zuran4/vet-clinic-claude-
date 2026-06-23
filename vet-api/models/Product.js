@@ -74,5 +74,6 @@ productSchema.post("findOneAndUpdate", async function (doc) {
   }
 });
 
+export { productSchema };
 const Product = mongoose.model("Product", productSchema);
 export default Product;

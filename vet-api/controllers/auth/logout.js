@@ -4,7 +4,8 @@ export async function logout(req, res, next) {
   try {
     const { refreshToken } = req.body;
     if (refreshToken) {
-      await revokeRefreshToken(refreshToken);
+      const { RefreshToken } = req.models;
+      await revokeRefreshToken(refreshToken, RefreshToken);
     }
     res.status(204).send();
   } catch (error) {

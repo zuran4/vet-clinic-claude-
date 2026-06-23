@@ -91,5 +91,6 @@ const settingsSchema = new mongoose.Schema({
 });
 
 
+export { settingsSchema };
 const Settings = mongoose.model("Settings", settingsSchema);
 export default Settings;

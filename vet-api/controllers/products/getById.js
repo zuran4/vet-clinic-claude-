@@ -2,7 +2,7 @@ import * as svc from "../../services/products/productService.js";
 
 export async function getById(req, res, next) {
   try {
-    const data = await svc.getById(req.params.id);
+    const data = await svc.getById(req.params.id, req.models);
     res.json(data);
   } catch (err) { next(err); }
 }

@@ -3,7 +3,6 @@
 // Περιγραφή: Επιστρέφει όλες τις αγορές συγκεκριμένου πελάτη
 // ===============================================
 
-import Customer from "../../../models/Customer.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
 
@@ -12,7 +11,7 @@ import logger from "../../../utils/logger.js";
 // ===============================
 export const getCustomerPurchases = async (req, res, next) => {
   try {
-    // 🔹 Αναζήτηση πελάτη με populate στα προϊόντα των αγορών
+    const { Customer } = req.models;
     const customer = await Customer.findById(req.params.id).populate(
       "purchases.product",
       "name"

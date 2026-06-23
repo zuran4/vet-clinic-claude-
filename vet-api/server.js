@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 
 import * as Sentry from "@sentry/node";
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
@@ -31,6 +30,9 @@ import registryRoutes from "./routes/registry/index.js";
 import healthRoutes from "./routes/health.js";
 import attachRequestId from "./middlewares/requestId.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import resolveTenant from "./middlewares/resolveTenant.js";
+import { connectAdmin } from "./services/adminConnection.js";
+import { closeAllTenantConnections } from "./services/tenantConnectionManager.js";
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";
@@ -160,11 +162,16 @@ app.use(limiter);
 app.use("/api/health", healthRoutes);
 
 // ==============================
-// 🔐 Auth Guard — προστατεύει όλα τα /api/* εκτός από /api/auth και /api/health
+// 🔐 Auth Guard + Tenant Resolution
 // ==============================
 app.use("/api", (req, res, next) => {
   if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
   return requireAuth(req, res, next);
+});
+
+app.use("/api", (req, res, next) => {
+  if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
+  return resolveTenant(req, res, next);
 });
 
 // ==============================
@@ -240,16 +247,10 @@ Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 // ==============================
-// 🗄️ MongoDB Connection
+// 🗄️ Admin DB Connection → μετά ξεκινά ο server
 // ==============================
-mongoose.set("strictQuery", true);
-
-mongoose
-  .connect(config.mongoUri, {
-    serverSelectionTimeoutMS: 10000,
-  })
+connectAdmin(config.mongoUri)
   .then(() => {
-    logger.info("✅ Συνδέθηκε με MongoDB!");
     server.listen(config.port, () => {
       logger.info(`✅ Server running on port ${config.port}`);
     });
@@ -261,23 +262,19 @@ mongoose
     logger.info("✅ Cron jobs ξεκίνησαν.");
   })
   .catch((err) => {
-    logger.error("❌ MongoDB connection error:", err);
+    logger.error("❌ Admin DB connection error:", err);
     process.exit(1);
   });
 
 // ==============================
 // 🧹 Graceful shutdown
 // ==============================
-process.on("SIGINT", async () => {
-  logger.warn("🛑 SIGINT received. Closing MongoDB connection...");
-  await mongoose.connection.close();
-  logger.warn("✅ MongoDB connection closed. Exiting...");
+async function gracefulShutdown(signal) {
+  logger.warn(`🛑 ${signal} received. Closing all DB connections...`);
+  await closeAllTenantConnections();
+  logger.warn("✅ All connections closed. Exiting...");
   process.exit(0);
-});
+}
 
-process.on("SIGTERM", async () => {
-  logger.warn("🛑 SIGTERM received. Closing MongoDB connection...");
-  await mongoose.connection.close();
-  logger.warn("✅ MongoDB connection closed. Exiting...");
-  process.exit(0);
-});
+process.on("SIGINT",  () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

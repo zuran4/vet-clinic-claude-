@@ -3,7 +3,6 @@
 // Bulk import πελατών από CSV — χωρίς email/SMS
 // ===============================================
 
-import Customer from "../../models/Customer.js";
 import logger from "../../utils/logger.js";
 
 const ALLOWED = ["name", "phone", "email", "address", "notes"];
@@ -17,6 +16,7 @@ const pick = (obj) =>
 
 export const importCustomers = async (req, res, next) => {
   try {
+    const { Customer } = req.models;
     const rows = req.body?.customers;
 
     if (!Array.isArray(rows) || rows.length === 0)

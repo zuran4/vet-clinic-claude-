@@ -3,7 +3,7 @@ import logger from "../../utils/logger.js";
 
 export default async function getAllPets(req, res, next) {
   try {
-    const pets = await petService.getAllPets();
+    const pets = await petService.getAllPets(req.models);
     logger.info(`📋 Επιστράφηκαν ${pets.length} κατοικίδια`);
     res.json(pets);
   } catch (error) {
