@@ -85,3 +85,8 @@ Thumbs.db
 *.pem
 *.key
 *.crt
+
+# =========================
+# Claude Code local settings (περιέχουν permissions & paths)
+# =========================
+.claude/settings.local.json
