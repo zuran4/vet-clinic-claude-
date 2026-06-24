@@ -26,3 +26,9 @@ export function getTenantModel() {
   if (!Tenant) throw new Error("Admin DB not connected yet.");
   return Tenant;
 }
+
+// Χρησιμοποιείται ΜΟΝΟ σε tests για να κάνει inject mock connection
+export function _setForTest(conn, tenantModel) {
+  adminConn = conn;
+  Tenant    = tenantModel;
+}

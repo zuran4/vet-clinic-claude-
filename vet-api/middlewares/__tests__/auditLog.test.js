@@ -85,7 +85,8 @@ describe("auditLog middleware", () => {
     res.triggerFinish();
 
     expect(recordAuditMock).toHaveBeenCalledWith(
-      expect.objectContaining({ action: expectedAction, resource: "appointments", resourceId: "abc123" })
+      expect.objectContaining({ action: expectedAction, resource: "appointments", resourceId: "abc123" }),
+      undefined
     );
   });
 

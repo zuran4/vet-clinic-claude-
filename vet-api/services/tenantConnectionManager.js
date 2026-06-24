@@ -70,3 +70,8 @@ export async function closeAllTenantConnections() {
   await Promise.all([...pool.values()].map((c) => c.close()));
   pool.clear();
 }
+
+// Χρησιμοποιείται ΜΟΝΟ σε tests για να κάνει inject υπάρχουσα connection
+export function _setConnectionForTest(clinicId, conn) {
+  pool.set(clinicId, conn);
+}
