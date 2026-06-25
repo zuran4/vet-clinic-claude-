@@ -1,14 +1,16 @@
 import React, { useState, useRef } from "react";
-import { Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Building2, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import request from "../../api/apiClient.js";
 
-// Μετάφραση τεχνικών errors σε φιλικά μηνύματα
 function friendlyError(err) {
   const status = err?.status;
   const msg    = (err?.message || "").toLowerCase();
 
+  if (status === 400 || /clinicid|κλινικ/i.test(msg))
+    return "Εισάγετε τον κωδικό κλινικής και το PIN.";
+
   if (status === 401 || /έγκυρ|invalid|unauthorized/i.test(msg))
-    return "Λάθος PIN. Δοκίμασε ξανά.";
+    return "Λάθος κωδικός κλινικής ή PIN. Δοκίμασε ξανά.";
 
   if (status === 429 || /πολλ|attempt|too many/i.test(msg))
     return "Πάρα πολλές αποτυχημένες προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.";
@@ -20,11 +22,13 @@ function friendlyError(err) {
 }
 
 const LoginForm = ({ onLogin }) => {
-  const [pin, setPin]         = useState("");
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPin, setShowPin] = useState(false);
-  const inputRef              = useRef(null);
+  const [clinicId, setClinicId] = useState("");
+  const [pin, setPin]           = useState("");
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [showPin, setShowPin]   = useState(false);
+  const clinicRef               = useRef(null);
+  const pinRef                  = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,38 +40,54 @@ const LoginForm = ({ onLogin }) => {
 
       const data = await request("/auth/login", {
         method: "POST",
-        body: { pin },
+        body: { clinicId: clinicId.trim().toLowerCase(), pin },
       });
 
-      onLogin({ token: data.token, refreshToken: data.refreshToken, name: data.name, role: data.role, permissions: data.permissions });
+      onLogin({
+        token:        data.token,
+        refreshToken: data.refreshToken,
+        name:         data.name,
+        role:         data.role,
+        permissions:  data.permissions,
+        clinicId:     data.clinicId,
+        clinicName:   data.clinicName,
+      });
     } catch (err) {
       console.error("❌ Σφάλμα σύνδεσης:", err);
       setError(friendlyError(err));
       setPin("");
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => pinRef.current?.focus(), 50);
     } finally {
       setLoading(false);
     }
   };
 
+  const fieldClass = (hasError) => `
+    w-full px-4 py-2.5
+    border rounded-xl
+    bg-gray-50 dark:bg-win-elevated focus:bg-white dark:focus:bg-win-elevated2
+    text-gray-900 dark:text-gray-100
+    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+    disabled:opacity-50 disabled:cursor-not-allowed
+    transition-all duration-150
+    ${hasError ? "border-red-400 focus:ring-red-400" : "border-gray-200 dark:border-win-border-light"}
+  `;
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center"
       style={{
-        backgroundColor: "#eef2ff",                        /* indigo-50 για τα letterbox margins */
+        backgroundColor: "#eef2ff",
         backgroundImage: "url('https://i.imgur.com/ZJfOZGX.png')",
         backgroundRepeat: "no-repeat",
-        backgroundSize: "contain",                         /* ολόκληρο logo ορατό */
-        backgroundPosition: "center center",               /* κεντρικά */
+        backgroundSize: "contain",
+        backgroundPosition: "center center",
       }}
     >
-      {/* Ελαφρύ overlay — δεν σκεπάζει το logo, απλά αυξάνει contrast */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 
-      {/* Card */}
       <div className="relative z-10 w-[340px] drop-shadow-2xl">
 
-        {/* Accent bar */}
         <div className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-indigo-500 to-indigo-400" />
 
         <form
@@ -90,6 +110,32 @@ const LoginForm = ({ onLogin }) => {
             </div>
           </div>
 
+          {/* Clinic ID field */}
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="clinic-input"
+              className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+            >
+              Κωδικός Κλινικής
+            </label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                ref={clinicRef}
+                id="clinic-input"
+                type="text"
+                placeholder="π.χ. papadopoulos"
+                value={clinicId}
+                onChange={(e) => setClinicId(e.target.value)}
+                required
+                disabled={loading}
+                autoFocus
+                autoComplete="organization"
+                className={`${fieldClass(!!error)} pl-9`}
+              />
+            </div>
+          </div>
+
           {/* PIN field */}
           <div className="flex flex-col gap-1.5">
             <label
@@ -100,7 +146,7 @@ const LoginForm = ({ onLogin }) => {
             </label>
             <div className="relative">
               <input
-                ref={inputRef}
+                ref={pinRef}
                 id="pin-input"
                 type={showPin ? "text" : "password"}
                 inputMode="numeric"
@@ -110,18 +156,8 @@ const LoginForm = ({ onLogin }) => {
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
                 required
                 disabled={loading}
-                autoFocus
                 autoComplete="current-password"
-                className={`
-                  w-full px-4 py-2.5 pr-10
-                  border rounded-xl text-center text-xl font-mono tracking-[0.5em]
-                  bg-gray-50 dark:bg-win-elevated focus:bg-white dark:focus:bg-win-elevated2
-                  text-gray-900 dark:text-gray-100
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-150
-                  ${error ? "border-red-400 focus:ring-red-400" : "border-gray-200 dark:border-win-border-light"}
-                `}
+                className={`${fieldClass(!!error)} text-center text-xl font-mono tracking-[0.5em] pr-10`}
               />
               <button
                 type="button"
@@ -147,7 +183,7 @@ const LoginForm = ({ onLogin }) => {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || pin.length === 0}
+            disabled={loading || clinicId.trim().length === 0 || pin.length === 0}
             className="
               w-full py-2.5 px-4 rounded-xl
               bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800

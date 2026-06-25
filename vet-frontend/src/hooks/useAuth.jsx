@@ -3,13 +3,14 @@ import { useState, useCallback, useEffect } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
 
 export function useAuth() {
-  const [user, setUser]           = useState(null);
+  const [user, setUser]               = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   const clearAuth = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("permissions");
+    localStorage.removeItem("clinicId");
     setUser(null);
   }, []);
 
@@ -29,13 +30,13 @@ export function useAuth() {
       })
       .then((data) => {
         const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
-        setUser({ name: data.name, token, role: data.role, permissions });
+        const clinicId    = localStorage.getItem("clinicId") || data.clinicId || "";
+        setUser({ name: data.name, token, role: data.role, permissions, clinicId });
       })
       .catch(() => clearAuth())
       .finally(() => setAuthLoading(false));
   }, [clearAuth]);
 
-  // Αυτόματη αποσύνδεση όταν το refresh token λήξει (το στέλνει ο apiClient)
   useEffect(() => {
     const handler = () => clearAuth();
     window.addEventListener("auth:logout", handler);
@@ -44,9 +45,20 @@ export function useAuth() {
 
   const login = useCallback((loggedInUser) => {
     const permissions = loggedInUser.permissions || [];
-    setUser({ name: loggedInUser.name, token: loggedInUser.token, role: loggedInUser.role, permissions });
-    localStorage.setItem("token", loggedInUser.token);
-    localStorage.setItem("permissions", JSON.stringify(permissions));
+    const clinicId    = loggedInUser.clinicId    || "";
+
+    setUser({
+      name:       loggedInUser.name,
+      token:      loggedInUser.token,
+      role:       loggedInUser.role,
+      clinicId,
+      clinicName: loggedInUser.clinicName || "",
+      permissions,
+    });
+
+    localStorage.setItem("token",        loggedInUser.token);
+    localStorage.setItem("permissions",  JSON.stringify(permissions));
+    localStorage.setItem("clinicId",     clinicId);
     if (loggedInUser.refreshToken) {
       localStorage.setItem("refreshToken", loggedInUser.refreshToken);
     }
@@ -54,12 +66,13 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     const refreshToken = localStorage.getItem("refreshToken");
+    const clinicId     = localStorage.getItem("clinicId");
     if (refreshToken) {
       try {
         await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: "POST",
+          method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
+          body:    JSON.stringify({ refreshToken, clinicId }),
         });
       } catch {
         // αγνοούμε σφάλματα δικτύου — το clearAuth γίνεται πάντα
@@ -76,7 +89,6 @@ export function useAuth() {
     };
   }, []);
 
-  // Ελέγχει αν ο τρέχων χρήστης έχει συγκεκριμένο permission
   const canDo = useCallback((permission) => {
     if (!user) return false;
     const perms = user.permissions || [];

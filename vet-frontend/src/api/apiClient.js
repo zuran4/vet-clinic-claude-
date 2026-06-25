@@ -13,12 +13,13 @@ function flushQueue(error, token = null) {
 
 async function attemptRefresh() {
   const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) throw new Error("no_refresh_token");
+  const clinicId     = localStorage.getItem("clinicId");
+  if (!refreshToken || !clinicId) throw new Error("no_refresh_token");
 
   const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify({ refreshToken, clinicId }),
   });
 
   if (!res.ok) throw new Error("refresh_failed");
