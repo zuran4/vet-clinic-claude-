@@ -1,15 +1,28 @@
 import { signToken } from "../../utils/jwt.js";
 import { rotateRefreshToken, generateRefreshToken, saveRefreshToken } from "../../services/auth/tokenService.js";
 import { getPermissions } from "../../config/roles.js";
+import { getTenantModels } from "../../services/tenantConnectionManager.js";
+import { getTenantModel } from "../../services/adminConnection.js";
 
 export async function refresh(req, res, next) {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken, clinicId } = req.body;
+
     if (!refreshToken) {
       return res.status(401).json({ message: "Απαιτείται refresh token" });
     }
+    if (!clinicId) {
+      return res.status(400).json({ message: "Απαιτείται clinicId" });
+    }
 
-    const { User, RefreshToken } = req.models;
+    // Επαλήθευση ότι η κλινική υπάρχει και είναι ενεργή
+    const Tenant = getTenantModel();
+    const tenant = await Tenant.findOne({ clinicId, isActive: true }).lean();
+    if (!tenant) {
+      return res.status(401).json({ message: "Άγνωστη ή ανενεργή κλινική" });
+    }
+
+    const { User, RefreshToken } = getTenantModels(clinicId);
 
     const userId = await rotateRefreshToken(refreshToken, RefreshToken);
     if (!userId) {
@@ -21,12 +34,15 @@ export async function refresh(req, res, next) {
       return res.status(401).json({ message: "Ο χρήστης δεν υπάρχει ή είναι ανενεργός" });
     }
 
-    const clinicId = req.user?.clinicId;
     const newToken = signToken({ userId: user._id, name: user.name, role: user.role, clinicId });
     const newRawRefresh = generateRefreshToken();
     await saveRefreshToken(userId, newRawRefresh, RefreshToken);
 
-    res.json({ token: newToken, refreshToken: newRawRefresh, permissions: getPermissions(user.role) });
+    res.json({
+      token: newToken,
+      refreshToken: newRawRefresh,
+      permissions: getPermissions(user.role),
+    });
   } catch (error) {
     next(error);
   }

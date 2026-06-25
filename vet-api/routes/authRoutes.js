@@ -9,7 +9,7 @@ import { me } from "../controllers/auth/me.js";
 import { refresh } from "../controllers/auth/refresh.js";
 import { logout } from "../controllers/auth/logout.js";
 import requireAuth from "../middlewares/auth/requireAuth.js";
-import User from "../models/User.js";
+import { getTenantModels } from "../services/tenantConnectionManager.js";
 import { comparePin, hashPin } from "../services/auth/pinCrypto.js";
 
 const router = express.Router();
@@ -43,6 +43,7 @@ router.post("/change-pin", requireAuth, async (req, res) => {
     if (!oldPin || !newPin) return res.status(400).json({ error: "Απαιτούνται oldPin και newPin." });
     if (String(newPin).length < 4) return res.status(400).json({ error: "Το νέο PIN πρέπει να έχει τουλάχιστον 4 ψηφία." });
 
+    const { User } = getTenantModels(req.user.clinicId);
     const user = await User.findById(req.user.userId).select("pinHash").lean();
     if (!user) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε." });
 
