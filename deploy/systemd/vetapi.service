@@ -1,0 +1,39 @@
+# =============================================================================
+# /etc/systemd/system/vetapi.service
+# Τρέχει το Node.js API σαν background service.
+# Ξεκινά αυτόματα μετά από restart του mini PC.
+# =============================================================================
+
+[Unit]
+Description=Vetty API Server
+Documentation=https://vetty.gr
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vetty
+Group=vetty
+WorkingDirectory=/opt/vetty/vet-api
+
+# Το ίδιο command με το npm start
+ExecStart=/usr/bin/node --import ./instrument.js server.js
+
+# Αυτόματη επανεκκίνηση αν κρασάρει (μετά από 10 δευτερόλεπτα)
+Restart=always
+RestartSec=10
+
+# Environment
+EnvironmentFile=/opt/vetty/vet-api/.env
+Environment=NODE_ENV=production
+
+# Logs → journald (δες με: journalctl -u vetapi -f)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vetapi
+
+# Limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

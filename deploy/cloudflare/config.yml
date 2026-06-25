@@ -1,0 +1,29 @@
+# =============================================================================
+# Cloudflare Tunnel config
+# Αρχείο: ~/.cloudflared/config.yml  (στο mini PC)
+#
+# ΠΡΙΝ χρησιμοποιήσεις αυτό το αρχείο:
+#   1. cloudflared tunnel login
+#   2. cloudflared tunnel create vetty-tunnel
+#   3. Αντικατέστησε TUNNEL_ID_HERE με το ID που έλαβες
+# =============================================================================
+
+tunnel: TUNNEL_ID_HERE
+credentials-file: /home/vetty/.cloudflared/TUNNEL_ID_HERE.json
+
+# Κάθε hostname → local service
+ingress:
+  # Node.js API → nginx → port 5000
+  - hostname: api.vetty.gr
+    service: http://localhost:80
+
+  # React App → nginx → /var/www/vetty-app
+  - hostname: app.vetty.gr
+    service: http://localhost:80
+
+  # Landing page → nginx → /var/www/vetty-landing
+  - hostname: www.vetty.gr
+    service: http://localhost:80
+
+  # Fallback — οτιδήποτε άλλο → 404
+  - service: http_status:404
