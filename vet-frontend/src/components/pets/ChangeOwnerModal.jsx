@@ -11,7 +11,7 @@ const ChangeOwnerModal = ({ isOpen, onClose, onSelect }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!query) {
+    if (!query || query.length < 2) {
       setResults([]);
       return;
     }
@@ -19,23 +19,17 @@ const ChangeOwnerModal = ({ isOpen, onClose, onSelect }) => {
     const fetchOwners = async () => {
       try {
         setLoading(true);
-
-        // Χρησιμοποιούμε apiClient:
-        // - Production: VITE_API_BASE_URL (Render)
-        // - Local: http://localhost:5000/api
-        const data = await request(
-          `/customers/search?q=${encodeURIComponent(query)}`
-        );
-
-        setResults(Array.isArray(data) ? data : []);
+        const data = await request(`/customers?search=${encodeURIComponent(query)}`);
+        setResults(Array.isArray(data) ? data : (data.data ?? []));
       } catch (err) {
         console.error("❌ Σφάλμα αναζήτησης πελατών:", err);
+        setResults([]);
       } finally {
         setLoading(false);
       }
     };
 
-    const timeout = setTimeout(fetchOwners, 400); // debounce 400ms
+    const timeout = setTimeout(fetchOwners, 400);
     return () => clearTimeout(timeout);
   }, [query]);
 

@@ -10,6 +10,7 @@ const CustomerSearchBox = ({ onSelect }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const skipSearch = useRef(false);
   const wrapperRef = useRef(null);
 
@@ -25,19 +26,31 @@ const CustomerSearchBox = ({ onSelect }) => {
 
   useEffect(() => {
     if (skipSearch.current) { skipSearch.current = false; return; }
-    if (!query.trim() || query.length < 2) { setResults([]); setShowDropdown(false); return; }
+    if (!query.trim() || query.length < 2) {
+      setResults([]);
+      setShowDropdown(false);
+      setLoading(false);
+      setSearchError(false);
+      return;
+    }
 
     let cancelled = false;
     const doFetch = async () => {
       try {
         setLoading(true);
+        setSearchError(false);
         const data = await request(`/customers?search=${encodeURIComponent(query)}`);
         if (!cancelled) {
           setResults(Array.isArray(data) ? data : (data.data ?? []));
           setShowDropdown(true);
         }
-      } catch {
-        if (!cancelled) setResults([]);
+      } catch (err) {
+        console.error("❌ CustomerSearchBox:", err);
+        if (!cancelled) {
+          setResults([]);
+          setSearchError(true);
+          setShowDropdown(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -103,7 +116,9 @@ const CustomerSearchBox = ({ onSelect }) => {
               <div className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
             ) : (
               <>
-                {results.length > 0 ? (
+                {searchError ? (
+                  <div className="px-4 py-3 text-xs text-red-400 text-center">Σφάλμα σύνδεσης. Δοκίμασε ξανά.</div>
+                ) : results.length > 0 ? (
                   <ul className="max-h-44 overflow-y-auto divide-y divide-gray-50 dark:divide-win-border/50">
                     {results.map((c) => (
                       <li key={c._id}>
