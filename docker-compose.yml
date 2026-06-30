@@ -30,8 +30,6 @@ services:
   vet-frontend:
     build:
       context: ./vet-frontend
-      args:
-        VITE_API_BASE_URL: https://api.vetty.gr/api
     container_name: vet-frontend
     restart: unless-stopped
     ports:
