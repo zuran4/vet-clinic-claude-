@@ -27,6 +27,16 @@ services:
     environment:
       - NODE_ENV=production
 
+  vet-frontend:
+    build:
+      context: ./vet-frontend
+      args:
+        VITE_API_BASE_URL: https://api.vetty.gr/api
+    container_name: vet-frontend
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: uptime-kuma
