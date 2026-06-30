@@ -26,6 +26,7 @@ function AppointmentsPage({
   onDeleteAppointment,
   onEditAppointment,
   onClose,
+  doctorFilter = null,
 }) {
   const { filteredAppointments } = useAppointmentsFilters(appointments, selectedDate);
   const [tab, setTab] = useState("calendar");
@@ -78,7 +79,15 @@ function AppointmentsPage({
       {tab === "calendar" && (
       <>
       {/* Date Navigator */}
-      <div className="bg-gradient-to-r from-indigo-500 to-violet-400 rounded-2xl px-5 py-4 mb-5 flex items-center justify-between">
+      <div
+        className={`bg-gradient-to-r rounded-2xl px-5 py-4 mb-5 flex items-center justify-between ${
+          doctorFilter === "Grooming"
+            ? "from-sky-400 to-sky-500"
+            : doctorFilter === "Ιατρείο"
+              ? "from-indigo-400 to-indigo-500"
+              : "from-indigo-500 to-violet-400"
+        }`}
+      >
         <Button
           type="button"
           onClick={() => setSelectedDate(dayjs(selectedDate).subtract(1, "day").format("YYYY-MM-DD"))}
@@ -112,6 +121,7 @@ function AppointmentsPage({
         endHour="17:00"
         slotDuration={30}
         appointments={filteredAppointments()}
+        doctorFilter={doctorFilter}
         onSlotSelect={(time, doctor) => {
           setSelectedTime(time);
           setSelectedDoctor(doctor);

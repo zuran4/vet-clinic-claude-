@@ -13,6 +13,7 @@ const AppointmentSlots = ({
   onDelete,
   onEdit,
   user,
+  doctorFilter = null,
 }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
@@ -68,11 +69,12 @@ const AppointmentSlots = ({
     appointments,
   });
 
-  // Αν είναι κλειστά και τα δύο → μήνυμα
-  if (
-    (!clinicSchedule || !clinicSchedule.enabled) &&
-    (!groomingSchedule || !groomingSchedule.enabled)
-  ) {
+  // 🔹 Ποια τμήματα εμφανίζονται (φιλτράρισμα από "Όλα" στο Dashboard)
+  const showClinic = (!doctorFilter || doctorFilter === "Ιατρείο") && clinicSchedule?.enabled;
+  const showGrooming = (!doctorFilter || doctorFilter === "Grooming") && groomingSchedule?.enabled;
+
+  // Αν δεν υπάρχει τίποτα να εμφανιστεί → μήνυμα
+  if (!showClinic && !showGrooming) {
     return (
       <div className="p-6 text-center text-gray-500 italic">
         Το κτηνιατρείο είναι κλειστό ({dayjs(date).locale("el").format("dddd")})
@@ -203,8 +205,8 @@ const AppointmentSlots = ({
 
   return (
     <div className="p-4">
-      {clinicSchedule?.enabled && renderSlots(slotsIatreio, "Ιατρείο")}
-      {groomingSchedule?.enabled && renderSlots(slotsGrooming, "Grooming")}
+      {showClinic && renderSlots(slotsIatreio, "Ιατρείο")}
+      {showGrooming && renderSlots(slotsGrooming, "Grooming")}
 
       <AppointmentPreviewModal
         isOpen={!!selectedAppointment}

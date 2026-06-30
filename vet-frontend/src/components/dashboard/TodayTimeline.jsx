@@ -233,7 +233,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             gradient="from-indigo-400 to-indigo-500"
             appointments={clinicAppts}
             emptyText="Κανένα ραντεβού ιατρείου"
-            onShowAll={onShowAppointments}
+            onShowAll={() => onShowAppointments?.("Ιατρείο")}
             onEditAppointment={onEditAppointment}
             onConsult={setConsultAppt}
             extra={
@@ -257,7 +257,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             gradient="from-sky-400 to-sky-500"
             appointments={groomingAppts}
             emptyText="Κανένα ραντεβού grooming"
-            onShowAll={onShowAppointments}
+            onShowAll={() => onShowAppointments?.("Grooming")}
             onEditAppointment={onEditAppointment}
             onConsult={setConsultAppt}
             extra={

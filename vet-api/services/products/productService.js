@@ -21,6 +21,7 @@ export async function listAll(search = "", { Product }) {
       $project: {
         _id: 1, name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
         threshold: 1, retailPrice: 1, expirationWarningDays: 1, batches: 1,
+        manualReorder: 1,
         createdAt: 1, updatedAt: 1,
         batchesCount: { $size: { $ifNull: ["$batches", []] } },
         stockTotal: {
@@ -50,6 +51,7 @@ export async function getById(id, { Product }) {
       $project: {
         name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
         threshold: 1, retailPrice: 1, expirationWarningDays: 1, notes: 1,
+        manualReorder: 1,
         createdAt: 1, updatedAt: 1, batches: 1,
         stockTotal: {
           $let: {

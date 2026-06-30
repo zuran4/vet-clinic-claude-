@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShoppingCart, AlertTriangle, Clock, Printer, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, AlertTriangle, Clock, Printer, RefreshCw, ChevronDown, ChevronUp, Plus, X, Search } from "lucide-react";
 import request from "@/api/apiClient.js";
 import { useStockThresholds } from "@/hooks";
 import { getStockStatus } from "@/utils/stock.js";
@@ -10,6 +10,9 @@ const WishlistPanel = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState({});
+  const [showAddPanel, setShowAddPanel] = useState(false);
+  const [addSearch, setAddSearch] = useState("");
+  const [addingId, setAddingId] = useState(null);
   const { getThresholdForCategory } = useStockThresholds();
 
   const fetchProducts = async () => {
@@ -29,6 +32,8 @@ const WishlistPanel = () => {
   const today = dayjs();
 
   const needsReorder = products.filter((p) => {
+    if (p.manualReorder) return true;
+
     const cfg = getThresholdForCategory(p.category);
     const qty = p.stockTotal ?? p.quantity ?? 0;
     const { key } = getStockStatus(qty, cfg);
@@ -41,6 +46,31 @@ const WishlistPanel = () => {
       return diff <= warnDays;
     });
   });
+
+  const reorderIds = new Set(needsReorder.map((p) => p._id));
+  const addCandidates = products
+    .filter((p) => !reorderIds.has(p._id))
+    .filter((p) => p.name.toLowerCase().includes(addSearch.trim().toLowerCase()));
+
+  const handleAddManual = async (productId) => {
+    try {
+      setAddingId(productId);
+      await request(`/products/${productId}`, { method: "PUT", body: { manualReorder: true } });
+      await fetchProducts();
+      setAddSearch("");
+    } finally {
+      setAddingId(null);
+    }
+  };
+
+  const handleRemoveManual = async (productId) => {
+    try {
+      await request(`/products/${productId}`, { method: "PUT", body: { manualReorder: false } });
+      await fetchProducts();
+    } catch {
+      // αγνόησε — η λίστα θα μείνει ως έχει αν αποτύχει
+    }
+  };
 
   const bySupplier = {};
   for (const p of needsReorder) {
@@ -68,6 +98,7 @@ const WishlistPanel = () => {
         return dayjs(b.expirationDate).diff(today, "day") <= warnDays;
       });
       const list = [];
+      if (p.manualReorder) list.push({ text: "Χειροκίνητη προσθήκη", cls: "reason-manual" });
       if (key === "out") list.push({ text: "Εξαντλημένο", cls: "reason-critical" });
       else if (key === "low") list.push({ text: "Χαμηλό απόθεμα", cls: "reason-warn" });
       expiring.forEach((b) => {
@@ -184,6 +215,7 @@ tr:last-child td{border-bottom:none}
 .reason{display:block;padding:1px 0}
 .reason-critical{color:#dc2626}
 .reason-warn{color:#d97706}
+.reason-manual{color:#2563eb}
 .td-order{width:16%;border-left:1.5px dashed #d1d5db !important;background:#fffbeb !important;vertical-align:middle}
 .order-line{height:1px;border-bottom:1px solid #d1d5db;margin:18px 8px 4px}
 
@@ -282,7 +314,17 @@ ${sections}
               : `${needsReorder.length} προϊόντα χρειάζονται παραγγελία`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
+          <button
+            onClick={() => setShowAddPanel((v) => !v)}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors ${
+              showAddPanel
+                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                : "bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" /> Προσθήκη
+          </button>
           <button
             onClick={fetchProducts}
             className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-win-elevated text-gray-500 dark:text-gray-400 transition-colors"
@@ -296,6 +338,40 @@ ${sections}
           >
             <Printer className="w-3.5 h-3.5" /> Εκτύπωση
           </button>
+
+          {showAddPanel && (
+            <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-lg z-20 overflow-hidden">
+              <div className="p-2 border-b border-gray-100 dark:border-win-border relative">
+                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  autoFocus
+                  value={addSearch}
+                  onChange={(e) => setAddSearch(e.target.value)}
+                  placeholder="Αναζήτηση προϊόντος..."
+                  className="w-full pl-8 pr-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-win-border bg-gray-50 dark:bg-win-elevated text-gray-800 dark:text-gray-100 outline-none focus:ring-1 focus:ring-blue-300"
+                />
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {addCandidates.length === 0 ? (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">
+                    Δεν βρέθηκαν προϊόντα.
+                  </p>
+                ) : (
+                  addCandidates.map((p) => (
+                    <button
+                      key={p._id}
+                      onClick={() => handleAddManual(p._id)}
+                      disabled={addingId === p._id}
+                      className="w-full flex items-center justify-between px-4 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+                    >
+                      <span className="text-gray-700 dark:text-gray-200">{p.name}</span>
+                      <span className="text-xs text-gray-400">{p.category}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -344,6 +420,7 @@ ${sections}
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Κατηγορία</th>
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Απόθεμα</th>
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Λόγος</th>
+                        <th className="px-4 py-[6.71px] w-8"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 dark:divide-win-border/50">
@@ -357,6 +434,7 @@ ${sections}
                           return dayjs(b.expirationDate).diff(today, "day") <= warnDays;
                         });
                         const reasons = [];
+                        if (p.manualReorder) reasons.push({ text: "Χειροκίνητη προσθήκη", color: "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30" });
                         if (key === "out") reasons.push({ text: "Εξαντλημένο", color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30" });
                         else if (key === "low") reasons.push({ text: "Χαμηλό απόθεμα", color: "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30" });
                         expiringBatches.forEach((b) => {
@@ -381,6 +459,17 @@ ${sections}
                                   </span>
                                 ))}
                               </div>
+                            </td>
+                            <td className="px-2 py-[8.38px]">
+                              {p.manualReorder && (
+                                <button
+                                  onClick={() => handleRemoveManual(p._id)}
+                                  className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                  title="Αφαίρεση από τη λίστα"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                             </td>
                           </tr>
                         );
@@ -408,6 +497,7 @@ ${sections}
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Προϊόν</th>
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Απόθεμα</th>
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Λόγος</th>
+                              <th className="px-2 py-[6.71px] w-8"></th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-50 dark:divide-win-border/50">
@@ -421,6 +511,7 @@ ${sections}
                                 return dayjs(b.expirationDate).diff(today, "day") <= warnDays;
                               });
                               const reasons = [];
+                              if (p.manualReorder) reasons.push({ text: "Χειροκίνητη προσθήκη", color: "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30" });
                               if (key === "out") reasons.push({ text: "Εξαντλημένο", color: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30" });
                               else if (key === "low") reasons.push({ text: "Χαμηλό απόθεμα", color: "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30" });
                               expiringBatches.forEach((b) => {
@@ -444,6 +535,17 @@ ${sections}
                                         </span>
                                       ))}
                                     </div>
+                                  </td>
+                                  <td className="px-2 py-[8.38px]">
+                                    {p.manualReorder && (
+                                      <button
+                                        onClick={() => handleRemoveManual(p._id)}
+                                        className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                        title="Αφαίρεση από τη λίστα"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
                                   </td>
                                 </tr>
                               );

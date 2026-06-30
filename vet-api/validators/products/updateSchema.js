@@ -21,4 +21,5 @@ export default Joi.object({
   notes: Joi.string().trim().allow(""),
   supplier: Joi.string().trim().allow(""),
   batches: Joi.array().items(batchSchema),
+  manualReorder: Joi.boolean(),
 }).min(1);

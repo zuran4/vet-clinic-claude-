@@ -48,6 +48,7 @@ function MainLayout({
   const [activePanel, setActivePanel] = useState("dashboard");
   const [petsCount, setPetsCount] = useState(0);
   const [customersCount, setCustomersCount] = useState(0);
+  const [appointmentsDoctorFilter, setAppointmentsDoctorFilter] = useState(null);
 
   // ✅ Settings state
   const [settings, setSettings] = useState(null);
@@ -56,7 +57,10 @@ function MainLayout({
   const [registryStatus, setRegistryStatus] = useState("UNKNOWN");
 
   const openPanel = (panel) => setActivePanel(panel);
-  const closePanel = () => setActivePanel("dashboard");
+  const closePanel = () => {
+    setActivePanel("dashboard");
+    setAppointmentsDoctorFilter(null);
+  };
 
   // 🔹 Όταν ανοίγουμε επεξεργασία ραντεβού από το Dashboard, θυμόμαστε να
   // γυρίσουμε πίσω στο Dashboard μόλις κλείσει το modal.
@@ -76,7 +80,7 @@ function MainLayout({
 
   useKeyboardShortcuts({
     goHome:          () => openPanel("dashboard"),
-    goAppointments:  () => openPanel("appointments"),
+    goAppointments:  () => { setAppointmentsDoctorFilter(null); openPanel("appointments"); },
     goCustomers:     () => openPanel("customers"),
     goProducts:      () => openPanel("products"),
     goPrescriptions: () => openPanel("prescriptions"),
@@ -279,13 +283,18 @@ function MainLayout({
               pets={Array(petsCount).fill(null)}
               customersCount={customersCount}
               products={productsWithExpDate}
-              onShowAppointments={() => openPanel("appointments")}
+              onShowAppointments={(doctor) => {
+                setAppointmentsDoctorFilter(doctor || null);
+                openPanel("appointments");
+              }}
               onEditAppointment={(appt) => {
                 cameFromDashboardRef.current = true;
+                setAppointmentsDoctorFilter(null);
                 onEditAppointment(appt);
                 openPanel("appointments");
               }}
               onJumpToDate={(date) => {
+                setAppointmentsDoctorFilter(null);
                 setSelectedDate(dayjs(date).format("YYYY-MM-DD"));
                 openPanel("appointments");
               }}
@@ -327,6 +336,7 @@ function MainLayout({
             onDeleteAppointment={onDeleteAppointment}
             onEditAppointment={onEditAppointment}
             onClose={closePanel}
+            doctorFilter={appointmentsDoctorFilter}
           />
         )}
 
