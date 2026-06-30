@@ -32,6 +32,7 @@ const productSchema = new mongoose.Schema(
 
     // 🛒 Χειροκίνητη προσθήκη στη Λίστα Αγορών (ανεξάρτητα από απόθεμα/λήξη)
     manualReorder: { type: Boolean, default: false },
+    manualReorderQty: { type: Number, default: null },
 
     // 📦 Παρτίδες προϊόντος
     batches: [

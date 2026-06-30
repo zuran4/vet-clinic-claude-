@@ -17,13 +17,21 @@ export default function validateAppointmentBody(req, res, next) {
     owner,
   } = req.body || {};
 
-  // 1) Υποχρεωτικά πεδία
-  const required = { date, time, clientName, animalName, type, duration };
+  // 1) Υποχρεωτικά πεδία (το "type" ελέγχεται ξεχωριστά παρακάτω, ως πίνακας)
+  const required = { date, time, clientName, animalName, duration };
   for (const [key, val] of Object.entries(required)) {
     if (val === undefined || val === null || String(val).trim() === "") {
       return res.status(400).json({ message: `Το πεδίο "${key}" είναι υποχρεωτικό.` });
     }
   }
+
+  // 1b) type: δέχεται πίνακα ή μεμονωμένο string (backward compatible), απαιτεί τουλάχιστον έναν τύπο
+  const typesArray = Array.isArray(type) ? type : (type ? [type] : []);
+  const cleanTypes = typesArray.map((t) => String(t).trim()).filter(Boolean);
+  if (cleanTypes.length === 0) {
+    return res.status(400).json({ message: 'Το πεδίο "type" είναι υποχρεωτικό.' });
+  }
+  req.body.type = cleanTypes;
 
   // 2) Ημερομηνία / ώρα με customParseFormat
   const validDate = dayjs(date, "YYYY-MM-DD", true).isValid();

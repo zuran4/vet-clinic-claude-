@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ShoppingCart, AlertTriangle, Clock, Printer, RefreshCw, ChevronDown, ChevronUp, Plus, X, Search } from "lucide-react";
 import request from "@/api/apiClient.js";
 import { useStockThresholds } from "@/hooks";
@@ -13,7 +13,23 @@ const WishlistPanel = () => {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [addSearch, setAddSearch] = useState("");
   const [addingId, setAddingId] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [qtyInput, setQtyInput] = useState("");
+  const addPanelRef = useRef(null);
   const { getThresholdForCategory } = useStockThresholds();
+
+  useEffect(() => {
+    if (!showAddPanel) return;
+    const handleClickOutside = (e) => {
+      if (addPanelRef.current && !addPanelRef.current.contains(e.target)) {
+        setShowAddPanel(false);
+        setSelectedCandidate(null);
+        setAddSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showAddPanel]);
 
   const fetchProducts = async () => {
     try {
@@ -52,12 +68,18 @@ const WishlistPanel = () => {
     .filter((p) => !reorderIds.has(p._id))
     .filter((p) => p.name.toLowerCase().includes(addSearch.trim().toLowerCase()));
 
-  const handleAddManual = async (productId) => {
+  const handleAddManual = async (productId, qty) => {
     try {
       setAddingId(productId);
-      await request(`/products/${productId}`, { method: "PUT", body: { manualReorder: true } });
+      await request(`/products/${productId}`, {
+        method: "PUT",
+        body: { manualReorder: true, manualReorderQty: qty ? Number(qty) : null },
+      });
       await fetchProducts();
       setAddSearch("");
+      setSelectedCandidate(null);
+      setQtyInput("");
+      setShowAddPanel(false);
     } finally {
       setAddingId(null);
     }
@@ -125,12 +147,15 @@ const WishlistPanel = () => {
         const reasonsHtml = reasons.map(r =>
           `<span class="reason ${r.cls}">${r.text}</span>`
         ).join("");
+        const orderQtyHtml = p.manualReorderQty
+          ? `<strong>${p.manualReorderQty}${p.unit ? " " + p.unit : ""}</strong>`
+          : `<div class="order-line"></div>`;
         return `<tr class="${pi % 2 === 1 ? "row-alt" : ""}">
           <td class="td-name">${p.name}</td>
           <td class="td-cat">${p.category || "—"}</td>
           <td class="td-stock"><span class="stock-val ${stockCls}">${label}</span><span class="stock-qty">${qty}</span></td>
           <td class="td-reason">${reasonsHtml}</td>
-          <td class="td-order"><div class="order-line"></div></td>
+          <td class="td-order">${orderQtyHtml}</td>
         </tr>`;
       }).join("");
 
@@ -314,9 +339,12 @@ ${sections}
               : `${needsReorder.length} προϊόντα χρειάζονται παραγγελία`}
           </p>
         </div>
-        <div className="flex items-center gap-2 relative">
+        <div className="flex items-center gap-2 relative" ref={addPanelRef}>
           <button
-            onClick={() => setShowAddPanel((v) => !v)}
+            onClick={() => {
+              setShowAddPanel((v) => !v);
+              setSelectedCandidate(null);
+            }}
             className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors ${
               showAddPanel
                 ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
@@ -341,35 +369,78 @@ ${sections}
 
           {showAddPanel && (
             <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-lg z-20 overflow-hidden">
-              <div className="p-2 border-b border-gray-100 dark:border-win-border relative">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  autoFocus
-                  value={addSearch}
-                  onChange={(e) => setAddSearch(e.target.value)}
-                  placeholder="Αναζήτηση προϊόντος..."
-                  className="w-full pl-8 pr-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-win-border bg-gray-50 dark:bg-win-elevated text-gray-800 dark:text-gray-100 outline-none focus:ring-1 focus:ring-blue-300"
-                />
-              </div>
-              <div className="max-h-64 overflow-y-auto">
-                {addCandidates.length === 0 ? (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">
-                    Δεν βρέθηκαν προϊόντα.
+              {selectedCandidate ? (
+                <div className="p-3">
+                  <button
+                    onClick={() => setSelectedCandidate(null)}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mb-2"
+                  >
+                    ← πίσω
+                  </button>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-2">
+                    {selectedCandidate.name}
                   </p>
-                ) : (
-                  addCandidates.map((p) => (
+                  <label className="text-xs text-gray-400 dark:text-gray-500 mb-1 block">
+                    Ποσότητα παραγγελίας {selectedCandidate.unit ? `(${selectedCandidate.unit})` : ""}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={qtyInput}
+                      onChange={(e) => setQtyInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddManual(selectedCandidate._id, qtyInput);
+                      }}
+                      placeholder="π.χ. 5"
+                      className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-win-border bg-gray-50 dark:bg-win-elevated text-gray-800 dark:text-gray-100 outline-none focus:ring-1 focus:ring-blue-300"
+                    />
                     <button
-                      key={p._id}
-                      onClick={() => handleAddManual(p._id)}
-                      disabled={addingId === p._id}
-                      className="w-full flex items-center justify-between px-4 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+                      onClick={() => handleAddManual(selectedCandidate._id, qtyInput)}
+                      disabled={addingId === selectedCandidate._id}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
                     >
-                      <span className="text-gray-700 dark:text-gray-200">{p.name}</span>
-                      <span className="text-xs text-gray-400">{p.category}</span>
+                      Προσθήκη
                     </button>
-                  ))
-                )}
-              </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="p-2 border-b border-gray-100 dark:border-win-border relative">
+                    <Search className="w-3.5 h-3.5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                    <input
+                      autoFocus
+                      value={addSearch}
+                      onChange={(e) => setAddSearch(e.target.value)}
+                      placeholder="Αναζήτηση προϊόντος..."
+                      className="w-full pl-8 pr-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-win-border bg-gray-50 dark:bg-win-elevated text-gray-800 dark:text-gray-100 outline-none focus:ring-1 focus:ring-blue-300"
+                    />
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {addCandidates.length === 0 ? (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">
+                        Δεν βρέθηκαν προϊόντα.
+                      </p>
+                    ) : (
+                      addCandidates.map((p) => (
+                        <button
+                          key={p._id}
+                          onClick={() => {
+                            setSelectedCandidate(p);
+                            setQtyInput("");
+                          }}
+                          className="w-full flex items-center justify-between px-4 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        >
+                          <span className="text-gray-700 dark:text-gray-200">{p.name}</span>
+                          <span className="text-xs text-gray-400">{p.category}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -420,6 +491,7 @@ ${sections}
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Κατηγορία</th>
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Απόθεμα</th>
                         <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Λόγος</th>
+                        <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ποσότητα</th>
                         <th className="px-4 py-[6.71px] w-8"></th>
                       </tr>
                     </thead>
@@ -460,6 +532,9 @@ ${sections}
                                 ))}
                               </div>
                             </td>
+                            <td className="px-4 py-[8.38px] text-sm font-semibold text-gray-700 dark:text-gray-200">
+                              {p.manualReorderQty ? `${p.manualReorderQty}${p.unit ? " " + p.unit : ""}` : "—"}
+                            </td>
                             <td className="px-2 py-[8.38px]">
                               {p.manualReorder && (
                                 <button
@@ -497,6 +572,7 @@ ${sections}
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Προϊόν</th>
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Απόθεμα</th>
                               <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Λόγος</th>
+                              <th className="px-4 py-[6.71px] text-left text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Ποσότητα</th>
                               <th className="px-2 py-[6.71px] w-8"></th>
                             </tr>
                           </thead>
@@ -535,6 +611,9 @@ ${sections}
                                         </span>
                                       ))}
                                     </div>
+                                  </td>
+                                  <td className="px-4 py-[8.38px] text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                    {p.manualReorderQty ? `${p.manualReorderQty}${p.unit ? " " + p.unit : ""}` : "—"}
                                   </td>
                                   <td className="px-2 py-[8.38px]">
                                     {p.manualReorder && (

@@ -6,7 +6,7 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     clientName: "",
     phone: "",
     animalName: "",
-    type: "",
+    type: [],
     duration: 30,
     notes: "",
   });
@@ -36,14 +36,16 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
         clientName: existingData.clientName,
         phone: existingData.phone || "",
         animalName: existingData.animalName,
-        type: existingData.type,
+        type: Array.isArray(existingData.type)
+          ? existingData.type
+          : (existingData.type ? [existingData.type] : []),
         duration: existingData.duration,
         notes: existingData.notes || "",
       });
     } else {
       setFormData((prev) => ({
         ...prev,
-        type: doctor === "Grooming" ? "Μπάνιο" : "Εξέταση",
+        type: doctor === "Grooming" ? ["Μπάνιο"] : ["Εξέταση"],
       }));
     }
 
@@ -128,6 +130,16 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       ...prev,
       [name]: name === "duration" ? Number(value) : value,
     }));
+  };
+
+  const handleToggleType = (value) => {
+    setFormData((prev) => {
+      const has = prev.type.includes(value);
+      const nextType = has
+        ? prev.type.filter((t) => t !== value)
+        : [...prev.type, value];
+      return { ...prev, type: nextType };
+    });
   };
 
   const handleSelectCustomer = (customer) => {
@@ -238,6 +250,7 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     showPrescription,
     setShowPrescription,
     handleChange,
+    handleToggleType,
     handleSelectCustomer,
     handlePetChange,
     handleSubmit,

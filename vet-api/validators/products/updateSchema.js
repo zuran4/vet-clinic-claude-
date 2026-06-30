@@ -22,4 +22,5 @@ export default Joi.object({
   supplier: Joi.string().trim().allow(""),
   batches: Joi.array().items(batchSchema),
   manualReorder: Joi.boolean(),
+  manualReorderQty: Joi.number().min(0).allow(null),
 }).min(1);

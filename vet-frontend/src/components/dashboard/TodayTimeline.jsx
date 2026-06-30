@@ -71,8 +71,9 @@ const TYPE_DOT = {
   "Στείρωση":      "bg-purple-400",
 };
 
-function getTypeColor(type) { return TYPE_COLORS[type] || "bg-gray-100 text-gray-600"; }
-function getTypeDot(type)   { return TYPE_DOT[type]    || "bg-gray-400"; }
+function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
+function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-100 text-gray-600"; }
+function getTypeDot(type)   { return TYPE_DOT[firstType(type)]    || "bg-gray-400"; }
 
 function AppointmentItem({ appt, onClick, onConsult }) {
   return (
@@ -89,7 +90,7 @@ function AppointmentItem({ appt, onClick, onConsult }) {
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
-          {appt.type}
+          {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
         </span>
       </button>
       <button

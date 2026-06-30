@@ -6,27 +6,35 @@ import { ClipboardList, Clock4, FileText } from "lucide-react";
  * - Δέχεται: formData, onChange, optionsByDoctor, doctor
  * - Δείχνει: select για type, select για duration, textarea για notes
  */
-const AppointmentFormFields = ({ formData, onChange, optionsByDoctor, doctor }) => {
+const AppointmentFormFields = ({ formData, onChange, onToggleType, optionsByDoctor, doctor }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {/* Τύπος Ραντεβού */}
-      <div className="flex flex-col gap-1">
+      {/* Τύπος Ραντεβού — πολλαπλή επιλογή */}
+      <div className="col-span-full flex flex-col gap-1">
         <label className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300">
           <ClipboardList className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          Τύπος
+          Τύπος <span className="text-xs text-gray-400 font-normal">(μπορείς να διαλέξεις παραπάνω από έναν)</span>
         </label>
-        <select
-          name="type"
-          value={formData.type}
-          onChange={onChange}
-          className="w-full border border-gray-300 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary"
-        >
-          {optionsByDoctor[doctor]?.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap gap-2">
+          {optionsByDoctor[doctor]?.map((opt) => {
+            const selected = formData.type.includes(opt);
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onToggleType(opt)}
+                aria-pressed={selected}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  selected
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white dark:bg-win-elevated text-gray-600 dark:text-gray-300 border-gray-300 dark:border-win-border-light hover:bg-gray-50 dark:hover:bg-win-surface"
+                }`}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Διάρκεια */}

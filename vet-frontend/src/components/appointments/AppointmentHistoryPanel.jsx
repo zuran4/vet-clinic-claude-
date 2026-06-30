@@ -106,7 +106,8 @@ export default function AppointmentHistoryPanel() {
           </div>
         ) : (
           results.map((appt) => {
-            const typeClass = TYPE_COLORS[appt.type] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-300";
+            const typeList = Array.isArray(appt.type) ? appt.type : (appt.type ? [appt.type] : []);
+            const typeClass = TYPE_COLORS[typeList[0]] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-300";
             const isGrooming = appt.doctor === "Grooming";
             return (
               <button
@@ -136,7 +137,7 @@ export default function AppointmentHistoryPanel() {
                       <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
                       <span className="text-gray-600 dark:text-gray-300 text-sm">{appt.clientName}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeClass}`}>
-                        {appt.type}
+                        {typeList.join(", ")}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">

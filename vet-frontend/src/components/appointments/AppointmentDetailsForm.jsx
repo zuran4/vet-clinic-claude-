@@ -30,6 +30,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
     showPrescription,
     setShowPrescription,
     handleChange,
+    handleToggleType,
     handleSelectCustomer,
     handlePetChange,
     handleSubmit,
@@ -154,6 +155,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           <AppointmentFormFields
             formData={formData}
             onChange={handleChange}
+            onToggleType={handleToggleType}
             optionsByDoctor={optionsByDoctor}
             doctor={doctor}
           />
@@ -178,7 +180,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
             <Button
               type="submit"
               variant="success"
-              disabled={existingData && !selectedTime}
+              disabled={(existingData && !selectedTime) || formData.type.length === 0}
               className="flex items-center gap-2"
             >
               {existingData

@@ -4,7 +4,11 @@ const appointmentSchema = new mongoose.Schema({
   clientName: { type: String, required: true },
   phone: String,
   animalName: { type: String, required: true },
-  type: { type: String, required: true },
+  type: {
+    type: [String],
+    required: true,
+    validate: { validator: (v) => Array.isArray(v) && v.length > 0, message: "Απαιτείται τουλάχιστον ένας τύπος ραντεβού." },
+  },
   duration: { type: Number, required: true, default: 30 },
   notes: String,
   doctor: { type: String, default: "Ιατρείο" },

@@ -174,7 +174,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
               {isGrooming ? <Scissors className="w-5 h-5" /> : <Stethoscope className="w-5 h-5" />}
               <span className="font-semibold text-sm">{appointment.doctor}</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/20 text-white ml-1">
-                {appointment.type}
+                {Array.isArray(appointment.type) ? appointment.type.join(", ") : appointment.type}
               </span>
             </div>
             <button
