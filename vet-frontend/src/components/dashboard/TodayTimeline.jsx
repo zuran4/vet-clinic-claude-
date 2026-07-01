@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
@@ -120,7 +120,7 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
 
 const MAX_VISIBLE = 4;
 
-function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAll, onEditAppointment, onConsult, extra }) {
+function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, onShowAll, onEditAppointment, onConsult, extra }) {
   const visible = appointments.slice(0, MAX_VISIBLE);
   const remaining = appointments.length - MAX_VISIBLE;
 
@@ -140,10 +140,11 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAl
         <div className="flex items-center gap-2">
           {extra}
           <button
-            onClick={onShowAll}
-            className="text-xs text-white/70 hover:text-white font-medium transition-colors"
+            onClick={onNew}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/25 hover:border-white/40 text-white text-xs font-semibold tracking-wide transition-all shadow-sm"
           >
-            Όλα →
+            <Plus className="w-3 h-3" />
+            <span>Νέο</span>
           </button>
         </div>
       </div>
@@ -182,7 +183,7 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onShowAl
   );
 }
 
-export default function TodayTimeline({ appointments = [], onShowAppointments, onEditAppointment, onJumpToDate }) {
+export default function TodayTimeline({ appointments = [], onShowAppointments, onNewAppointment, onEditAppointment, onJumpToDate }) {
   const [consultAppt, setConsultAppt] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
@@ -234,6 +235,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             gradient="from-indigo-400 to-indigo-500"
             appointments={clinicAppts}
             emptyText="Κανένα ραντεβού ιατρείου"
+            onNew={() => onNewAppointment?.("Ιατρείο")}
             onShowAll={() => onShowAppointments?.("Ιατρείο")}
             onEditAppointment={onEditAppointment}
             onConsult={setConsultAppt}
@@ -258,6 +260,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             gradient="from-sky-400 to-sky-500"
             appointments={groomingAppts}
             emptyText="Κανένα ραντεβού grooming"
+            onNew={() => onNewAppointment?.("Grooming")}
             onShowAll={() => onShowAppointments?.("Grooming")}
             onEditAppointment={onEditAppointment}
             onConsult={setConsultAppt}

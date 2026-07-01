@@ -12,6 +12,7 @@ const Dashboard = ({
   products = [],
   customersCount = 0,
   onShowAppointments,
+  onNewAppointment,
   onEditAppointment,
   onJumpToDate,
   onShowProducts,
@@ -87,6 +88,7 @@ const Dashboard = ({
       <TodayTimeline
         appointments={appointments}
         onShowAppointments={onShowAppointments}
+        onNewAppointment={onNewAppointment}
         onEditAppointment={onEditAppointment}
         onJumpToDate={onJumpToDate}
       />

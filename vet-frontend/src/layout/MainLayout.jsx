@@ -62,18 +62,28 @@ function MainLayout({
     setAppointmentsDoctorFilter(null);
   };
 
-  // 🔹 Όταν ανοίγουμε επεξεργασία ραντεβού από το Dashboard, θυμόμαστε να
-  // γυρίσουμε πίσω στο Dashboard μόλις κλείσει το modal.
+  // 🔹 Όταν ανοίγουμε ραντεβού από το Dashboard, γυρνάμε πίσω μόλις κλείσει το modal.
+  // modalWasOpenedRef: σηματοδοτεί ότι ο χρήστης άνοιξε τη φόρμα (έκανε κλικ σε slot),
+  // ώστε να μην επιστρέψουμε στο dashboard πριν ανοίξει η φόρμα.
   const cameFromDashboardRef = useRef(false);
+  const modalWasOpenedRef = useRef(false);
+
+  useEffect(() => {
+    if (cameFromDashboardRef.current && selectedTime) {
+      modalWasOpenedRef.current = true;
+    }
+  }, [selectedTime]);
 
   useEffect(() => {
     if (
       cameFromDashboardRef.current &&
+      modalWasOpenedRef.current &&
       activePanel === "appointments" &&
       !selectedTime &&
       !editingAppointment
     ) {
       cameFromDashboardRef.current = false;
+      modalWasOpenedRef.current = false;
       setActivePanel("dashboard");
     }
   }, [activePanel, selectedTime, editingAppointment]);
@@ -285,6 +295,14 @@ function MainLayout({
               products={productsWithExpDate}
               onShowAppointments={(doctor) => {
                 setAppointmentsDoctorFilter(doctor || null);
+                openPanel("appointments");
+              }}
+              onNewAppointment={(doctor) => {
+                cameFromDashboardRef.current = true;
+                setAppointmentsDoctorFilter(doctor);
+                setSelectedDoctor(doctor);
+                setSelectedDate(dayjs().format("YYYY-MM-DD"));
+                setEditingAppointment(null);
                 openPanel("appointments");
               }}
               onEditAppointment={(appt) => {
