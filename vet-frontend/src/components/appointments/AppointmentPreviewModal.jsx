@@ -23,7 +23,6 @@ const inputClass =
   "border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full";
 
 const VISIT_STEPS = [
-  { key: "arrival",   label: "Άφιξη" },
   { key: "exam",      label: "Εξέταση" },
   { key: "treatment", label: "Θεραπεία" },
   { key: "complete",  label: "Ολοκλήρωση" },
@@ -96,6 +95,14 @@ const VAX_KEYWORDS = ["εμβόλ", "vaccine", "bravecto", "nexgard", "frontline
 const isVaccination = (reason = "") => VAX_KEYWORDS.some((kw) => reason.toLowerCase().includes(kw));
 
 const SYMPTOM_CHIPS = ["Έμετος", "Διάρροια", "Ανορεξία", "Κινησιο", "Βήχας", "Χωλότητα", "Μάζα", "Επανέλεγχος", "Λήθαργος", "Κνησμός", "Πόνος", "Πυρετός"];
+
+const VISIT_REASONS = [
+  "Τακτικός έλεγχος", "Εμβολιασμός", "Αποπαρασίτωση", "Microchip",
+  "Στείρωση", "Χειρουργείο", "Επανέλεγχος",
+  "Δέρμα / Αλλεργία", "Γαστρεντερολογικό", "Αναπνευστικό",
+  "Ορθοπεδικό / Χωλότητα", "Οφθαλμολογικό", "Ωτολογικό",
+  "Οδοντολογικό", "Ουρολογικό", "Νευρολογικό", "Επείγον",
+];
 
 const BODY_SYSTEMS = [
   "Γενική εικόνα", "Δέρμα / Τρίχωμα", "Μάτια", "Αυτιά",
@@ -224,8 +231,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const [elapsed,       setElapsed]       = useState(0);
   const [completing,    setCompleting]    = useState(false);
   const [checkInStatus, setCheckInStatus] = useState("waiting"); // "waiting"|"entered"|"noshow"
-  const [behavior,      setBehavior]      = useState("");
-  const [consultForm,   setConsultForm]   = useState(emptyConsultForm);
+  const [behavior,      setBehavior]    = useState("");
+  const [consultForm,   setConsultForm] = useState(emptyConsultForm);
   const [examForm,      setExamForm]      = useState(emptyExamForm);
   const [pendingTasks,    setPendingTasks]    = useState([]);
   const [treatmentForm,   setTreatmentForm]   = useState(emptyTreatmentForm);
@@ -256,13 +263,26 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       setCompleting(false);
       setCheckInStatus("waiting");
       setBehavior("");
-      setConsultForm(emptyConsultForm);
+      const initTypes = Array.isArray(appointment?.type) ? appointment.type : [appointment?.type].filter(Boolean);
+      const initReasons = initTypes.filter((t) => VISIT_REASONS.includes(t));
+      setConsultForm({ ...emptyConsultForm, reason: initReasons.join(", ") });
       setExamForm(emptyExamForm);
       setSaved(false);
       setFullPet(null);
       setRecentHistory([]);
       setSelectedEntry(null);
-      setPendingTasks([]);
+      const apptTypes = Array.isArray(appointment?.type) ? appointment.type : [appointment?.type].filter(Boolean);
+      const defaultTasks = [];
+      if (apptTypes.some((t) => t === "Chip" || t === "Microchip")) {
+        defaultTasks.push({ id: 1, text: "Σάρωση chip", done: false });
+        defaultTasks.push({ id: 2, text: "Εγγραφή στο μητρώο", done: false });
+      }
+      if (apptTypes.includes("Εμβόλιο")) defaultTasks.push({ id: 3, text: "Εμβολιασμός", done: false });
+      if (apptTypes.includes("Αποπαρασίτωση")) defaultTasks.push({ id: 4, text: "Αποπαρασίτωση", done: false });
+      if (apptTypes.includes("Στείρωση") || apptTypes.includes("Χειρουργείο"))
+        defaultTasks.push({ id: 5, text: "Προεγχειρητικές εξετάσεις", done: false });
+      if (defaultTasks.length === 0) defaultTasks.push({ id: 1, text: "Ολοκλήρωση καταχώρισης", done: false });
+      setPendingTasks(defaultTasks);
       setTreatmentForm(emptyTreatmentForm);
       setMedicationInput({ drug: "", dose: "", frequency: "", duration: "" });
       setCompletionForm(emptyCompletionForm);
@@ -483,7 +503,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     if (types.includes("Χειρουργείο"))   procs.push({ id: pid++, text: "Χειρουργική επέμβαση", done: false });
     if (procs.length === 0)              procs.push({ id: 1, text: "Ολοκλήρωση επίσκεψης", done: false });
     setTreatmentForm((p) => ({ ...p, procedures: procs }));
-    setVisitStep(3);
+    setVisitStep(2);
   };
 
   const handleGoToCompletion = () => {
@@ -510,7 +530,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       sentEmailSms: treatmentForm.sendEmailSms,
       registeredChip: types.includes("Chip"),
     });
-    setVisitStep(4);
+    setVisitStep(3);
   };
 
   const handleFinalComplete = () => {
@@ -571,294 +591,107 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
           </button>
         </div>
 
-        {/* ── 2-column body ── */}
-        <div className="flex flex-1 min-h-0">
+        {/* ── Info bar: owner + pet ── */}
+        <div className="flex-shrink-0 border-b border-gray-100 dark:border-win-border bg-white dark:bg-win-surface px-5 py-2.5 flex items-center gap-0 divide-x divide-gray-100 dark:divide-win-border">
 
-          {/* ── Left column ── */}
-          <div className="w-56 flex-shrink-0 border-r border-gray-100 dark:border-win-border overflow-y-auto bg-white dark:bg-win-surface p-4 space-y-5">
-
-            {/* Patient */}
-            <div>
-              <SectionLabel>Ιδιοκτήτης</SectionLabel>
-              <div className="rounded-xl border border-gray-200 dark:border-win-border-light bg-gray-50 dark:bg-win-elevated/30 divide-y divide-gray-100 dark:divide-win-border-light overflow-hidden">
-                <div className="px-3 py-2">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">{appointment.clientName}</p>
-                </div>
+          {/* Owner */}
+          <div className="flex items-center gap-3 pr-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-[10px] font-bold">{initials}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">{appointment.clientName}</p>
+              <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                 {(fullCustomer?.phone || appointment.phone) && (
-                  <div className="flex items-center gap-2.5 px-3 py-2">
-                    <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                    <span className="text-xs text-gray-600 dark:text-gray-300">{fullCustomer?.phone || appointment.phone}</span>
-                  </div>
+                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    <Phone className="w-3 h-3 flex-shrink-0" />
+                    {fullCustomer?.phone || appointment.phone}
+                  </span>
                 )}
                 {fullCustomer?.email && (
-                  <div className="flex items-center gap-2.5 px-3 py-2">
-                    <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                    <span className="text-xs text-gray-600 dark:text-gray-300 break-all">{fullCustomer.email}</span>
-                  </div>
+                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    <Mail className="w-3 h-3 flex-shrink-0" />
+                    {fullCustomer.email}
+                  </span>
                 )}
-                {fullCustomer?.notifications && (
-                  <div className="flex items-center gap-2.5 px-3 py-2">
-                    <BellRing className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                    {fullCustomer.notifications.email || fullCustomer.notifications.sms ? (
-                      <span className="text-xs text-gray-600 dark:text-gray-300">
-                        Προτιμά {[
-                          fullCustomer.notifications.sms   && "SMS",
-                          fullCustomer.notifications.email && "Email",
-                        ].filter(Boolean).join(" & ")}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400 italic">Χωρίς ειδοποιήσεις</span>
-                    )}
-                  </div>
+                {fullCustomer?.notifications && (fullCustomer.notifications.email || fullCustomer.notifications.sms) && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    <BellRing className="w-3 h-3 flex-shrink-0" />
+                    {[fullCustomer.notifications.sms && "SMS", fullCustomer.notifications.email && "Email"].filter(Boolean).join(" & ")}
+                  </span>
                 )}
               </div>
             </div>
-
-            {/* Alerts — always visible */}
-            <div>
-              <SectionLabel>⚠ Σημαντικά Alerts</SectionLabel>
-              {alertLines.length > 0 ? (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/40 rounded-xl p-2.5 space-y-1.5">
-                  {alertLines.map((line, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-xs text-red-700 dark:text-red-300 leading-snug">{line}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-300 dark:text-gray-600 italic">Δεν υπάρχουν καταγεγραμμένα alerts</p>
-              )}
-            </div>
-
-            {/* Pet — full details */}
-            {appointment.animalName && (
-              <div>
-                <SectionLabel>Κατοικίδιο</SectionLabel>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
-                    <PawPrint className="w-3.5 h-3.5 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{appointment.animalName}</p>
-                    {fullPet?.species && <p className="text-xs text-gray-400">{fullPet.species}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  {fullPet?.gender && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Φύλο</span>
-                      <span className="font-medium text-gray-700 dark:text-gray-200">
-                        {fullPet.gender === "Θηλυκό" ? "♀ Θηλυκό" : "♂ Αρσενικό"}
-                      </span>
-                    </div>
-                  )}
-                  {ageLabel && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Ηλικία</span>
-                      <span className="font-medium text-gray-700 dark:text-gray-200">{ageLabel}</span>
-                    </div>
-                  )}
-                  {latestVitals?.weight && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Βάρος</span>
-                      <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">{latestVitals.weight} kg</span>
-                    </div>
-                  )}
-                  {fullPet !== null && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Στειρωμένο</span>
-                      <span className={`font-medium px-1.5 py-0.5 rounded-md text-[10px] ${fullPet?.neutered ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300" : "text-gray-400 dark:text-gray-500"}`}>
-                        {fullPet?.neutered ? "Ναι" : "Όχι"}
-                      </span>
-                    </div>
-                  )}
-                  {fullPet?.microchip && (
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Dna className="w-3 h-3 text-indigo-400 flex-shrink-0" />
-                      <span className="text-gray-400 dark:text-gray-500">Chip</span>
-                      <span className="font-mono text-gray-700 dark:text-gray-200 truncate">{fullPet.microchip}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Weight chart */}
-            <WeightChart history={recentHistory} />
-
-            {/* Vitals */}
-            {latestVitals && (latestVitals.temperature || latestVitals.heartRate) && (
-              <div>
-                <SectionLabel>Τελευταίες Μετρήσεις</SectionLabel>
-                <div className="space-y-1.5">
-                  {latestVitals.temperature && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Θερμ.</span>
-                      <span className="font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded-md">{latestVitals.temperature}°C</span>
-                    </div>
-                  )}
-                  {latestVitals.heartRate && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 dark:text-gray-500">Καρδιά</span>
-                      <span className="font-semibold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md">{latestVitals.heartRate} bpm</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Vaccinations */}
-            {vaccinations.length > 0 && (
-              <div>
-                <SectionLabel>Εμβόλια / Προληπτικά</SectionLabel>
-                <div className="space-y-1.5">
-                  {vaccinations.map((v) => (
-                    <div key={v._id} className="flex items-center gap-2">
-                      <Syringe className="w-3 h-3 text-green-400 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{v.reason}</p>
-                        <p className="text-[10px] text-gray-400">{dayjs(v.date).format("DD/MM/YYYY")}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Notes (if not shown as alerts) */}
-            {appointment.notes && !alertLines.length && (
-              <div>
-                <SectionLabel>Σημειώσεις</SectionLabel>
-                <div className="flex gap-2">
-                  <StickyNote className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">{appointment.notes}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Other pets */}
-            {otherPets.length > 0 && (
-              <div>
-                <SectionLabel>Άλλα Κατοικίδια</SectionLabel>
-                <div className="space-y-1.5">
-                  {otherPets.map((pet) => (
-                    <div key={pet._id} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
-                      <PawPrint className="w-3 h-3 text-gray-300 dark:text-gray-600" />
-                      <span className="font-medium">{pet.name}</span>
-                      {pet.species && <span className="text-gray-400">{pet.species}</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* ── Right column ── */}
+          {/* Pet */}
+          {appointment.animalName && (
+            <div className="flex items-center gap-3 px-5">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
+                <PawPrint className="w-3.5 h-3.5 text-amber-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">{appointment.animalName}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  {fullPet?.species && <span className="text-xs text-gray-500 dark:text-gray-400">{fullPet.species}</span>}
+                  {fullPet?.gender && <span className="text-xs text-gray-400">{fullPet.gender === "Θηλυκό" ? "♀" : "♂"}</span>}
+                  {ageLabel && <span className="text-xs text-gray-500 dark:text-gray-400">{ageLabel}</span>}
+                  {latestVitals?.weight && (
+                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-md">
+                      {latestVitals.weight} kg
+                    </span>
+                  )}
+                  {fullPet?.microchip && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Dna className="w-3 h-3 flex-shrink-0" />{fullPet.microchip}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Alerts (if any) */}
+          {alertLines.length > 0 && (
+            <div className="flex items-center gap-2 px-5">
+              <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+              <div className="space-y-0.5">
+                {alertLines.map((line, i) => (
+                  <p key={i} className="text-xs text-red-600 dark:text-red-400 leading-snug">{line}</p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Γρήγορες Ενέργειες */}
+          <div className="ml-auto pl-5 flex items-center gap-1 flex-shrink-0">
+            {[
+              { icon: Dna,         label: "Σάρωση chip",         title: "Σάρωση chip" },
+              { icon: Plus,        label: "Φωτογραφία",          title: "Προσθήκη φωτογραφίας" },
+              { icon: StickyNote,  label: "Αρχείο",              title: "Προσθήκη αρχείου" },
+              { icon: AlertCircle, label: "Alert",               title: "Προσθήκη alert" },
+              { icon: Pill,        label: "Συνταγή",             title: "Νέα συνταγή" },
+            ].map(({ icon: Icon, label, title }) => (
+              <button
+                key={label}
+                type="button"
+                title={title}
+                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-win-elevated/50 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span className="text-[9px] font-medium whitespace-nowrap">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        <div className="flex flex-1 min-h-0">
+
+          {/* ── Full-width content column ── */}
           <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg/30">
             {activeView === null && (
               <div className="p-4 space-y-4">
-
-                {/* Progress steps */}
-                <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-100 dark:border-win-border-light px-4 py-3">
-                  <div className="flex items-center">
-                    {VISIT_STEPS.map((step, idx) => {
-                      const stepNum = idx + 1;
-                      const done   = stepNum < visitStep;
-                      const active = stepNum === visitStep;
-                      return (
-                        <React.Fragment key={step.key}>
-                          <button type="button" onClick={() => setVisitStep(stepNum)} className="flex flex-col items-center gap-1 flex-shrink-0">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                              done   ? "bg-indigo-500 border-indigo-500 text-white" :
-                              active ? "bg-white dark:bg-win-surface border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm" :
-                                       "bg-transparent border-gray-200 dark:border-gray-600 text-gray-300 dark:text-gray-600"
-                            }`}>
-                              {done ? <Check className="w-3 h-3" /> : stepNum}
-                            </div>
-                            <span className={`text-[10px] font-semibold whitespace-nowrap ${
-                              active ? "text-indigo-600 dark:text-indigo-400" :
-                              done   ? "text-indigo-400 dark:text-indigo-500" :
-                                       "text-gray-300 dark:text-gray-600"
-                            }`}>{step.label}</span>
-                          </button>
-                          {idx < VISIT_STEPS.length - 1 && (
-                            <div className={`flex-1 h-0.5 mx-1 mb-4 rounded-full transition-colors ${idx + 1 < visitStep ? "bg-indigo-400" : "bg-gray-100 dark:bg-gray-700"}`} />
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── CHECK-IN BLOCK (only step 1) ── */}
-                {visitStep === 1 && (
-                  <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-700/30 px-4 py-2.5 flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-indigo-500" />
-                      <p className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">Κατάσταση Άφιξης</p>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {/* Stats row */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="text-center">
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Ώρα ραντ.</p>
-                          <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{appointment.time}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Καθυστέρηση</p>
-                          <p className={`text-sm font-bold ${delayMinutes > 0 ? "text-amber-500" : "text-green-500"}`}>
-                            {delayMinutes > 0 ? `+${delayMinutes} λεπτά` : "Στην ώρα"}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Αναμονή</p>
-                          <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 font-mono">{formatElapsed(elapsed)}</p>
-                        </div>
-                      </div>
-                      {/* Status buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleCheckIn("waiting")}
-                          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                            checkInStatus === "waiting"
-                              ? "bg-amber-50 dark:bg-amber-900/30 border-amber-300 text-amber-700 dark:text-amber-300"
-                              : "border-gray-200 dark:border-win-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated/50"
-                          }`}
-                        >
-                          <Clock className="w-3.5 h-3.5" />
-                          Σε αναμονή
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCheckIn("entered")}
-                          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                            checkInStatus === "entered"
-                              ? "bg-green-50 dark:bg-green-900/30 border-green-300 text-green-700 dark:text-green-300"
-                              : "border-gray-200 dark:border-win-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated/50"
-                          }`}
-                        >
-                          <DoorOpen className="w-3.5 h-3.5" />
-                          Μπήκε
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCheckIn("noshow")}
-                          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                            checkInStatus === "noshow"
-                              ? "bg-red-50 dark:bg-red-900/30 border-red-300 text-red-700 dark:text-red-300"
-                              : "border-gray-200 dark:border-win-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated/50"
-                          }`}
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                          Δεν ήρθε
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* History entry detail */}
                 {selectedEntry ? (
@@ -918,117 +751,86 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           {saved && <span className="ml-auto text-xs text-green-600 dark:text-green-400 font-medium">✓ Αποθηκεύτηκε</span>}
                         </div>
 
-                        {/* Booking reason chips */}
-                        {types.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Λόγος ραντεβού</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {types.map((t) => (
-                                <span key={t} className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium border border-indigo-100 dark:border-indigo-700/40">
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Quick templates */}
-                        {availableTemplates.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                              <Zap className="w-3 h-3 text-amber-400" />
-                              Γρήγορα templates
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {availableTemplates.map((t) => {
-                                const tpl = TYPE_TEMPLATES[t];
-                                const isSelected = consultForm.reason.includes(tpl.slice(0, 12));
-                                return (
-                                  <button
-                                    key={t}
-                                    type="button"
-                                    onClick={() => {
-                                      if (isSelected) return;
-                                      setConsultForm((prev) => ({
-                                        ...prev,
-                                        reason: prev.reason.trim()
-                                          ? prev.reason.trimEnd() + " " + tpl
-                                          : tpl,
-                                      }));
-                                    }}
-                                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                                      isSelected
-                                        ? "border-indigo-400 bg-indigo-100 dark:bg-indigo-800/40 text-indigo-700 dark:text-indigo-200 font-semibold"
-                                        : "border-dashed border-indigo-200 dark:border-indigo-700/50 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                                    }`}
-                                  >
-                                    {isSelected ? "✓" : "+"} {t}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Behavioral state */}
+                        {/* Visit reason chips — multi-select, sync to reason field */}
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Συμπεριφορά ζώου</p>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Λόγος επίσκεψης</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {BEHAVIOR_OPTIONS.map(({ key, color }) => {
-                              const s = BEHAVIOR_STYLES[color];
-                              const isActive = behavior === key;
+                            {VISIT_REASONS.map((r) => {
+                              const active = consultForm.reason.split(",").map((s) => s.trim()).includes(r);
                               return (
                                 <button
-                                  key={key}
+                                  key={r}
                                   type="button"
-                                  onClick={() => setBehavior(isActive ? "" : key)}
-                                  className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-all ${isActive ? s.active : s.base}`}
+                                  onClick={() => setConsultForm((prev) => {
+                                    const parts = prev.reason.split(",").map((s) => s.trim()).filter(Boolean);
+                                    const next = active
+                                      ? parts.filter((x) => x !== r)
+                                      : [...parts, r];
+                                    return { ...prev, reason: next.join(", ") };
+                                  })}
+                                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                    active
+                                      ? "bg-indigo-500 border-indigo-500 text-white font-medium"
+                                      : "border-gray-200 dark:border-win-border-light text-gray-600 dark:text-gray-400 hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                  }`}
                                 >
-                                  {key}
+                                  {r}
                                 </button>
                               );
                             })}
                           </div>
                         </div>
 
-                        {/* Weight today — prominent */}
-                        <div className="flex items-center gap-3">
-                          <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 w-28 flex-shrink-0">
-                            Βάρος σήμερα
-                          </label>
-                          <div className="relative flex-1">
-                            <input
-                              name="weight"
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              placeholder={latestVitals?.weight ? `τελ. ${latestVitals.weight} kg` : "kg"}
-                              value={consultForm.weight}
-                              onChange={handleConsultChange}
-                              className="border border-blue-200 dark:border-blue-700/50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300 dark:placeholder-gray-600 bg-blue-50/50 dark:bg-blue-900/10 text-gray-900 dark:text-gray-100 w-full"
-                            />
+
+                        {/* Behavioral state + Weight side by side */}
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Συμπεριφορά ζώου</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {BEHAVIOR_OPTIONS.map(({ key, color }) => {
+                                const s = BEHAVIOR_STYLES[color];
+                                const isActive = behavior === key;
+                                return (
+                                  <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setBehavior(isActive ? "" : key)}
+                                    className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-all ${isActive ? s.active : s.base}`}
+                                  >
+                                    {key}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-400">kg</span>
+
+                          <div className="w-px self-stretch bg-gray-200 dark:bg-win-border-light flex-shrink-0" />
+
+                          <div className="flex-shrink-0">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Βάρος σήμερα</p>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                name="weight"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                placeholder={latestVitals?.weight ? `τελ. ${latestVitals.weight}` : "0.0"}
+                                value={consultForm.weight}
+                                onChange={handleConsultChange}
+                                className="border border-blue-200 dark:border-blue-700/50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300 dark:placeholder-gray-600 bg-blue-50/50 dark:bg-blue-900/10 text-gray-900 dark:text-gray-100 w-24"
+                              />
+                              <span className="text-xs text-gray-400">kg</span>
+                            </div>
+                          </div>
                         </div>
 
                         <input name="reason" type="text" placeholder="Λόγος επίσκεψης (κλινικό) *" value={consultForm.reason} onChange={handleConsultChange} required className={inputClass} />
                         {/* CTA */}
-                        <div className="flex items-center gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={handleStartExam}
-                            disabled={saving}
-                            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm"
-                          >
-                            Έναρξη εξέτασης
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
                       </form>
                     )}
 
-                    {/* ── Step 2: Εξέταση ── */}
-                    {fullPet && visitStep === 2 && (
+                    {/* ── Step 2 (now 1): Εξέταση ── */}
+                    {fullPet && visitStep === 1 && (
                       <div className="flex gap-3 items-start">
                       {/* Main exam content */}
                       <div className="flex-1 min-w-0 space-y-3">
@@ -1072,12 +874,10 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           </div>
                           <div className="p-4 space-y-3">
                             {/* Row 1: vitals */}
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                               {[
-                                { label: "Βάρος", name: "weight",      val: consultForm.weight,      unit: "kg",  handler: handleConsultChange },
-                                { label: "Θερμοκρασία", name: "temperature", val: consultForm.temperature, unit: "°C",  handler: handleConsultChange },
-                                { label: "Καρδ. ρυθμός", name: "heartRate",  val: consultForm.heartRate,  unit: "bpm", handler: handleConsultChange },
-                                { label: "Αναπνοές",    name: "respRate",   val: examForm.respRate,      unit: "rpm", handler: (e) => setExamForm((p) => ({ ...p, respRate: e.target.value })) },
+                                { label: "Βάρος",      name: "weight",      val: consultForm.weight,      unit: "kg", handler: handleConsultChange },
+                                { label: "Θερμοκρασία", name: "temperature", val: consultForm.temperature, unit: "°C", handler: handleConsultChange },
                               ].map(({ label, name, val, unit, handler }) => (
                                 <div key={name}>
                                   <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
@@ -1088,38 +888,15 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                   </div>
                                 </div>
                               ))}
+                              <div>
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Ενυδάτωση</p>
+                                <select value={examForm.hydration} onChange={(e) => setExamForm((p) => ({ ...p, hydration: e.target.value }))}
+                                  className="border border-gray-200 dark:border-win-border-light rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full">
+                                  {["Φυσιολογική", "Ήπια αφυδ.", "Μέτρια", "Σοβαρή"].map((o) => <option key={o}>{o}</option>)}
+                                </select>
+                              </div>
                             </div>
                             {/* Row 2 */}
-                            <div className="grid grid-cols-4 gap-2">
-                              {[
-                                { label: "Ελέγχονται", name: "gumsColor", val: examForm.gumsColor, opts: ["Ρόζ", "Λευκά", "Κίτρινα", "Μπλε", "Κόκκινα"] },
-                                { label: "Ενυδάτωση",  name: "hydration", val: examForm.hydration, opts: ["Φυσιολογική", "Ήπια αφυδ.", "Μέτρια", "Σοβαρή"] },
-                              ].map(({ label, name, val, opts }) => (
-                                <div key={name} className="col-span-2">
-                                  <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                                  <select value={val} onChange={(e) => setExamForm((p) => ({ ...p, [name]: e.target.value }))}
-                                    className="border border-gray-200 dark:border-win-border-light rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full">
-                                    {opts.map((o) => <option key={o}>{o}</option>)}
-                                  </select>
-                                </div>
-                              ))}
-                              <div>
-                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">CRT</p>
-                                <input name="crt" type="text" placeholder="<2 sec" value={examForm.crt}
-                                  onChange={(e) => setExamForm((p) => ({ ...p, crt: e.target.value }))}
-                                  className="border border-gray-200 dark:border-win-border-light rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full" />
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">O₂</p>
-                                <div className="flex items-center gap-1">
-                                  <input name="o2sat" type="number" min="0" max="100" value={examForm.o2sat}
-                                    onChange={(e) => setExamForm((p) => ({ ...p, o2sat: e.target.value }))}
-                                    className="border border-gray-200 dark:border-win-border-light rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full" />
-                                  <span className="text-[10px] text-gray-400 flex-shrink-0">%</span>
-                                </div>
-                              </div>
-                            </div>
-                            {/* Row 3 */}
                             <div className="grid grid-cols-3 gap-2">
                               {[
                                 { label: "Πόνος (0-5)",     name: "painScore",    val: examForm.painScore,    opts: ["0/5","1/5","2/5","3/5","4/5","5/5"] },
@@ -1198,69 +975,11 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                         </div>
                       </div>
 
-                      {/* ── Right sidebar (step 2) ── */}
-                      <div className="w-48 flex-shrink-0 space-y-3 sticky top-0">
-
-                        {/* Εκκρεμότητες */}
-                        <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                          <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-3 py-2">
-                            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Εκκρεμότητες</p>
-                          </div>
-                          <div className="p-3 space-y-2">
-                            {pendingTasks.length === 0 && (
-                              <p className="text-[10px] text-gray-300 dark:text-gray-600 italic">Χωρίς εκκρεμότητες</p>
-                            )}
-                            {pendingTasks.map((task) => (
-                              <label key={task.id} className="flex items-start gap-2 cursor-pointer group">
-                                <input type="checkbox" checked={task.done}
-                                  onChange={() => setPendingTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, done: !t.done } : t))}
-                                  className="mt-0.5 accent-indigo-500 flex-shrink-0" />
-                                <span className={`text-xs leading-snug ${task.done ? "line-through text-gray-300 dark:text-gray-600" : "text-gray-600 dark:text-gray-300"}`}>
-                                  {task.text}
-                                </span>
-                              </label>
-                            ))}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const text = window.prompt("Νέα εκκρεμότητα:");
-                                if (text?.trim()) setPendingTasks((p) => [...p, { id: Date.now(), text: text.trim(), done: false }]);
-                              }}
-                              className="w-full mt-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg border border-dashed border-indigo-200 dark:border-indigo-700/50 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-xs font-medium transition-colors"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Νέα εκκρεμότητα
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Γρήγορες ενέργειες */}
-                        <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                          <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-3 py-2">
-                            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Γρήγορες Ενέργειες</p>
-                          </div>
-                          <div className="p-3 space-y-1">
-                            {[
-                              { icon: Dna,       label: "Σάρωση chip" },
-                              { icon: Plus,      label: "Προσθήκη φωτογραφίας" },
-                              { icon: StickyNote,label: "Προσθήκη αρχείου" },
-                              { icon: AlertCircle, label: "Προσθήκη alert" },
-                            ].map(({ icon: Icon, label }) => (
-                              <button key={label} type="button"
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-win-elevated/50 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors text-xs text-left">
-                                <Icon className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                      </div>
                       </div>
                     )}
 
-                    {/* ── Step 3: Θεραπεία ── */}
-                    {fullPet && visitStep === 3 && (() => {
+                    {/* ── Step 3 (now 2): Θεραπεία ── */}
+                    {fullPet && visitStep === 2 && (() => {
                       const charges = types.flatMap((t) => {
                         const c = SUGGESTED_CHARGES[t];
                         return c ? [c] : [];
@@ -1502,8 +1221,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                       );
                     })()}
 
-                    {/* ── Step 4: Ολοκλήρωση ── */}
-                    {fullPet && visitStep === 4 && (
+                    {/* ── Step 4 (now 3): Ολοκλήρωση ── */}
+                    {fullPet && visitStep === 3 && (
                       <div className="space-y-4">
 
                         {/* Περίληψη Επίσκεψης */}
@@ -1595,7 +1314,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-win-border-light gap-3">
                           <button
                             type="button"
-                            onClick={() => setVisitStep(3)}
+                            onClick={() => setVisitStep(2)}
                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-win-elevated/50 transition-colors"
                           >
                             <ArrowLeft className="w-4 h-4" />
