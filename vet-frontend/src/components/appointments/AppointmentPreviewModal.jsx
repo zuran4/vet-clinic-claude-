@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Calendar, Clock, Stethoscope, Scissors,
-  StickyNote, PawPrint, ShoppingBag, Pill, X,
+  StickyNote, PawPrint, Pill, X,
   Plus, ChevronDown, ChevronUp, Activity, ChevronRight, ArrowLeft,
-  CheckCircle, AlertCircle, Syringe, Check, Timer, Zap,
-  UserCheck, DoorOpen, XCircle, Dna, MoreVertical,
-  Phone, Mail, BellRing,
+  CheckCircle, AlertCircle, Syringe, Timer, Zap,
+  UserCheck, DoorOpen, XCircle, Dna,
+  Phone, Mail, BellRing, Camera,
 } from "lucide-react";
 import dayjs from "dayjs";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
-import PetProfile from "../pets/PetProfile";
-import InlinePurchases from "./InlinePurchases.jsx";
-import InlinePrescriptions from "./InlinePrescriptions.jsx";
 import { addPetHistoryEntry, getPetsByOwner } from "../../api/petsApi.js";
 import { getCustomerById } from "../../api/customersApi.js";
+import request from "../../api/apiClient.js";
 
 const emptyConsultForm = {
   reason: "", result: "", weight: "", temperature: "", heartRate: "", diagnosis: "", treatment: "",
@@ -34,6 +33,42 @@ const BEHAVIOR_OPTIONS = [
   { key: "Επιθετικό",     color: "red"    },
   { key: "Επείγον",       color: "purple" },
 ];
+
+const QUICK_ACTION_STYLES = {
+  teal:   "bg-teal-50   dark:bg-teal-900/20   text-teal-500   dark:text-teal-400   group-hover:bg-teal-100   dark:group-hover:bg-teal-900/40",
+  indigo: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/40",
+  blue:   "bg-blue-50   dark:bg-blue-900/20   text-blue-500   dark:text-blue-400   group-hover:bg-blue-100   dark:group-hover:bg-blue-900/40",
+  slate:  "bg-slate-100 dark:bg-slate-800/40  text-slate-500  dark:text-slate-400  group-hover:bg-slate-200  dark:group-hover:bg-slate-700/60",
+  amber:  "bg-amber-50  dark:bg-amber-900/20  text-amber-500  dark:text-amber-400  group-hover:bg-amber-100  dark:group-hover:bg-amber-900/40",
+  purple: "bg-purple-50 dark:bg-purple-900/20 text-purple-500 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40",
+};
+
+const QUICK_ACTION_RING = {
+  teal:   "ring-teal-400   dark:ring-teal-500",
+  indigo: "ring-indigo-400 dark:ring-indigo-500",
+  blue:   "ring-blue-400   dark:ring-blue-500",
+  slate:  "ring-slate-400  dark:ring-slate-500",
+  amber:  "ring-amber-400  dark:ring-amber-500",
+  purple: "ring-purple-400 dark:ring-purple-500",
+};
+
+const QUICK_ACTION_TEXT_ACTIVE = {
+  teal:   "text-teal-600   dark:text-teal-400",
+  indigo: "text-indigo-600 dark:text-indigo-400",
+  blue:   "text-blue-600   dark:text-blue-400",
+  slate:  "text-slate-600  dark:text-slate-300",
+  amber:  "text-amber-600  dark:text-amber-400",
+  purple: "text-purple-600 dark:text-purple-400",
+};
+
+const QUICK_CARD_META = {
+  history: { icon: Clock,       label: "Ιστορικό",     title: "Ιστορικό Επισκέψεων", color: "teal"   },
+  chip:    { icon: Dna,         label: "Σάρωση chip",  title: "Σάρωση chip",         color: "indigo" },
+  photo:   { icon: Camera,      label: "Φωτογραφία",   title: "Φωτογραφία",          color: "blue"   },
+  file:    { icon: StickyNote,  label: "Αρχείο",        title: "Αρχείο",              color: "slate"  },
+  alert:   { icon: AlertCircle, label: "Alert",         title: "Alert",               color: "amber"  },
+  quickRx: { icon: Pill,        label: "Συνταγή",       title: "Συνταγή",             color: "purple" },
+};
 
 const BEHAVIOR_STYLES = {
   green:  { base: "border-green-200  dark:border-green-700/50  text-green-700  dark:text-green-300  bg-green-50   dark:bg-green-900/20",  active: "border-green-400  bg-green-100  dark:bg-green-800/40  text-green-800  dark:text-green-200"  },
@@ -56,33 +91,14 @@ const TYPE_TEMPLATES = {
   "Επανέλεγχος":   "Επανέλεγχος. ",
 };
 
-const SUGGESTED_CHARGES = {
-  "Εξέταση":       { label: "Κλινική εξέταση",      price: 25 },
-  "Chip":           { label: "Τοποθέτηση microchip", price: 20 },
-  "Εμβόλιο":       { label: "Εμβολιασμός",           price: 20 },
-  "Αποπαρασίτωση": { label: "Αποπαρασίτωση",         price: 15 },
-  "Στείρωση":      { label: "Στείρωση",              price: 80 },
-  "Χειρουργείο":   { label: "Χειρουργείο",           price: 150 },
-  "Μπάνιο":        { label: "Grooming - Μπάνιο",     price: 25 },
-  "Κούρεμα":       { label: "Grooming - Κούρεμα",    price: 20 },
-};
-
 const INSTRUCTION_TEMPLATES = {
   chip:    "Τοποθετήθηκε microchip με επιτυχία και καταχωρήθηκε στο registry.\nΕίναι φυσιολογικό μια ήπια ευαισθησία στην περιοχή για 1-2 ημέρες.\nΠαρακολουθήστε για ερυθρότητα, οίδημα ή πόνο και επικοινωνήστε μαζί μας αν παρατηρήσετε κάτι ασυνήθιστο.\nΣυνεχίστε κανονικά τη ρουτίνα πρόληψης και τη σωστή διατροφή.",
   vaccine: "Χορηγήθηκε εμβόλιο. Μπορεί να εμφανιστεί ήπια αδυναμία ή ευαισθησία στο σημείο έγχυσης για 24-48 ώρες.\nΕπικοινωνήστε αμέσως αν εμφανιστεί έντονη αντίδραση ή αλλεργία.\nΤο επόμενο εμβόλιο προγραμματίζεται σε 1 χρόνο.",
   followup: "Παρακαλώ επισκεφθείτε μας σε ____ εβδομάδες για επανέλεγχο.\nΕπικοινωνήστε μαζί μας αν παρατηρήσετε επιδείνωση της κατάστασης ή νέα συμπτώματα.",
 };
 
-const emptyCompletionForm = {
-  summary:             "",
-  printedInstructions: false,
-  sentEmailSms:        false,
-  registeredChip:      false,
-};
-
 const emptyTreatmentForm = {
   procedures:       [],
-  noPharma:         true,
   medications:      [],
   instructions:     "",
   followUpReminder: false,
@@ -122,7 +138,6 @@ const emptyExamForm = {
   examBehavior:     "Ήρεμη",
   generalState:     "Καλή",
   bodyNotes:        "",
-  findings:         "",
   bodySystemStatus: {},
 };
 
@@ -208,6 +223,105 @@ function WeightChart({ history }) {
   );
 }
 
+function PlaceholderCard({ icon: Icon, title, color = "slate" }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-win-elevated/30 rounded-xl border border-dashed border-gray-200 dark:border-win-border-light">
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${QUICK_ACTION_STYLES[color]}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Σύντομα διαθέσιμο</p>
+    </div>
+  );
+}
+
+function DrugSearchInput({ value, onChange, onSelect, placeholder, className }) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (value.trim().length < 1) { setResults([]); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const data = await request(`/products?search=${encodeURIComponent(value)}`);
+        const meds = (Array.isArray(data) ? data : []).filter((p) => p.category === "Φάρμακο");
+        if (!cancelled) setResults(meds);
+      } catch {
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [value]);
+
+  const openDropdown = () => {
+    if (inputRef.current) {
+      const r = inputRef.current.getBoundingClientRect();
+      setDropdownPos({ top: r.bottom + 4, left: r.left, width: r.width });
+    }
+  };
+
+  const handleSelect = (p) => {
+    onSelect(p);
+    setResults([]);
+    setDropdownPos(null);
+  };
+
+  const showDropdown = dropdownPos && value.trim().length > 0;
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          if (e.target.value.trim()) openDropdown(); else setDropdownPos(null);
+        }}
+        onFocus={openDropdown}
+        onBlur={() => setTimeout(() => setDropdownPos(null), 200)}
+        placeholder={placeholder}
+        className={className}
+      />
+      {showDropdown && createPortal(
+        <div style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
+          className="bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-lg overflow-hidden">
+          {loading ? (
+            <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Αναζήτηση...</div>
+          ) : results.length > 0 ? (
+            <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50 dark:divide-win-border">
+              {results.map((p) => (
+                <li key={p._id}>
+                  <button type="button"
+                    onMouseDown={(e) => { e.preventDefault(); handleSelect(p); }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                        <Pill className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-300" />
+                      </div>
+                      <span className="font-medium text-sm text-gray-800 dark:text-gray-100 truncate">{p.name}</span>
+                    </div>
+                    <span className="text-xs text-gray-400 flex-shrink-0">απόθ. {p.stockTotal ?? 0}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-3 text-xs text-gray-400 dark:text-gray-500 text-center">Δεν βρέθηκαν φάρμακα στην αποθήκη.</div>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
 function InfoItem({ icon: Icon, value, iconColor = "text-gray-400" }) {
   return (
     <div className="flex items-center gap-2">
@@ -217,16 +331,7 @@ function InfoItem({ icon: Icon, value, iconColor = "text-gray-400" }) {
   );
 }
 
-const TAB_VIEW_MAP = { consult: null, overview: null, purchases: "purchases", prescriptions: "prescriptions", pet: "pet" };
-
-const BOTTOM_ACTIONS = [
-  { key: "purchases",     label: "Αγορές",     icon: ShoppingBag },
-  { key: "prescriptions", label: "Συνταγές",   icon: Pill },
-  { key: "pet",           label: "Κατοικίδιο", icon: PawPrint },
-];
-
 const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "overview" }) => {
-  const [activeView,    setActiveView]    = useState(TAB_VIEW_MAP[initialTab] ?? null);
   const [visitStep,     setVisitStep]     = useState(1);
   const [elapsed,       setElapsed]       = useState(0);
   const [completing,    setCompleting]    = useState(false);
@@ -237,13 +342,12 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const [pendingTasks,    setPendingTasks]    = useState([]);
   const [treatmentForm,   setTreatmentForm]   = useState(emptyTreatmentForm);
   const [medicationInput, setMedicationInput] = useState({ drug: "", dose: "", frequency: "", duration: "" });
-  const [completionForm,  setCompletionForm]  = useState(emptyCompletionForm);
   const [saving,          setSaving]          = useState(false);
-  const [saved,         setSaved]         = useState(false);
   const [recentHistory, setRecentHistory] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [fullPet,       setFullPet]       = useState(null);
   const [fullCustomer,  setFullCustomer]  = useState(null);
+  const [quickCard,     setQuickCard]     = useState(null);
   const timerRef = useRef(null);
 
   const ownerId = typeof appointment?.owner === "object"
@@ -251,13 +355,9 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     : appointment?.owner || null;
 
   const { pets } = useCustomerPets(ownerId);
-  const matchedPet = pets.find(
-    (p) => p.name?.toLowerCase() === appointment?.animalName?.toLowerCase()
-  ) || pets[0] || null;
 
   useEffect(() => {
     if (isOpen) {
-      setActiveView(TAB_VIEW_MAP[initialTab] ?? null);
       setVisitStep(1);
       setElapsed(0);
       setCompleting(false);
@@ -267,10 +367,10 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       const initReasons = initTypes.filter((t) => VISIT_REASONS.includes(t));
       setConsultForm({ ...emptyConsultForm, reason: initReasons.join(", ") });
       setExamForm(emptyExamForm);
-      setSaved(false);
       setFullPet(null);
       setRecentHistory([]);
       setSelectedEntry(null);
+      setQuickCard(null);
       const apptTypes = Array.isArray(appointment?.type) ? appointment.type : [appointment?.type].filter(Boolean);
       const defaultTasks = [];
       if (apptTypes.some((t) => t === "Chip" || t === "Microchip")) {
@@ -285,7 +385,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       setPendingTasks(defaultTasks);
       setTreatmentForm(emptyTreatmentForm);
       setMedicationInput({ drug: "", dose: "", frequency: "", duration: "" });
-      setCompletionForm(emptyCompletionForm);
     }
   }, [isOpen, initialTab]);
 
@@ -333,18 +432,13 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const types = Array.isArray(appointment.type)
     ? appointment.type : [appointment.type].filter(Boolean);
 
-  const appointmentCharges = [
-    ...types.flatMap((t) => (SUGGESTED_CHARGES[t] ? [SUGGESTED_CHARGES[t]] : [])),
-    ...(types.includes("Chip") ? [{ label: "Microchip", price: 15 }] : []),
-  ];
-  const chargesSubtotal = appointmentCharges.reduce((s, c) => s + c.price, 0);
-  const chargesVat      = +(chargesSubtotal * 0.24).toFixed(2);
-  const chargesTotal    = +(chargesSubtotal + chargesVat).toFixed(2);
-
   const initials = appointment.clientName
     ?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
   const latestVitals  = recentHistory.find((e) => e.weight || e.temperature || e.heartRate);
+  const latestWeightEntry = fullPet?.history
+    ?.filter((e) => e.weight != null)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))[0] || null;
   const vaccinations  = recentHistory.filter((e) => isVaccination(e.reason)).slice(0, 4);
   const alertLines    = fullPet?.notes ? fullPet.notes.split("\n").map((l) => l.trim()).filter(Boolean) : [];
   const otherPets     = pets.filter((p) => p.name?.toLowerCase() !== appointment.animalName?.toLowerCase());
@@ -368,66 +462,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     setConsultForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const buildPayload = () => {
-    const resultParts = [
-      behavior ? `Κατάσταση: ${behavior}` : null,
-      consultForm.result || null,
-    ].filter(Boolean);
-    return {
-      reason:      consultForm.reason,
-      result:      resultParts.length ? resultParts.join(". ") : undefined,
-      weight:      consultForm.weight      ? parseFloat(consultForm.weight)      : undefined,
-      temperature: consultForm.temperature ? parseFloat(consultForm.temperature) : undefined,
-      heartRate:   consultForm.heartRate   ? parseInt(consultForm.heartRate)     : undefined,
-      diagnosis:   consultForm.diagnosis   || undefined,
-      treatment:   consultForm.treatment   || undefined,
-    };
-  };
-
-  const doSave = async () => {
-    if (!consultForm.reason.trim() || !fullPet) return false;
-    setSaving(true);
-    try {
-      await addPetHistoryEntry(fullPet._id, buildPayload());
-      setConsultForm(emptyConsultForm);
-      setBehavior("");
-      setSaved(true);
-      const freshPets = await getPetsByOwner(ownerId);
-      const fresh = freshPets.find((p) => p._id === fullPet._id);
-      if (fresh?.history) {
-        const sorted = [...fresh.history].sort((a, b) => new Date(b.date) - new Date(a.date));
-        setRecentHistory(sorted.slice(0, 5));
-        setFullPet(fresh);
-      }
-      return true;
-    } catch (err) {
-      alert("❌ " + err.message);
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSave = async (e) => { e.preventDefault(); await doSave(); };
-
-  const handleStartExam = async () => {
-    if (consultForm.reason.trim() && fullPet) await doSave();
-    const apptTypes = Array.isArray(appointment?.type) ? appointment.type : [appointment?.type].filter(Boolean);
-    const defaultTasks = [];
-    if (apptTypes.some((t) => t === "Chip" || t === "Microchip")) {
-      defaultTasks.push({ id: 1, text: "Καταχώριση αριθμού chip", done: false });
-      defaultTasks.push({ id: 2, text: "Εκτύπωση/αποστολή οδηγιών", done: false });
-    }
-    if (apptTypes.some((t) => t === "Εμβόλιο")) {
-      defaultTasks.push({ id: 3, text: "Reminder επόμενου εμβολίου", done: false });
-    }
-    if (defaultTasks.length === 0) {
-      defaultTasks.push({ id: 1, text: "Ολοκλήρωση καταχώρισης", done: false });
-    }
-    setPendingTasks(defaultTasks);
-    setVisitStep(2);
-  };
-
   const toggleSymptom = (s) =>
     setExamForm((p) => ({
       ...p,
@@ -437,55 +471,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const setBodySystem = (system, value) =>
     setExamForm((p) => ({ ...p, bodySystemStatus: { ...p.bodySystemStatus, [system]: value } }));
 
-  const buildExamPayload = () => {
-    const symptomText = examForm.symptoms.length > 0 ? `Συμπτώματα: ${examForm.symptoms.join(", ")}` : null;
-    const reasonParts = [consultForm.reason, symptomText].filter(Boolean);
-    const abnormal = Object.entries(examForm.bodySystemStatus).filter(([, v]) => v === "Παθολογικό").map(([k]) => k);
-    const resultParts = [
-      behavior ? `Συμπεριφορά: ${behavior}` : null,
-      examForm.generalState ? `Γεν. κατάσταση: ${examForm.generalState}` : null,
-      examForm.findings || null,
-      examForm.bodyNotes || null,
-      abnormal.length > 0 ? `Παθολογικά: ${abnormal.join(", ")}` : null,
-    ].filter(Boolean);
-    const ownerNote = examForm.ownerHistory?.trim()
-      ? `Ιστορικό ιδιοκτήτη: ${examForm.ownerHistory.trim()}`
-      : null;
-    return {
-      reason:      reasonParts.join(". ") || "Εξέταση",
-      result:      [ownerNote, ...resultParts].filter(Boolean).join(". ") || undefined,
-      weight:      consultForm.weight      ? parseFloat(consultForm.weight)      : undefined,
-      temperature: consultForm.temperature ? parseFloat(consultForm.temperature) : undefined,
-      heartRate:   consultForm.heartRate   ? parseInt(consultForm.heartRate)     : undefined,
-      diagnosis:   consultForm.diagnosis   || undefined,
-      treatment:   consultForm.treatment   || undefined,
-    };
-  };
-
-  const doSaveExam = async () => {
-    if (!fullPet) return false;
-    setSaving(true);
-    try {
-      await addPetHistoryEntry(fullPet._id, buildExamPayload());
-      setSaved(true);
-      const freshPets = await getPetsByOwner(ownerId);
-      const fresh = freshPets.find((p) => p._id === fullPet._id);
-      if (fresh?.history) {
-        const sorted = [...fresh.history].sort((a, b) => new Date(b.date) - new Date(a.date));
-        setRecentHistory(sorted.slice(0, 5));
-        setFullPet(fresh);
-      }
-      return true;
-    } catch (err) {
-      alert("❌ " + err.message);
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleContinueToTherapy = async () => {
-    await doSaveExam();
+  const handleContinueToTherapy = () => {
     const procs = [];
     let pid = 1;
     if (types.includes("Εξέταση"))       procs.push({ id: pid++, text: "Κλινική εξέταση", done: true });
@@ -506,40 +492,65 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     setVisitStep(2);
   };
 
-  const handleGoToCompletion = () => {
-    const petName = fullPet?.name || "Το ζώο";
-    const doneProcedures = treatmentForm.procedures.filter((p) => p.done).map((p) => p.text.toLowerCase());
-    const parts = [];
-    if (doneProcedures.some((p) => p.includes("εξέταση")))
-      parts.push(`${petName} εξετάστηκε κλινικά και βρέθηκε σε καλή κατάσταση.`);
-    if (doneProcedures.some((p) => p.includes("microchip")))
-      parts.push("Τοποθετήθηκε microchip επιτυχώς και καταχωρήθηκε στο Εθνικό Μητρώο Ζώων Συντροφιάς.");
-    if (doneProcedures.some((p) => p.includes("εμβόλ")))
-      parts.push("Πραγματοποιήθηκε εμβολιασμός χωρίς επιπλοκές.");
-    if (doneProcedures.some((p) => p.includes("αποπαρ")))
-      parts.push("Χορηγήθηκε αποπαρασιτωτικό.");
-    if (treatmentForm.instructions)
-      parts.push("Ο ιδιοκτήτης ενημερώθηκε για τη φροντίδα του ζώου και έλαβε οδηγίες.");
-    parts.push(treatmentForm.medications.length > 0
-      ? "Χορηγήθηκε φαρμακευτική αγωγή."
-      : "Δεν παρουσιάστηκαν επιπλοκές κατά τη διάρκεια της επίσκεψης."
-    );
-    setCompletionForm({
-      summary: parts.join(" "),
-      printedInstructions: treatmentForm.instructions.length > 0,
-      sentEmailSms: treatmentForm.sendEmailSms,
-      registeredChip: types.includes("Chip"),
-    });
-    setVisitStep(3);
+  const buildFinalPayload = () => {
+    const abnormal = Object.entries(examForm.bodySystemStatus).filter(([, v]) => v === "Παθολογικό").map(([k]) => k);
+    const doneProcedures = treatmentForm.procedures.filter((p) => p.done).map((p) => p.text);
+    const medsText = treatmentForm.medications.length > 0
+      ? treatmentForm.medications.map((m) => [m.drug, m.dose, m.frequency, m.duration].filter(Boolean).join(" ")).join("; ")
+      : "—";
+
+    const resultLines = [
+      `Λόγος επίσκεψης: ${consultForm.reason || "—"}`,
+      "",
+      "1. ΙΣΤΟΡΙΚΟ ΑΠΟ ΙΔΙΟΚΤΗΤΗ",
+      `Ιστορικό ιδιοκτήτη: ${examForm.ownerHistory?.trim() || "—"}`,
+      `Συμπεριφορά ζώου (άφιξη): ${behavior || "—"}`,
+      `Συμπτώματα: ${examForm.symptoms.length > 0 ? examForm.symptoms.join(", ") : "—"}`,
+      "",
+      "2. ΚΛΙΝΙΚΑ ΣΤΟΙΧΕΙΑ",
+      `Ενυδάτωση: ${examForm.hydration || "—"}`,
+      `Πόνος (0-5): ${examForm.painScore || "—"}`,
+      `Συμπεριφορά (εξέταση): ${examForm.examBehavior || "—"}`,
+      `Γενική κατάσταση: ${examForm.generalState || "—"}`,
+      "",
+      "3. ΣΩΜΑΤΙΚΗ ΕΞΕΤΑΣΗ",
+      `Παθολογικά ευρήματα: ${abnormal.length > 0 ? abnormal.join(", ") : "—"}`,
+      `Σημειώσεις: ${examForm.bodyNotes || "—"}`,
+      "",
+      "4. ΠΡΑΞΕΙΣ ΠΟΥ ΕΓΙΝΑΝ",
+      doneProcedures.length > 0 ? doneProcedures.join(", ") : "—",
+      "",
+      "5. ΦΑΡΜΑΚΕΥΤΙΚΗ ΑΓΩΓΗ",
+      medsText,
+      "",
+      "6. ΟΔΗΓΙΕΣ / ΣΧΕΔΙΟ",
+      treatmentForm.instructions || "—",
+    ];
+
+    return {
+      reason:      consultForm.reason || "Εξέταση",
+      result:      resultLines.join("\n"),
+      weight:      consultForm.weight      ? parseFloat(consultForm.weight)      : undefined,
+      temperature: consultForm.temperature ? parseFloat(consultForm.temperature) : undefined,
+      heartRate:   consultForm.heartRate   ? parseInt(consultForm.heartRate)     : undefined,
+      diagnosis:   consultForm.diagnosis   || undefined,
+      treatment:   consultForm.treatment   || undefined,
+      nextVisit:   treatmentForm.scheduleFollowUp && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+    };
   };
 
-  const handleFinalComplete = () => {
-    setCompleting(true);
-    clearInterval(timerRef.current);
-    setTimeout(() => onClose(), 300);
-  };
-
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (fullPet) {
+      setSaving(true);
+      try {
+        await addPetHistoryEntry(fullPet._id, buildFinalPayload());
+      } catch (err) {
+        alert("❌ " + err.message);
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
     setCompleting(true);
     clearInterval(timerRef.current);
     setTimeout(() => onClose(), 300);
@@ -591,34 +602,41 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
           </button>
         </div>
 
-        {/* ── Info bar: owner + pet ── */}
-        <div className="flex-shrink-0 border-b border-gray-100 dark:border-win-border bg-white dark:bg-win-surface px-5 py-2.5 flex items-center gap-0 divide-x divide-gray-100 dark:divide-win-border">
+        {/* ── Info bar: owner | pet | actions ── */}
+        <div className="flex-shrink-0 border-b border-gray-100 dark:border-win-border bg-white dark:bg-win-surface px-5 py-2.5 flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-0">
 
+        <div className="flex items-stretch divide-x divide-gray-100 dark:divide-win-border">
           {/* Owner */}
           <div className="flex items-center gap-3 pr-5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
               <span className="text-white text-[10px] font-bold">{initials}</span>
             </div>
-            <div className="min-w-0">
+            <div>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">{appointment.clientName}</p>
-              <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+              <div className="mt-0.5 space-y-0.5">
                 {(fullCustomer?.phone || appointment.phone) && (
-                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                     <Phone className="w-3 h-3 flex-shrink-0" />
                     {fullCustomer?.phone || appointment.phone}
-                  </span>
+                  </div>
                 )}
                 {fullCustomer?.email && (
-                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                     <Mail className="w-3 h-3 flex-shrink-0" />
                     {fullCustomer.email}
-                  </span>
+                  </div>
                 )}
                 {fullCustomer?.notifications && (fullCustomer.notifications.email || fullCustomer.notifications.sms) && (
-                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                     <BellRing className="w-3 h-3 flex-shrink-0" />
                     {[fullCustomer.notifications.sms && "SMS", fullCustomer.notifications.email && "Email"].filter(Boolean).join(" & ")}
-                  </span>
+                  </div>
+                )}
+                {alertLines.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
+                    <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                    {alertLines[0]}
+                  </div>
                 )}
               </div>
             </div>
@@ -627,61 +645,57 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
           {/* Pet */}
           {appointment.animalName && (
             <div className="flex items-center gap-3 px-5">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
-                <PawPrint className="w-3.5 h-3.5 text-amber-400" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                <PawPrint className="w-3.5 h-3.5 text-white" />
               </div>
-              <div className="min-w-0">
+              <div>
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-tight">{appointment.animalName}</p>
-                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  {fullPet?.species && <span className="text-xs text-gray-500 dark:text-gray-400">{fullPet.species}</span>}
-                  {fullPet?.gender && <span className="text-xs text-gray-400">{fullPet.gender === "Θηλυκό" ? "♀" : "♂"}</span>}
-                  {ageLabel && <span className="text-xs text-gray-500 dark:text-gray-400">{ageLabel}</span>}
-                  {latestVitals?.weight && (
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-md">
-                      {latestVitals.weight} kg
-                    </span>
+                <div className="mt-0.5 space-y-0.5">
+                  {(fullPet?.species || fullPet?.gender) && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <PawPrint className="w-3 h-3 flex-shrink-0" />
+                      {[fullPet?.species, fullPet?.gender && (fullPet.gender === "Θηλυκό" ? "♀" : "♂")].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
+                  {fullPet && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Activity className="w-3 h-3 flex-shrink-0" />
+                      {latestWeightEntry ? `${latestWeightEntry.weight} kg` : "—"}
+                    </div>
+                  )}
+                  {fullPet && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-3 h-3 flex-shrink-0" />
+                      {ageLabel || "—"}
+                    </div>
                   )}
                   {fullPet?.microchip && (
-                    <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                      <Dna className="w-3 h-3 flex-shrink-0" />{fullPet.microchip}
-                    </span>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Dna className="w-3 h-3 flex-shrink-0" />
+                      {fullPet.microchip}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           )}
+        </div>
 
-          {/* Alerts (if any) */}
-          {alertLines.length > 0 && (
-            <div className="flex items-center gap-2 px-5">
-              <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-              <div className="space-y-0.5">
-                {alertLines.map((line, i) => (
-                  <p key={i} className="text-xs text-red-600 dark:text-red-400 leading-snug">{line}</p>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Γρήγορες Ενέργειες */}
-          <div className="ml-auto pl-5 flex items-center gap-1 flex-shrink-0">
-            {[
-              { icon: Dna,         label: "Σάρωση chip",         title: "Σάρωση chip" },
-              { icon: Plus,        label: "Φωτογραφία",          title: "Προσθήκη φωτογραφίας" },
-              { icon: StickyNote,  label: "Αρχείο",              title: "Προσθήκη αρχείου" },
-              { icon: AlertCircle, label: "Alert",               title: "Προσθήκη alert" },
-              { icon: Pill,        label: "Συνταγή",             title: "Νέα συνταγή" },
-            ].map(({ icon: Icon, label, title }) => (
-              <button
-                key={label}
-                type="button"
-                title={title}
-                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-win-elevated/50 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span className="text-[9px] font-medium whitespace-nowrap">{label}</span>
-              </button>
-            ))}
+          {/* Quick actions */}
+          <div className="flex items-center gap-1.5 flex-wrap pt-2 sm:pt-0 sm:pl-5 sm:ml-auto border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-win-border">
+            {Object.entries(QUICK_CARD_META).map(([key, { icon: Icon, label, color }]) => {
+              const active = quickCard === key;
+              return (
+                <button key={key} type="button"
+                  onClick={() => { setQuickCard(active ? null : key); setSelectedEntry(null); }}
+                  className="group flex flex-col items-center gap-1 px-1.5 py-1 rounded-xl transition-colors">
+                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${QUICK_ACTION_STYLES[color]} ${active ? `ring-2 ${QUICK_ACTION_RING[color]}` : ""}`}>
+                    <Icon className="w-3.5 h-3.5" />
+                  </span>
+                  <span className={`text-[9px] font-medium whitespace-nowrap ${active ? QUICK_ACTION_TEXT_ACTIVE[color] : "text-gray-500 dark:text-gray-400"}`}>{label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -690,53 +704,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
 
           {/* ── Full-width content column ── */}
           <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg/30">
-            {activeView === null && (
               <div className="p-4 space-y-4">
-
-                {/* History entry detail */}
-                {selectedEntry ? (
-                  <div className="space-y-3">
-                    <button onClick={() => setSelectedEntry(null)} className="flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors">
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      Επιστροφή
-                    </button>
-                    <div className="bg-white dark:bg-win-elevated/50 rounded-xl border border-gray-100 dark:border-win-border-light overflow-hidden">
-                      <div className="bg-gray-50 dark:bg-win-elevated/80 px-4 py-2.5 border-b border-gray-100 dark:border-win-border-light flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          {dayjs(selectedEntry.date).locale("el").format("dddd, DD MMMM YYYY")}
-                        </span>
-                      </div>
-                      <div className="px-4 py-3 space-y-3">
-                        {(selectedEntry.weight || selectedEntry.temperature || selectedEntry.heartRate) && (
-                          <div className="flex flex-wrap gap-2">
-                            {selectedEntry.weight      && <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-600   dark:text-blue-300   px-2.5 py-1 rounded-lg font-medium">⚖ {selectedEntry.weight} kg</span>}
-                            {selectedEntry.temperature && <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-2.5 py-1 rounded-lg font-medium">🌡 {selectedEntry.temperature}°C</span>}
-                            {selectedEntry.heartRate   && <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-300    px-2.5 py-1 rounded-lg font-medium">♥ {selectedEntry.heartRate} bpm</span>}
-                          </div>
-                        )}
-                        <div className="space-y-1.5">
-                          {[["Λόγος", selectedEntry.reason], ["Αποτέλεσμα", selectedEntry.result], ["Διάγνωση", selectedEntry.diagnosis], ["Αγωγή", selectedEntry.treatment], ["Κτηνίατρος", selectedEntry.vet]]
-                            .filter(([, v]) => v).map(([label, value]) => (
-                            <div key={label} className="flex gap-2 text-sm">
-                              <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">{label}</span>
-                              <span className="text-gray-800 dark:text-gray-100 font-medium">{value}</span>
-                            </div>
-                          ))}
-                          {selectedEntry.nextVisit && (
-                            <div className="flex gap-2 text-sm">
-                              <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">Επόμενη</span>
-                              <span className="text-gray-800 dark:text-gray-100 font-medium">{dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY")}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                ) : (
-                  <>
-                    {!fullPet && (
+                {!fullPet && (
                       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-xl px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
                         Το ζώο δεν βρέθηκε στο μητρώο. Δεν είναι δυνατή η καταχώριση.
                       </div>
@@ -744,11 +713,10 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
 
                     {/* ── New entry form (step 1 only) ── */}
                     {fullPet && visitStep === 1 && (
-                      <form onSubmit={handleSave} className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4 space-y-3">
+                      <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4 space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse flex-shrink-0" />
                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Νέα Επίσκεψη</p>
-                          {saved && <span className="ml-auto text-xs text-green-600 dark:text-green-400 font-medium">✓ Αποθηκεύτηκε</span>}
                         </div>
 
                         {/* Visit reason chips — multi-select, sync to reason field */}
@@ -814,7 +782,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                 type="number"
                                 step="0.1"
                                 min="0"
-                                placeholder={latestVitals?.weight ? `τελ. ${latestVitals.weight}` : "0.0"}
+                                placeholder={latestWeightEntry ? `τελ. ${latestWeightEntry.weight}` : "0.0"}
                                 value={consultForm.weight}
                                 onChange={handleConsultChange}
                                 className="border border-blue-200 dark:border-blue-700/50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300 dark:placeholder-gray-600 bg-blue-50/50 dark:bg-blue-900/10 text-gray-900 dark:text-gray-100 w-24"
@@ -824,9 +792,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           </div>
                         </div>
 
-                        <input name="reason" type="text" placeholder="Λόγος επίσκεψης (κλινικό) *" value={consultForm.reason} onChange={handleConsultChange} required className={inputClass} />
-                        {/* CTA */}
-                      </form>
+                      </div>
                     )}
 
                     {/* ── Step 2 (now 1): Εξέταση ── */}
@@ -834,8 +800,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                       <div className="flex gap-3 items-start">
                       {/* Main exam content */}
                       <div className="flex-1 min-w-0 space-y-3">
-                        {saved && <p className="text-xs text-green-600 dark:text-green-400 font-medium">✓ Αποθηκεύτηκε</p>}
-
                         {/* 1. Owner History */}
                         <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                           <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
@@ -922,13 +886,13 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Σωματική Εξέταση</p>
                           </div>
                           <div className="p-4 space-y-3">
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                               {BODY_SYSTEMS.map((sys) => {
                                 const val = examForm.bodySystemStatus[sys] ?? "Φυσιολογικό";
                                 const color = val === "Φυσιολογικό" ? "text-green-600 dark:text-green-400" : val === "Παθολογικό" ? "text-red-600 dark:text-red-400" : "text-gray-400";
                                 return (
                                   <div key={sys} className="flex items-center justify-between gap-2">
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{sys}</span>
+                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 min-w-0">{sys}</span>
                                     <select value={val} onChange={(e) => setBodySystem(sys, e.target.value)}
                                       className={`text-xs rounded-lg px-2 py-1 border border-gray-200 dark:border-win-border focus:outline-none focus:ring-1 focus:ring-indigo-300 bg-white dark:bg-win-elevated font-medium flex-shrink-0 ${color}`}>
                                       <option>Φυσιολογικό</option>
@@ -946,27 +910,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           </div>
                         </div>
 
-                        {/* 4. Findings */}
-                        <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                          <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">4</span>
-                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Ευρήματα / Σχόλια Εξέτασης</p>
-                          </div>
-                          <div className="p-4">
-                            <textarea rows={4} placeholder="Εισάγετε τα ευρήματα της εξέτασης..."
-                              value={examForm.findings}
-                              onChange={(e) => setExamForm((p) => ({ ...p, findings: e.target.value }))}
-                              className={inputClass + " resize-none"} />
-                          </div>
-                        </div>
-
                         {/* Step 2 CTA */}
                         <div className="flex items-center gap-2 pb-2">
-                          <button type="button" onClick={doSaveExam} disabled={saving}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-win-border-light text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated/50 disabled:opacity-40 text-sm font-medium transition-colors">
-                            <Plus className="w-3.5 h-3.5" />
-                            {saving ? "Αποθήκευση..." : "Αποθήκευση"}
-                          </button>
                           <button type="button" onClick={handleContinueToTherapy} disabled={saving}
                             className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm">
                             Συνέχεια στη θεραπεία
@@ -979,19 +924,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                     )}
 
                     {/* ── Step 3 (now 2): Θεραπεία ── */}
-                    {fullPet && visitStep === 2 && (() => {
-                      const charges = types.flatMap((t) => {
-                        const c = SUGGESTED_CHARGES[t];
-                        return c ? [c] : [];
-                      });
-                      if (types.includes("Chip")) charges.push({ label: "Microchip", price: 15 });
-                      const subtotal = charges.reduce((s, c) => s + c.price, 0);
-                      const vat = +(subtotal * 0.24).toFixed(2);
-                      const total = +(subtotal + vat).toFixed(2);
-                      return (
-                        <div className="flex gap-3 items-start">
-                        {/* Main */}
-                        <div className="flex-1 min-w-0 space-y-3">
+                    {fullPet && visitStep === 2 && (
+                        <div className="space-y-3">
 
                           {/* 1. Πράξεις που έγιναν */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
@@ -1027,15 +961,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Φαρμακευτική Αγωγή</p>
                             </div>
                             <div className="p-4 space-y-3">
-                              {treatmentForm.noPharma && treatmentForm.medications.length === 0 && (
-                                <div className="flex items-start gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700/40 rounded-xl px-3 py-2.5">
-                                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <p className="text-xs font-semibold text-green-700 dark:text-green-300">Δεν απαιτήθηκε φαρμακευτική αγωγή</p>
-                                    <p className="text-[10px] text-green-600/70 dark:text-green-400/70">Εάν χρειάζεται, προσθέστε φάρμακο παρακάτω.</p>
-                                  </div>
-                                </div>
-                              )}
                               {treatmentForm.medications.length > 0 && (
                                 <ul className="space-y-1.5">
                                   {treatmentForm.medications.map((m) => (
@@ -1045,16 +970,20 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                       {m.dose && <span className="text-gray-400">{m.dose}</span>}
                                       {m.frequency && <span className="text-gray-400">· {m.frequency}</span>}
                                       {m.duration && <span className="text-gray-400">· {m.duration}</span>}
-                                      <button type="button" onClick={() => setTreatmentForm((p) => ({ ...p, medications: p.medications.filter((x) => x.id !== m.id), noPharma: p.medications.length <= 1 }))}
+                                      <button type="button" onClick={() => setTreatmentForm((p) => ({ ...p, medications: p.medications.filter((x) => x.id !== m.id) }))}
                                         className="ml-auto text-red-400 hover:text-red-600 transition-colors">✕</button>
                                     </li>
                                   ))}
                                 </ul>
                               )}
                               <div className="grid grid-cols-4 gap-2">
-                                <input placeholder="Αναζήτηση φαρμάκου..." value={medicationInput.drug}
-                                  onChange={(e) => setMedicationInput((p) => ({ ...p, drug: e.target.value }))}
-                                  className={inputClass + " col-span-2"} />
+                                <DrugSearchInput
+                                  value={medicationInput.drug}
+                                  onChange={(v) => setMedicationInput((p) => ({ ...p, drug: v }))}
+                                  onSelect={(prod) => setMedicationInput((p) => ({ ...p, drug: prod.name }))}
+                                  placeholder="Αναζήτηση φαρμάκου..."
+                                  className={inputClass + " col-span-2"}
+                                />
                                 <input placeholder="π.χ. 5 mg/kg" value={medicationInput.dose}
                                   onChange={(e) => setMedicationInput((p) => ({ ...p, dose: e.target.value }))}
                                   className={inputClass} />
@@ -1072,7 +1001,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                 <button type="button"
                                   onClick={() => {
                                     if (!medicationInput.drug.trim()) return;
-                                    setTreatmentForm((p) => ({ ...p, medications: [...p.medications, { ...medicationInput, id: Date.now() }], noPharma: false }));
+                                    setTreatmentForm((p) => ({ ...p, medications: [...p.medications, { ...medicationInput, id: Date.now() }] }));
                                     setMedicationInput({ drug: "", dose: "", frequency: "", duration: "" });
                                   }}
                                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-xs font-semibold transition-colors flex-shrink-0">
@@ -1143,330 +1072,178 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
 
                           {/* CTA */}
                           <div className="flex items-center gap-2 pb-2">
-                            <button type="button" onClick={() => setSaved(true)} disabled={saving}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-win-border-light text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-win-elevated/50 disabled:opacity-40 text-sm font-medium transition-colors">
-                              <Plus className="w-3.5 h-3.5" />
-                              Αποθήκευση
+                            <button type="button" onClick={() => setVisitStep(1)} disabled={saving}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-win-elevated/50 transition-colors">
+                              <ArrowLeft className="w-4 h-4" />
+                              Πίσω στην εξέταση
                             </button>
-                            <button type="button" onClick={handleGoToCompletion} disabled={saving}
+                            <button type="button" onClick={handleComplete} disabled={saving}
                               className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm">
-                              Συνέχεια στην ολοκλήρωση
-                              <ChevronRight className="w-4 h-4" />
+                              <CheckCircle className="w-4 h-4" />
+                              Ολοκλήρωση Ραντεβού
                             </button>
                           </div>
                         </div>
-
-                        {/* Right sidebar */}
-                        <div className="w-48 flex-shrink-0 space-y-3 sticky top-0">
-                          {/* Ολοκληρώθηκαν */}
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-3 py-2">
-                              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Ολοκληρώθηκαν</p>
-                            </div>
-                            <div className="p-3 space-y-1.5">
-                              {treatmentForm.procedures.map((proc) => (
-                                <div key={proc.id} className="flex items-center gap-2">
-                                  <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${proc.done ? "bg-emerald-500" : "border-2 border-gray-200 dark:border-gray-600"}`}>
-                                    {proc.done && <Check className="w-2.5 h-2.5 text-white" />}
-                                  </div>
-                                  <span className={`text-[10px] leading-snug ${proc.done ? "text-gray-500 dark:text-gray-400 line-through" : "text-gray-600 dark:text-gray-300"}`}>{proc.text}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Εκκρεμότητες */}
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-3 py-2">
-                              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Εκκρεμότητες</p>
-                            </div>
-                            <div className="p-3 space-y-1.5">
-                              {[
-                                { field: "followUpReminder", label: "Reminder επόμενου εμβολίου" },
-                                { field: "sendEmailSms",     label: "Αποστολή οδηγιών με Email/SMS" },
-                                { field: "scheduleFollowUp", label: "Προγραμματισμός επανελέγχου" },
-                              ].map(({ field, label }) => (
-                                <div key={field} className="flex items-start gap-2">
-                                  <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5 ${treatmentForm[field] ? "bg-indigo-500" : "border-2 border-gray-200 dark:border-gray-600"}`}>
-                                    {treatmentForm[field] && <Check className="w-2.5 h-2.5 text-white" />}
-                                  </div>
-                                  <span className="text-[10px] text-gray-600 dark:text-gray-300 leading-snug">{label}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Γρήγορες ενέργειες */}
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-3 py-2">
-                              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Γρήγορες Ενέργειες</p>
-                            </div>
-                            <div className="p-3 space-y-1">
-                              {[
-                                { icon: StickyNote,   label: "Εκτύπωση οδηγιών" },
-                                { icon: Stethoscope,  label: "Αποστολή Email/SMS" },
-                                { icon: Pill,         label: "Νέα συνταγή" },
-                                { icon: Plus,         label: "Προσθήκη φωτογραφίας" },
-                              ].map(({ icon: Icon, label }) => (
-                                <button key={label} type="button"
-                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-win-elevated/50 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors text-xs text-left">
-                                  <Icon className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-                                  {label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* ── Step 4 (now 3): Ολοκλήρωση ── */}
-                    {fullPet && visitStep === 3 && (
-                      <div className="space-y-4">
-
-                        {/* Περίληψη Επίσκεψης */}
-                        <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <StickyNote className="w-4 h-4 text-indigo-500" />
-                            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Περίληψη Επίσκεψης</h3>
-                          </div>
-                          <textarea
-                            value={completionForm.summary}
-                            onChange={(e) => setCompletionForm((p) => ({ ...p, summary: e.target.value }))}
-                            rows={5}
-                            placeholder="Αυτόματα συμπληρωμένη περίληψη επίσκεψης..."
-                            className={inputClass + " resize-none"}
-                          />
-                        </div>
-
-                        {/* Χρεώσεις + Έγγραφα */}
-                        <div className="grid grid-cols-2 gap-4">
-
-                          {/* Χρεώσεις */}
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <ShoppingBag className="w-4 h-4 text-emerald-500" />
-                                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Χρεώσεις</h3>
-                              </div>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
-                                Οριστικοποιήσεις
-                              </span>
-                            </div>
-                            {appointmentCharges.length === 0 ? (
-                              <p className="text-xs text-gray-400 italic">Δεν υπάρχουν χρεώσεις</p>
-                            ) : (
-                              <div className="space-y-1.5">
-                                {appointmentCharges.map((c, i) => (
-                                  <div key={i} className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-700 dark:text-gray-200">{c.label}</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-100">{c.price}€</span>
-                                  </div>
-                                ))}
-                                <div className="border-t border-gray-100 dark:border-win-border-light mt-2 pt-2 space-y-1">
-                                  <div className="flex items-center justify-between text-xs text-gray-400">
-                                    <span>Υποσύνολο</span>
-                                    <span>{chargesSubtotal}€</span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-xs text-gray-400">
-                                    <span>ΦΠΑ 24%</span>
-                                    <span>{chargesVat}€</span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-sm font-bold text-gray-900 dark:text-gray-100">
-                                    <span>Σύνολο</span>
-                                    <span>{chargesTotal}€</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Έγγραφα / Επικοινωνία */}
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <CheckCircle className="w-4 h-4 text-sky-500" />
-                              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Έγγραφα / Επικοινωνία</h3>
-                            </div>
-                            <div className="space-y-2.5">
-                              {[
-                                { key: "printedInstructions", label: "Εκτυπώθηκαν οδηγίες φροντίδας" },
-                                { key: "sentEmailSms",        label: "Εστάλη email/SMS στον ιδιοκτήτη" },
-                                { key: "registeredChip",      label: "Εγγραφή microchip στο μητρώο" },
-                              ].map(({ key, label }) => (
-                                <label key={key} className="flex items-center gap-2 cursor-pointer group">
-                                  <input
-                                    type="checkbox"
-                                    checked={!!completionForm[key]}
-                                    onChange={(e) => setCompletionForm((p) => ({ ...p, [key]: e.target.checked }))}
-                                    className="w-4 h-4 rounded accent-emerald-500 cursor-pointer"
-                                  />
-                                  <span className="text-sm text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
-                                    {label}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* CTA Bar */}
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-win-border-light gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setVisitStep(2)}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-win-elevated/50 transition-colors"
-                          >
-                            <ArrowLeft className="w-4 h-4" />
-                            Πίσω στη θεραπεία
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleFinalComplete}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold shadow-sm transition-colors"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Ολοκλήρωση επίσκεψης
-                          </button>
-                        </div>
-                      </div>
                     )}
 
-                    {/* ── History (visible only step 1) ── */}
-                    {fullPet && visitStep === 1 && (
-                      <div>
-                        <SectionLabel>Ιστορικό Επισκέψεων</SectionLabel>
-                        {recentHistory.length === 0 ? (
-                          <div className="bg-white dark:bg-win-elevated/30 rounded-xl border border-gray-100 dark:border-win-border-light py-8 text-center">
-                            <Clock className="w-5 h-5 text-gray-200 dark:text-gray-600 mx-auto mb-1" />
-                            <p className="text-xs text-gray-400">Δεν υπάρχουν προηγούμενες επισκέψεις</p>
-                          </div>
-                        ) : (
-                          <ul className="space-y-2">
-                            {recentHistory.map((entry) => {
-                              const dot = entryDotColor(entry.reason);
-                              const hasBottom = entry.diagnosis || entry.treatment || entry.nextVisit || entry.vet;
-                              const hasVitals = entry.weight || entry.temperature || entry.heartRate;
-                              return (
-                                <li key={entry._id} className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-100 dark:border-win-border-light overflow-hidden">
-                                  <div className="p-3">
-                                    {/* Top row */}
-                                    <div className="flex items-start gap-3">
-                                      {/* Date + dot */}
-                                      <div className="flex items-start gap-2 flex-shrink-0 w-12">
-                                        <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dot}`} />
-                                        <div className="text-center">
-                                          <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight">{dayjs(entry.date).format("DD")}</p>
-                                          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase leading-tight">{dayjs(entry.date).locale("el").format("MMM")}</p>
-                                          <p className="text-[10px] text-gray-300 dark:text-gray-600 leading-tight">{dayjs(entry.date).format("YYYY")}</p>
-                                        </div>
-                                      </div>
-
-                                      {/* Content */}
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-start justify-between gap-1">
-                                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug">{entry.reason}</p>
-                                          <button
-                                            type="button"
-                                            onClick={() => setSelectedEntry(entry)}
-                                            className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-win-border/40 text-gray-300 hover:text-gray-500 dark:hover:text-gray-300 transition-colors flex-shrink-0"
-                                          >
-                                            <MoreVertical className="w-3.5 h-3.5" />
-                                          </button>
-                                        </div>
-
-                                        {entry.result && (
-                                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">{entry.result}</p>
-                                        )}
-
-                                        {hasVitals && (
-                                          <div className="flex flex-wrap gap-1.5 mt-2">
-                                            {entry.weight      && <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-500   dark:text-blue-400   px-1.5 py-0.5 rounded-md font-medium">⚖ {entry.weight} kg</span>}
-                                            {entry.temperature && <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 px-1.5 py-0.5 rounded-md font-medium">🌡 {entry.temperature}°C</span>}
-                                            {entry.heartRate   && <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-400    px-1.5 py-0.5 rounded-md font-medium">♥ {entry.heartRate} bpm</span>}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Bottom: diagnosis / treatment / next visit */}
-                                    {hasBottom && (
-                                      <div className="mt-2.5 pt-2.5 border-t border-gray-50 dark:border-win-border/30 ml-14 space-y-2">
-                                        {(entry.diagnosis || entry.treatment) && (
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Διάγνωση / Εκτίμηση</p>
-                                              <p className="text-xs text-gray-700 dark:text-gray-200">{entry.diagnosis || "Καμία"}</p>
-                                            </div>
-                                            <div>
-                                              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Θεραπείες</p>
-                                              <p className="text-xs text-gray-700 dark:text-gray-200">{entry.treatment || "Καμία"}</p>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {entry.nextVisit && (
-                                          <div className="flex items-center gap-1.5 text-xs text-indigo-500 dark:text-indigo-400">
-                                            <Calendar className="w-3 h-3 flex-shrink-0" />
-                                            Επόμενο: {dayjs(entry.nextVisit).format("DD/MM/YYYY")}
-                                          </div>
-                                        )}
-                                        {entry.vet && (
-                                          <p className="text-[10px] text-gray-400 dark:text-gray-500">Dr. {entry.vet}</p>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
-            )}
-
-            {activeView === "purchases" && (
-              <div className="p-4">
-                {ownerId ? <InlinePurchases customerId={ownerId} /> : <p className="text-sm text-gray-400 text-center py-8">Δεν υπάρχει πελάτης.</p>}
-              </div>
-            )}
-
-            {activeView === "prescriptions" && (
-              <div className="p-4">
-                <InlinePrescriptions
-                  petId={matchedPet?._id}
-                  pet={matchedPet}
-                  customer={ownerId ? { _id: ownerId, name: appointment.clientName, phone: appointment.phone } : null}
-                />
-              </div>
-            )}
-
-            {activeView === "pet" && (
-              matchedPet ? <PetProfile petId={matchedPet._id} /> : <p className="text-sm text-gray-400 text-center py-8 p-4">Δεν βρέθηκε κατοικίδιο.</p>
-            )}
           </div>
         </div>
 
-        {/* ── Bottom action bar ── */}
-        <div className="flex-shrink-0 border-t border-gray-100 dark:border-win-border bg-white dark:bg-win-surface px-4 py-2 flex items-center gap-1">
-          {BOTTOM_ACTIONS.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setActiveView(activeView === key ? null : key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                activeView === key
-                  ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated/50 hover:text-gray-700 dark:hover:text-gray-200"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* ── Quick action card (separate overlay, doesn't replace main content) ── */}
+        {quickCard && (() => {
+          const meta = QUICK_CARD_META[quickCard];
+          const CardIcon = meta.icon;
+          const close = () => { setQuickCard(null); setSelectedEntry(null); };
+          return (
+            <div className="absolute inset-0 z-20 bg-black/30 flex items-center justify-center p-4" onClick={close}>
+              <div
+                className="bg-white dark:bg-win-surface rounded-2xl shadow-2xl w-full max-w-md max-h-[85%] flex flex-col overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-win-border flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center ${QUICK_ACTION_STYLES[meta.color]}`}>
+                      <CardIcon className="w-3.5 h-3.5" />
+                    </span>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{meta.title}</p>
+                  </div>
+                  <button onClick={close} className="w-7 h-7 rounded-lg hover:bg-gray-100 dark:hover:bg-win-elevated/50 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-4 overflow-y-auto">
+                  {quickCard !== "history" ? (
+                    <PlaceholderCard icon={CardIcon} title={meta.title} color={meta.color} />
+                  ) : selectedEntry ? (
+                    <div className="space-y-3">
+                      <button onClick={() => setSelectedEntry(null)} className="flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors">
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        Επιστροφή
+                      </button>
+                      <div className="bg-white dark:bg-win-elevated/50 rounded-xl border border-gray-100 dark:border-win-border-light overflow-hidden">
+                        <div className="bg-gray-50 dark:bg-win-elevated/80 px-4 py-2.5 border-b border-gray-100 dark:border-win-border-light flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            {dayjs(selectedEntry.date).locale("el").format("dddd, DD MMMM YYYY")}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {dayjs(selectedEntry.date).format("HH:mm")}
+                          </span>
+                        </div>
+                        <div className="px-4 py-3 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-600   dark:text-blue-300   px-2.5 py-1 rounded-lg font-medium">⚖ {selectedEntry.weight      ?? "—"} kg</span>
+                            <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-2.5 py-1 rounded-lg font-medium">🌡 {selectedEntry.temperature ?? "—"} °C</span>
+                            <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-300    px-2.5 py-1 rounded-lg font-medium">♥ {selectedEntry.heartRate   ?? "—"} bpm</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {[
+                              ["Λόγος",     selectedEntry.reason],
+                              ["Αποτέλεσμα", selectedEntry.result],
+                              ["Διάγνωση",  selectedEntry.diagnosis],
+                              ["Αγωγή",     selectedEntry.treatment],
+                              ["Επόμενη",   selectedEntry.nextVisit ? dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY") : null],
+                              ["Κτηνίατρος", selectedEntry.vet],
+                            ].map(([label, value]) => (
+                              <div key={label} className="flex gap-2 text-sm">
+                                <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">{label}</span>
+                                <span className="text-gray-800 dark:text-gray-100 font-medium whitespace-pre-line">{value || "—"}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : !fullPet ? (
+                    <p className="text-sm text-gray-400 text-center py-8">Δεν βρέθηκε κατοικίδιο.</p>
+                  ) : (
+                    <div>
+                      {recentHistory.length === 0 ? (
+                        <div className="bg-white dark:bg-win-elevated/30 rounded-xl border border-gray-100 dark:border-win-border-light py-8 text-center">
+                          <Clock className="w-5 h-5 text-gray-200 dark:text-gray-600 mx-auto mb-1" />
+                          <p className="text-xs text-gray-400">Δεν υπάρχουν προηγούμενες επισκέψεις</p>
+                        </div>
+                      ) : (
+                        <ul className="space-y-2">
+                          {recentHistory.map((entry) => {
+                            const dot = entryDotColor(entry.reason);
+                            const hasBottom = entry.diagnosis || entry.treatment || entry.nextVisit || entry.vet;
+                            const hasVitals = entry.weight || entry.temperature || entry.heartRate;
+                            return (
+                              <li key={entry._id}
+                                onClick={() => setSelectedEntry(entry)}
+                                className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-100 dark:border-win-border-light overflow-hidden cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-700/50 hover:shadow-sm transition-all">
+                                <div className="p-3">
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex items-start gap-2 flex-shrink-0 w-12">
+                                      <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dot}`} />
+                                      <div className="text-center">
+                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight">{dayjs(entry.date).format("DD")}</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase leading-tight">{dayjs(entry.date).locale("el").format("MMM")}</p>
+                                        <p className="text-[10px] text-gray-300 dark:text-gray-600 leading-tight">{dayjs(entry.date).format("YYYY")}</p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between gap-1">
+                                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug">{entry.reason}</p>
+                                        <ChevronRight className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
+                                      </div>
+
+                                      {entry.result && (
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">{entry.result}</p>
+                                      )}
+
+                                      {hasVitals && (
+                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                          {entry.weight      && <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-500   dark:text-blue-400   px-1.5 py-0.5 rounded-md font-medium">⚖ {entry.weight} kg</span>}
+                                          {entry.temperature && <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400 px-1.5 py-0.5 rounded-md font-medium">🌡 {entry.temperature}°C</span>}
+                                          {entry.heartRate   && <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-400    px-1.5 py-0.5 rounded-md font-medium">♥ {entry.heartRate} bpm</span>}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {hasBottom && (
+                                    <div className="mt-2.5 pt-2.5 border-t border-gray-50 dark:border-win-border/30 ml-14 space-y-2">
+                                      {(entry.diagnosis || entry.treatment) && (
+                                        <div className="grid grid-cols-2 gap-3">
+                                          <div>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Διάγνωση / Εκτίμηση</p>
+                                            <p className="text-xs text-gray-700 dark:text-gray-200">{entry.diagnosis || "Καμία"}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Θεραπείες</p>
+                                            <p className="text-xs text-gray-700 dark:text-gray-200">{entry.treatment || "Καμία"}</p>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {entry.nextVisit && (
+                                        <div className="flex items-center gap-1.5 text-xs text-indigo-500 dark:text-indigo-400">
+                                          <Calendar className="w-3 h-3 flex-shrink-0" />
+                                          Επόμενο: {dayjs(entry.nextVisit).format("DD/MM/YYYY")}
+                                        </div>
+                                      )}
+                                      {entry.vet && (
+                                        <p className="text-[10px] text-gray-400 dark:text-gray-500">Dr. {entry.vet}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
