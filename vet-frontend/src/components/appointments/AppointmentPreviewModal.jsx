@@ -4,13 +4,14 @@ import {
   Calendar, Clock, Stethoscope, Scissors,
   StickyNote, PawPrint, Pill, X,
   Plus, ChevronDown, ChevronUp, Activity, ChevronRight, ArrowLeft,
-  CheckCircle, AlertCircle, Syringe, Timer, Zap,
+  CheckCircle, AlertCircle, Syringe, Zap,
   UserCheck, DoorOpen, XCircle, Dna,
   Phone, Mail, BellRing, Camera,
 } from "lucide-react";
 import dayjs from "dayjs";
+import toast from "react-hot-toast";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
-import { addPetHistoryEntry, getPetsByOwner } from "../../api/petsApi.js";
+import { addPetHistoryEntry, getPetsByOwner, updatePet } from "../../api/petsApi.js";
 import { getCustomerById } from "../../api/customersApi.js";
 import request from "../../api/apiClient.js";
 
@@ -150,12 +151,6 @@ function entryDotColor(reason = "") {
   return "bg-indigo-400";
 }
 
-function formatElapsed(s) {
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  if (h > 0) return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
-  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
-}
-
 function SectionLabel({ children, className = "" }) {
   return <p className={`text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ${className}`}>{children}</p>;
 }
@@ -231,6 +226,74 @@ function PlaceholderCard({ icon: Icon, title, color = "slate" }) {
       </div>
       <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</p>
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Σύντομα διαθέσιμο</p>
+    </div>
+  );
+}
+
+function ChipScanCard({ pet, onSaved }) {
+  const [value, setValue] = useState(pet?.microchip || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setValue(pet?.microchip || "");
+    setError("");
+  }, [pet?._id]);
+
+  if (!pet) {
+    return <PlaceholderCard icon={Dna} title="Σάρωση chip" color="indigo" />;
+  }
+
+  const handleSave = async () => {
+    const trimmed = value.trim();
+    if (!trimmed) { setError("Εισάγετε αριθμό chip."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const updated = await updatePet(pet._id, { microchip: trimmed });
+      toast.success("✅ Το chip καταχωρήθηκε.");
+      onSaved?.(updated);
+    } catch (err) {
+      setError(
+        err.status === 409
+          ? "Αυτό το chip υπάρχει ήδη καταχωρημένο σε άλλο κατοικίδιο."
+          : (err.message || "Αποτυχία αποθήκευσης.")
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-col items-center text-center py-2">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400">
+          <Dna className="w-5 h-5" />
+        </div>
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Αριθμός Microchip</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{pet.name}</p>
+      </div>
+      <div className="relative">
+        <Dna className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => { setValue(e.target.value); setError(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSave(); } }}
+          placeholder="π.χ. 941000012345678"
+          className="w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+        />
+      </div>
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm"
+      >
+        <CheckCircle className="w-4 h-4" />
+        {saving ? "Αποθήκευση..." : "Αποθήκευση Chip"}
+      </button>
     </div>
   );
 }
@@ -333,8 +396,6 @@ function InfoItem({ icon: Icon, value, iconColor = "text-gray-400" }) {
 
 const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "overview" }) => {
   const [visitStep,     setVisitStep]     = useState(1);
-  const [elapsed,       setElapsed]       = useState(0);
-  const [completing,    setCompleting]    = useState(false);
   const [checkInStatus, setCheckInStatus] = useState("waiting"); // "waiting"|"entered"|"noshow"
   const [behavior,      setBehavior]    = useState("");
   const [consultForm,   setConsultForm] = useState(emptyConsultForm);
@@ -348,7 +409,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const [fullPet,       setFullPet]       = useState(null);
   const [fullCustomer,  setFullCustomer]  = useState(null);
   const [quickCard,     setQuickCard]     = useState(null);
-  const timerRef = useRef(null);
 
   const ownerId = typeof appointment?.owner === "object"
     ? appointment?.owner._id
@@ -359,8 +419,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   useEffect(() => {
     if (isOpen) {
       setVisitStep(1);
-      setElapsed(0);
-      setCompleting(false);
       setCheckInStatus("waiting");
       setBehavior("");
       const initTypes = Array.isArray(appointment?.type) ? appointment.type : [appointment?.type].filter(Boolean);
@@ -387,12 +445,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       setMedicationInput({ drug: "", dose: "", frequency: "", duration: "" });
     }
   }, [isOpen, initialTab]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
-    return () => clearInterval(timerRef.current);
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !ownerId) return;
@@ -551,8 +603,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       }
       setSaving(false);
     }
-    setCompleting(true);
-    clearInterval(timerRef.current);
     setTimeout(() => onClose(), 300);
   };
 
@@ -582,20 +632,12 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-black/15 rounded-xl px-3 py-1.5 flex-shrink-0">
-            <Timer className="w-3.5 h-3.5 text-white/70" />
-            <span className="text-white font-mono text-sm font-bold tracking-wider">{formatElapsed(elapsed)}</span>
-            <span className="text-white/50 text-[10px] hidden sm:inline">Διάρκεια</span>
-          </div>
-
-          <button
-            onClick={handleComplete}
-            disabled={completing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white disabled:opacity-70 text-emerald-600 text-xs font-bold transition-all shadow-sm flex-shrink-0"
-          >
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Ολοκλήρωση</span>
-          </button>
+          {appointment.notes && (
+            <div className="flex items-center gap-1.5 bg-black/15 rounded-xl px-3 py-1.5 flex-shrink-0 max-w-[16rem]">
+              <StickyNote className="w-3.5 h-3.5 text-white/70 flex-shrink-0" />
+              <span className="text-white text-xs truncate" title={appointment.notes}>{appointment.notes}</span>
+            </div>
+          )}
 
           <button onClick={onClose} className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors flex-shrink-0">
             <X className="w-3.5 h-3.5" />
@@ -1114,7 +1156,12 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                 </div>
 
                 <div className="p-4 overflow-y-auto">
-                  {quickCard !== "history" ? (
+                  {quickCard === "chip" ? (
+                    <ChipScanCard
+                      pet={fullPet}
+                      onSaved={(updated) => { setFullPet(updated); setQuickCard(null); }}
+                    />
+                  ) : quickCard !== "history" ? (
                     <PlaceholderCard icon={CardIcon} title={meta.title} color={meta.color} />
                   ) : selectedEntry ? (
                     <div className="space-y-3">

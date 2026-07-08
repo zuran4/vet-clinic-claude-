@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus, StickyNote } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
@@ -88,6 +88,12 @@ function AppointmentItem({ appt, onClick, onConsult }) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{appt.animalName}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
+          {appt.notes && (
+            <p title={appt.notes} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 truncate mt-0.5">
+              <StickyNote className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{appt.notes}</span>
+            </p>
+          )}
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
           {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}

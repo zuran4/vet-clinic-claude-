@@ -21,6 +21,11 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
     setNewPetSpecies,
     newPetGender,
     setNewPetGender,
+    extraPets,
+    addExtraPet,
+    removeExtraPet,
+    handleExtraPetChange,
+    updateExtraPet,
     date,
     setDate,
     availableSlots,
@@ -145,6 +150,45 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
             onChangeSpecies={setNewPetSpecies}
             onChangeGender={setNewPetGender}
           />
+
+          {!existingData && extraPets.map((ep, idx) => (
+            <div key={ep.key} className="mt-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                  Κατοικίδιο #{idx + 2}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeExtraPet(ep.key)}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <PetSelector
+                ownerId={ownerId}
+                selectedPetId={ep.selectedPetId}
+                animalName={ep.animalName}
+                newPetSpecies={ep.species}
+                newPetGender={ep.gender}
+                onChangePet={(petId) => handleExtraPetChange(ep.key, petId)}
+                onChangeAnimalName={(name) => updateExtraPet(ep.key, { animalName: name })}
+                onChangeSpecies={(v) => updateExtraPet(ep.key, { species: v })}
+                onChangeGender={(v) => updateExtraPet(ep.key, { gender: v })}
+              />
+            </div>
+          ))}
+
+          {!existingData && (
+            <button
+              type="button"
+              onClick={addExtraPet}
+              className="mt-3 flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              Προσθήκη κι άλλου κατοικιδίου
+            </button>
+          )}
         </div>
 
         {/* Λεπτομέρειες */}

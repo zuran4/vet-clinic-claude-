@@ -48,7 +48,7 @@ export async function findSameDayByDoctor(date, doctor, excludeId, { Appointment
 export async function findAll({ Appointment }) {
   return Appointment.find(
     {},
-    { clientName: 1, animalName: 1, date: 1, time: 1, duration: 1, type: 1, doctor: 1, phone: 1, owner: 1 }
+    { clientName: 1, animalName: 1, date: 1, time: 1, duration: 1, type: 1, doctor: 1, phone: 1, owner: 1, notes: 1 }
   ).sort({ date: 1, time: 1 }).lean();
 }
 
