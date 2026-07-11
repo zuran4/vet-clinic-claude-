@@ -116,6 +116,7 @@ export async function addHistoryEntry(petId, entryData, { Pet }) {
     }
     const newEntry = {
       date: entryData.date || new Date(),
+      category: entryData.category || "Ιατρείο",
       reason: entryData.reason,
       result: entryData.result,
       weight: entryData.weight,

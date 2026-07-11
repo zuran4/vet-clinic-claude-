@@ -48,7 +48,7 @@ export async function findSameDayByDoctor(date, doctor, excludeId, { Appointment
 export async function findAll({ Appointment }) {
   return Appointment.find(
     {},
-    { clientName: 1, animalName: 1, date: 1, time: 1, duration: 1, type: 1, doctor: 1, phone: 1, owner: 1, notes: 1 }
+    { clientName: 1, animalName: 1, date: 1, time: 1, duration: 1, type: 1, doctor: 1, phone: 1, owner: 1, notes: 1, status: 1 }
   ).sort({ date: 1, time: 1 }).lean();
 }
 
@@ -59,6 +59,10 @@ export async function create(data, { Appointment }) {
 
 export async function update(id, data, { Appointment }) {
   return Appointment.findByIdAndUpdate(id, data, { new: true });
+}
+
+export async function updateStatus(id, status, { Appointment }) {
+  return Appointment.findByIdAndUpdate(id, { status }, { new: true });
 }
 
 export async function remove(id, { Appointment }) {

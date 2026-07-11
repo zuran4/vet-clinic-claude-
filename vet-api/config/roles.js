@@ -34,6 +34,8 @@ export const ROLES = {
     "appointments:read", "appointments:write",
     "customers:read",
     "pets:read",
+    "pets.history:read", "pets.history:write",
+    "products:read",
     "settings:read",
   ],
 

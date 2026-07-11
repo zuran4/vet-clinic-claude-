@@ -12,6 +12,7 @@ const appointmentSchema = new mongoose.Schema({
   duration: { type: Number, required: true, default: 30 },
   notes: String,
   doctor: { type: String, default: "Ιατρείο" },
+  status: { type: String, enum: ["scheduled", "completed"], default: "scheduled" },
   date: { type: String, required: true }, // "YYYY-MM-DD"
   time: { type: String, required: true }, // "HH:mm"
   owner: {

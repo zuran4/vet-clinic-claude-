@@ -2,6 +2,7 @@ import {
   findAll,
   create as createOne,
   update as updateOne,
+  updateStatus as updateStatusOne,
   remove as removeOne,
   search as searchAppointments,
 } from "../../services/appointments/service.js";
@@ -60,6 +61,19 @@ export const updateAppointment = async (req, res, next) => {
       owner:      req.body.owner,
     };
     const updated = await updateOne(req.params.id, payload, req.models);
+    if (!updated) return res.status(404).json({ message: "❌ Το ραντεβού δεν βρέθηκε." });
+    emitChange("appointments");
+    res.json(updated);
+  } catch (error) { next(error); }
+};
+
+export const updateAppointmentStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body || {};
+    if (!["scheduled", "completed"].includes(status)) {
+      return res.status(400).json({ message: '❌ Μη έγκυρο "status".' });
+    }
+    const updated = await updateStatusOne(req.params.id, status, req.models);
     if (!updated) return res.status(404).json({ message: "❌ Το ραντεβού δεν βρέθηκε." });
     emitChange("appointments");
     res.json(updated);

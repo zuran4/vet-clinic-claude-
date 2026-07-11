@@ -50,6 +50,7 @@ const petSchema = new mongoose.Schema({
   history: [
     {
       date: { type: Date, default: Date.now },
+      category: { type: String, enum: ["Ιατρείο", "Grooming"], default: "Ιατρείο" },
       reason: { type: String, required: true },
       result: { type: String },
       weight: { type: Number },       // kg

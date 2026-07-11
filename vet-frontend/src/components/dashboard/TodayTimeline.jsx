@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus, StickyNote } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus, StickyNote, CheckCircle2 } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
@@ -61,6 +61,12 @@ const TYPE_COLORS = {
   "Αποπαρασίτωση": "bg-amber-100 text-amber-700",
   "Χειρουργείο":   "bg-red-100 text-red-700",
   "Στείρωση":      "bg-purple-100 text-purple-700",
+  "Μπάνιο":        "bg-sky-100 text-sky-700",
+  "Κούρεμα":       "bg-sky-100 text-sky-700",
+  "Καλλωπισμός":   "bg-sky-100 text-sky-700",
+  "Νύχια":         "bg-sky-100 text-sky-700",
+  "Αυτιά":         "bg-sky-100 text-sky-700",
+  "Αδένες":        "bg-sky-100 text-sky-700",
 };
 
 const TYPE_DOT = {
@@ -69,6 +75,12 @@ const TYPE_DOT = {
   "Αποπαρασίτωση": "bg-amber-400",
   "Χειρουργείο":   "bg-red-400",
   "Στείρωση":      "bg-purple-400",
+  "Μπάνιο":        "bg-sky-400",
+  "Κούρεμα":       "bg-sky-400",
+  "Καλλωπισμός":   "bg-sky-400",
+  "Νύχια":         "bg-sky-400",
+  "Αυτιά":         "bg-sky-400",
+  "Αδένες":        "bg-sky-400",
 };
 
 function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
@@ -76,17 +88,26 @@ function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-10
 function getTypeDot(type)   { return TYPE_DOT[firstType(type)]    || "bg-gray-400"; }
 
 function AppointmentItem({ appt, onClick, onConsult }) {
+  const isCompleted = appt.status === "completed";
   return (
-    <li className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-win-surface/40 border border-gray-100 dark:border-win-border/50 transition-colors group">
-      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
+    <li className={`flex items-center gap-3 p-3 rounded-xl border transition-colors group ${
+      isCompleted
+        ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
+        : "bg-gray-50 dark:bg-win-surface/40 border-gray-100 dark:border-win-border/50"
+    }`}>
+      {isCompleted ? (
+        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+      ) : (
+        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
+      )}
       <button
         type="button"
         onClick={onConsult}
         className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
       >
-        <span className="text-sm font-bold text-gray-700 dark:text-gray-200 w-12 flex-shrink-0">{appt.time}</span>
+        <span className={`text-sm font-bold w-12 flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{appt.animalName}</p>
+          <p className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
           {appt.notes && (
             <p title={appt.notes} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 truncate mt-0.5">
@@ -95,9 +116,15 @@ function AppointmentItem({ appt, onClick, onConsult }) {
             </p>
           )}
         </div>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
-          {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
-        </span>
+        {isCompleted ? (
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+            Ολοκληρώθηκε
+          </span>
+        ) : (
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
+            {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
+          </span>
+        )}
       </button>
       <button
         type="button"

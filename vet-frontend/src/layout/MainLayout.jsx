@@ -366,6 +366,7 @@ function MainLayout({
             onClose={closePanel}
             settings={settings}
             setSettings={setSettings}
+            user={user}
           />
         )}
       </main>

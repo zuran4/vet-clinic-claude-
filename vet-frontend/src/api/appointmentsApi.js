@@ -22,6 +22,13 @@ export const updateAppointment = (id, updatedData) =>
     body: updatedData,
   });
 
+// 🔹 Ενημέρωση κατάστασης ραντεβού (π.χ. ολοκλήρωση)
+export const updateAppointmentStatus = (id, status) =>
+  request(`${APPOINTMENTS_ENDPOINT}/${id}/status`, {
+    method: "PATCH",
+    body: { status },
+  });
+
 // 🔹 Διαγραφή ραντεβού
 export const deleteAppointment = (id) =>
   request(`${APPOINTMENTS_ENDPOINT}/${id}`, { method: "DELETE" });
@@ -31,6 +38,7 @@ const appointmentsApi = {
   getAllAppointments,
   createAppointment,
   updateAppointment,
+  updateAppointmentStatus,
   deleteAppointment,
 };
 

@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
 import { addPetHistoryEntry, getPetsByOwner, updatePet } from "../../api/petsApi.js";
 import { getCustomerById } from "../../api/customersApi.js";
+import { updateAppointmentStatus } from "../../api/appointmentsApi.js";
 import request from "../../api/apiClient.js";
 
 const emptyConsultForm = {
@@ -127,6 +128,10 @@ const BODY_SYSTEMS = [
   "Μυοσκελετικό", "Ουρογεννητικό", "Νευρολογικά",
 ];
 
+const GROOMING_SERVICES = ["Μπάνιο", "Κούρεμα", "Καλλωπισμός", "Νύχια", "Αυτιά", "Αδένες"];
+
+const GROOMING_COAT_TAGS = ["Κανονικό", "Μπερδέματα", "Ψύλλοι / Τσιμπούρια", "Ερεθισμός δέρματος", "Κόμποι", "Ξηροδερμία"];
+
 const emptyExamForm = {
   ownerHistory:     "",
   symptoms:         [],
@@ -142,7 +147,8 @@ const emptyExamForm = {
   bodySystemStatus: {},
 };
 
-function entryDotColor(reason = "") {
+function entryDotColor(reason = "", category = "Ιατρείο") {
+  if (category === "Grooming") return "bg-sky-400";
   const r = reason.toLowerCase();
   if (VAX_KEYWORDS.some((kw) => r.includes(kw)))               return "bg-green-400";
   if (r.includes("χειρουργ") || r.includes("στείρωση"))         return "bg-red-400";
@@ -545,8 +551,25 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   };
 
   const buildFinalPayload = () => {
-    const abnormal = Object.entries(examForm.bodySystemStatus).filter(([, v]) => v === "Παθολογικό").map(([k]) => k);
+    if (isGrooming) {
+      const groomingLines = [
+        `Λόγος επίσκεψης: ${consultForm.reason || "—"}`,
+        "",
+        "1. ΚΑΤΑΣΤΑΣΗ ΤΡΙΧΩΜΑΤΟΣ / ΔΕΡΜΑΤΟΣ",
+        `Συμπεριφορά ζώου: ${behavior || "—"}`,
+        `Παρατηρήσεις: ${examForm.symptoms.length > 0 ? examForm.symptoms.join(", ") : "—"}`,
+        `Σημειώσεις: ${examForm.bodyNotes || "—"}`,
+      ];
+      return {
+        category:  "Grooming",
+        reason:    consultForm.reason || "Grooming",
+        result:    groomingLines.join("\n"),
+        nextVisit: treatmentForm.scheduleFollowUp && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+      };
+    }
+
     const doneProcedures = treatmentForm.procedures.filter((p) => p.done).map((p) => p.text);
+    const abnormal = Object.entries(examForm.bodySystemStatus).filter(([, v]) => v === "Παθολογικό").map(([k]) => k);
     const medsText = treatmentForm.medications.length > 0
       ? treatmentForm.medications.map((m) => [m.drug, m.dose, m.frequency, m.duration].filter(Boolean).join(" ")).join("; ")
       : "—";
@@ -580,6 +603,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     ];
 
     return {
+      category:    "Ιατρείο",
       reason:      consultForm.reason || "Εξέταση",
       result:      resultLines.join("\n"),
       weight:      consultForm.weight      ? parseFloat(consultForm.weight)      : undefined,
@@ -592,17 +616,16 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   };
 
   const handleComplete = async () => {
-    if (fullPet) {
-      setSaving(true);
-      try {
-        await addPetHistoryEntry(fullPet._id, buildFinalPayload());
-      } catch (err) {
-        alert("❌ " + err.message);
-        setSaving(false);
-        return;
-      }
+    setSaving(true);
+    try {
+      if (fullPet) await addPetHistoryEntry(fullPet._id, buildFinalPayload());
+      await updateAppointmentStatus(appointment._id, "completed");
+    } catch (err) {
+      alert("❌ " + err.message);
       setSaving(false);
+      return;
     }
+    setSaving(false);
     setTimeout(() => onClose(), 300);
   };
 
@@ -725,7 +748,9 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
 
           {/* Quick actions */}
           <div className="flex items-center gap-1.5 flex-wrap pt-2 sm:pt-0 sm:pl-5 sm:ml-auto border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-win-border">
-            {Object.entries(QUICK_CARD_META).map(([key, { icon: Icon, label, color }]) => {
+            {Object.entries(QUICK_CARD_META)
+              .filter(([key]) => !isGrooming || (key !== "chip" && key !== "quickRx"))
+              .map(([key, { icon: Icon, label, color }]) => {
               const active = quickCard === key;
               return (
                 <button key={key} type="button"
@@ -763,9 +788,9 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
 
                         {/* Visit reason chips — multi-select, sync to reason field */}
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Λόγος επίσκεψης</p>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">{isGrooming ? "Υπηρεσίες" : "Λόγος επίσκεψης"}</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {VISIT_REASONS.map((r) => {
+                            {(isGrooming ? GROOMING_SERVICES : VISIT_REASONS).map((r) => {
                               const active = consultForm.reason.split(",").map((s) => s.trim()).includes(r);
                               return (
                                 <button
@@ -814,24 +839,28 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             </div>
                           </div>
 
-                          <div className="w-px self-stretch bg-gray-200 dark:bg-win-border-light flex-shrink-0" />
+                          {!isGrooming && (
+                            <>
+                              <div className="w-px self-stretch bg-gray-200 dark:bg-win-border-light flex-shrink-0" />
 
-                          <div className="flex-shrink-0">
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Βάρος σήμερα</p>
-                            <div className="flex items-center gap-1.5">
-                              <input
-                                name="weight"
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                placeholder={latestWeightEntry ? `τελ. ${latestWeightEntry.weight}` : "0.0"}
-                                value={consultForm.weight}
-                                onChange={handleConsultChange}
-                                className="border border-blue-200 dark:border-blue-700/50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300 dark:placeholder-gray-600 bg-blue-50/50 dark:bg-blue-900/10 text-gray-900 dark:text-gray-100 w-24"
-                              />
-                              <span className="text-xs text-gray-400">kg</span>
-                            </div>
-                          </div>
+                              <div className="flex-shrink-0">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Βάρος σήμερα</p>
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    name="weight"
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    placeholder={latestWeightEntry ? `τελ. ${latestWeightEntry.weight}` : "0.0"}
+                                    value={consultForm.weight}
+                                    onChange={handleConsultChange}
+                                    className="border border-blue-200 dark:border-blue-700/50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300 dark:placeholder-gray-600 bg-blue-50/50 dark:bg-blue-900/10 text-gray-900 dark:text-gray-100 w-24"
+                                  />
+                                  <span className="text-xs text-gray-400">kg</span>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
 
                       </div>
@@ -842,6 +871,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                       <div className="flex gap-3 items-start">
                       {/* Main exam content */}
                       <div className="flex-1 min-w-0 space-y-3">
+                        {!isGrooming && (
+                        <>
                         {/* 1. Owner History */}
                         <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                           <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
@@ -951,14 +982,84 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               className={inputClass + " resize-none"} />
                           </div>
                         </div>
+                        </>
+                        )}
+
+                        {isGrooming && (
+                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
+                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Κατάσταση Τριχώματος / Δέρματος</p>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              <div className="flex flex-wrap gap-1.5">
+                                {GROOMING_COAT_TAGS.map((s) => {
+                                  const sel = examForm.symptoms.includes(s);
+                                  return (
+                                    <button key={s} type="button" onClick={() => toggleSymptom(s)}
+                                      className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                                        sel ? "border-indigo-400 bg-indigo-100 dark:bg-indigo-800/40 text-indigo-700 dark:text-indigo-200 font-semibold"
+                                            : "border-gray-200 dark:border-win-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-win-elevated/50"
+                                      }`}
+                                    >{s}</button>
+                                  );
+                                })}
+                              </div>
+                              <textarea rows={3} placeholder="Σημειώσεις για το τρίχωμα/δέρμα..."
+                                value={examForm.bodyNotes}
+                                onChange={(e) => setExamForm((p) => ({ ...p, bodyNotes: e.target.value }))}
+                                className={inputClass + " resize-none"} />
+                            </div>
+                          </div>
+                        )}
+
+                        {isGrooming && (
+                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
+                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Follow-up / Reminder</p>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              {[
+                                { field: "followUpReminder", label: "Reminder επόμενου grooming" },
+                                { field: "sendEmailSms",     label: "Αποστολή οδηγιών με Email/SMS" },
+                                { field: "scheduleFollowUp", label: "Προγραμματισμός επανελέγχου αν χρειαστεί" },
+                              ].map(({ field, label }) => (
+                                <label key={field} className="flex items-center gap-3 cursor-pointer">
+                                  <div onClick={() => setTreatmentForm((p) => ({ ...p, [field]: !p[field] }))}
+                                    className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 cursor-pointer ${treatmentForm[field] ? "bg-indigo-500" : "bg-gray-200 dark:bg-gray-700"}`}>
+                                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${treatmentForm[field] ? "translate-x-4" : "translate-x-0.5"}`} />
+                                  </div>
+                                  <span className="text-sm text-gray-700 dark:text-gray-200">{label}</span>
+                                </label>
+                              ))}
+                              {treatmentForm.followUpReminder && (
+                                <div className="pl-12 space-y-1">
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">Προτεινόμενη ημερομηνία reminder</p>
+                                  <input type="date" value={treatmentForm.reminderDate}
+                                    onChange={(e) => setTreatmentForm((p) => ({ ...p, reminderDate: e.target.value }))}
+                                    className={inputClass} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Step 2 CTA */}
                         <div className="flex items-center gap-2 pb-2">
-                          <button type="button" onClick={handleContinueToTherapy} disabled={saving}
-                            className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm">
-                            Συνέχεια στη θεραπεία
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
+                          {isGrooming ? (
+                            <button type="button" onClick={handleComplete} disabled={saving}
+                              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              {saving ? "Αποθήκευση..." : "Ολοκλήρωση Ραντεβού"}
+                            </button>
+                          ) : (
+                            <button type="button" onClick={handleContinueToTherapy} disabled={saving}
+                              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-sm">
+                              Συνέχεια στη θεραπεία
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -996,7 +1097,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             </div>
                           </div>
 
-                          {/* 2. Φαρμακευτική αγωγή */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
@@ -1054,7 +1154,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             </div>
                           </div>
 
-                          {/* 3. Οδηγίες / Σχέδιο */}
+                          {/* Οδηγίες / Σχέδιο */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
@@ -1081,7 +1181,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             </div>
                           </div>
 
-                          {/* 4. Follow-up / Reminder */}
+                          {/* Follow-up / Reminder */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">4</span>
@@ -1180,26 +1280,43 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           </span>
                         </div>
                         <div className="px-4 py-3 space-y-3">
-                          <div className="flex flex-wrap gap-2">
-                            <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-600   dark:text-blue-300   px-2.5 py-1 rounded-lg font-medium">⚖ {selectedEntry.weight      ?? "—"} kg</span>
-                            <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-2.5 py-1 rounded-lg font-medium">🌡 {selectedEntry.temperature ?? "—"} °C</span>
-                            <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-300    px-2.5 py-1 rounded-lg font-medium">♥ {selectedEntry.heartRate   ?? "—"} bpm</span>
-                          </div>
-                          <div className="space-y-1.5">
-                            {[
-                              ["Λόγος",     selectedEntry.reason],
-                              ["Αποτέλεσμα", selectedEntry.result],
-                              ["Διάγνωση",  selectedEntry.diagnosis],
-                              ["Αγωγή",     selectedEntry.treatment],
-                              ["Επόμενη",   selectedEntry.nextVisit ? dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY") : null],
-                              ["Κτηνίατρος", selectedEntry.vet],
-                            ].map(([label, value]) => (
-                              <div key={label} className="flex gap-2 text-sm">
-                                <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">{label}</span>
-                                <span className="text-gray-800 dark:text-gray-100 font-medium whitespace-pre-line">{value || "—"}</span>
+                          {selectedEntry.category === "Grooming" ? (
+                            <div className="space-y-1.5">
+                              {[
+                                ["Υπηρεσίες",  selectedEntry.reason],
+                                ["Αποτέλεσμα", selectedEntry.result],
+                                ["Επόμενη",    selectedEntry.nextVisit ? dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY") : null],
+                              ].map(([label, value]) => (
+                                <div key={label} className="flex gap-2 text-sm">
+                                  <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">{label}</span>
+                                  <span className="text-gray-800 dark:text-gray-100 font-medium whitespace-pre-line">{value || "—"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex flex-wrap gap-2">
+                                <span className="text-xs bg-blue-50   dark:bg-blue-900/30   text-blue-600   dark:text-blue-300   px-2.5 py-1 rounded-lg font-medium">⚖ {selectedEntry.weight      ?? "—"} kg</span>
+                                <span className="text-xs bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 px-2.5 py-1 rounded-lg font-medium">🌡 {selectedEntry.temperature ?? "—"} °C</span>
+                                <span className="text-xs bg-red-50    dark:bg-red-900/30    text-red-500    dark:text-red-300    px-2.5 py-1 rounded-lg font-medium">♥ {selectedEntry.heartRate   ?? "—"} bpm</span>
                               </div>
-                            ))}
-                          </div>
+                              <div className="space-y-1.5">
+                                {[
+                                  ["Λόγος",     selectedEntry.reason],
+                                  ["Αποτέλεσμα", selectedEntry.result],
+                                  ["Διάγνωση",  selectedEntry.diagnosis],
+                                  ["Αγωγή",     selectedEntry.treatment],
+                                  ["Επόμενη",   selectedEntry.nextVisit ? dayjs(selectedEntry.nextVisit).format("DD/MM/YYYY") : null],
+                                  ["Κτηνίατρος", selectedEntry.vet],
+                                ].map(([label, value]) => (
+                                  <div key={label} className="flex gap-2 text-sm">
+                                    <span className="text-gray-400 dark:text-gray-500 w-24 flex-shrink-0 text-xs pt-0.5">{label}</span>
+                                    <span className="text-gray-800 dark:text-gray-100 font-medium whitespace-pre-line">{value || "—"}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1215,7 +1332,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                       ) : (
                         <ul className="space-y-2">
                           {recentHistory.map((entry) => {
-                            const dot = entryDotColor(entry.reason);
+                            const dot = entryDotColor(entry.reason, entry.category);
                             const hasBottom = entry.diagnosis || entry.treatment || entry.nextVisit || entry.vet;
                             const hasVitals = entry.weight || entry.temperature || entry.heartRate;
                             return (

@@ -27,6 +27,7 @@ import purchaseRoutes from "./routes/purchases.js";
 import reminderRoutes from "./routes/reminders.js";
 import exportRoutes from "./routes/export.js";
 import registryRoutes from "./routes/registry/index.js";
+import userRoutes from "./routes/users/index.js";
 import healthRoutes from "./routes/health.js";
 import attachRequestId from "./middlewares/requestId.js";
 import errorHandler from "./middlewares/errorHandler.js";
@@ -200,6 +201,7 @@ app.use("/api/purchases", purchaseRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/registry", registryRoutes);
 app.use("/api/export", exportRoutes);
+app.use("/api/users", userRoutes);
 
 // ==============================
 // 🌐 Health Check

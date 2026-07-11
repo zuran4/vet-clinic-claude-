@@ -4,13 +4,14 @@ import {
   Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
   ChevronRight, ArrowLeft, Download, FileText, Phone, MapPin,
-  Hash, Lock, Activity,
+  Hash, Lock, Activity, UserCog,
 } from "lucide-react";
 import LogoUpload from "../components/ui/LogoUpload";
 import WorkingHoursSection from "../components/settings/WorkingHoursSection";
 import DarkModeToggle from "../components/settings/DarkModeToggle";
 import StockThresholdsPanel from "../components/settings/StockThresholdsPanel";
 import KeyboardShortcutsSection from "../components/settings/KeyboardShortcutsSection";
+import UsersSettings from "../components/settings/UsersSettings";
 import { useSettingsPage } from "../hooks/useSettingsPage";
 import request from "../api/apiClient";
 
@@ -35,6 +36,7 @@ const NAV_GROUPS = [
     group: "ΔΙΑΧΕΙΡΙΣΗ",
     items: [
       { id: "account", label: "Λογαριασμός", icon: Lock,     desc: "Αλλαγή PIN σύνδεσης",              iconBg: "bg-amber-100 dark:bg-amber-900/40",      iconColor: "text-amber-500 dark:text-amber-400" },
+      { id: "users",   label: "Χρήστες",     icon: UserCog,  desc: "Λογαριασμοί σύνδεσης και ρόλοι",  iconBg: "bg-violet-100 dark:bg-violet-900/40",    iconColor: "text-violet-500 dark:text-violet-400", adminOnly: true },
       { id: "export",  label: "Εξαγωγή",     icon: Download, desc: "Λήψη δεδομένων σε CSV",            iconBg: "bg-cyan-100 dark:bg-cyan-900/40",        iconColor: "text-cyan-500 dark:text-cyan-400" },
       { id: "audit",   label: "Audit Log",   icon: Activity, desc: "Ιστορικό ενεργειών συστήματος",    iconBg: "bg-rose-100 dark:bg-rose-900/40",        iconColor: "text-rose-500 dark:text-rose-400" },
       { id: "admin",   label: "Admin",        icon: Shield,   desc: "Ρυθμίσεις registry worker",        iconBg: "bg-slate-100 dark:bg-slate-800/60",      iconColor: "text-slate-500 dark:text-slate-400" },
@@ -208,8 +210,12 @@ function AuditLogViewer() {
   );
 }
 
-const SettingsPage = ({ onClose }) => {
+const SettingsPage = ({ onClose, user }) => {
   const { settings, setSettings, updateSettings, uploadLogo, loading, error } = useSettingsPage();
+  const navGroups = useMemo(() => NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => !item.adminOnly || user?.role === "admin"),
+  })), [user?.role]);
   const [activeSection, setActiveSection] = useState("clinic");
   const [mobileView, setMobileView]       = useState("menu");
   const [form, setForm]                   = useState(null);
@@ -631,6 +637,15 @@ const SettingsPage = ({ onClose }) => {
         </Section>
       </div>
 
+      {/* ── Χρήστες ── */}
+      {user?.role === "admin" && (
+        <div className={activeSection !== "users" ? "hidden" : ""}>
+          <Section title="Χρήστες Συστήματος" description="Δημιουργία λογαριασμών σύνδεσης (PIN) και ανάθεση ρόλων.">
+            <UsersSettings />
+          </Section>
+        </div>
+      )}
+
       {/* ── Εξαγωγή Δεδομένων ── */}
       <div className={activeSection !== "export" ? "hidden" : ""}>
         <Section title="Εξαγωγή Δεδομένων" description="Λήψη δεδομένων σε CSV — άνοιγμα με Excel ή Google Sheets.">
@@ -717,7 +732,7 @@ const SettingsPage = ({ onClose }) => {
       {/* ── Mobile: Navigation Menu ── */}
       <div className={`sm:hidden ${mobileView === "menu" ? "block" : "hidden"}`}>
         <div className="space-y-4">
-          {NAV_GROUPS.map(({ group, items }) => (
+          {navGroups.map(({ group, items }) => (
             <div key={group}>
               <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-2 px-1">{group}</p>
               <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
@@ -759,7 +774,7 @@ const SettingsPage = ({ onClose }) => {
       {/* ── Desktop: Sidebar + Content ── */}
       <div className="hidden sm:flex gap-6 items-start">
         <div className="w-48 flex-shrink-0 bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden py-3">
-          {NAV_GROUPS.map(({ group, items }) => (
+          {navGroups.map(({ group, items }) => (
             <div key={group} className="mb-4 last:mb-0">
               <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest mb-1 px-4">{group}</p>
               {items.map(({ id, label, icon: Icon }) => (
