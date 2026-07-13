@@ -11,13 +11,13 @@ const auditBase = (req) => ({
 
 export async function login(req, res, next) {
   try {
-    const { clinicId, pin } = req.body;
+    const { clinicId, userId, pin } = req.body;
 
-    if (!clinicId || !pin) {
-      return res.status(400).json({ message: "clinicId και pin είναι υποχρεωτικά." });
+    if (!clinicId || !userId || !pin) {
+      return res.status(400).json({ message: "clinicId, userId και pin είναι υποχρεωτικά." });
     }
 
-    const result = await authService.loginWithPin(clinicId, pin);
+    const result = await authService.loginWithPin(clinicId, pin, userId);
     if (!result) {
       recordAudit({ ...auditBase(req), action: "LOGIN_FAILURE", statusCode: 401 });
       return res.status(401).json({ message: "Μη έγκυρα στοιχεία" });

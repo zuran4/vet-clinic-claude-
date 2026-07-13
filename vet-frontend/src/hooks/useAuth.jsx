@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { attemptRefresh } from "../api/apiClient.js";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
 
@@ -6,11 +7,13 @@ export function useAuth() {
   const [user, setUser]               = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // Σημείωση: το "clinicId" ΔΕΝ διαγράφεται εδώ σκόπιμα — είναι πλέον ρύθμιση
+  // συσκευής (ποια κλινική "ανήκει" σε αυτό το kiosk), όχι μέρος του session.
+  // Καθαρίζεται μόνο ρητά όταν ο χρήστης επιλέξει "Άλλαξε κλινική".
   const clearAuth = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("permissions");
-    localStorage.removeItem("clinicId");
     setUser(null);
   }, []);
 
@@ -21,18 +24,29 @@ export function useAuth() {
       return;
     }
 
-    fetch(`${API_BASE_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("invalid token");
-        return res.json();
-      })
-      .then((data) => {
-        const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
-        const clinicId    = localStorage.getItem("clinicId") || data.clinicId || "";
-        setUser({ name: data.name, token, role: data.role, permissions, clinicId });
-      })
+    async function restoreSession() {
+      let activeToken = token;
+      let res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${activeToken}` },
+      });
+
+      // Το access token (15 λεπτά) μπορεί να έχει λήξει — δοκιμάζουμε αυτόματο
+      // refresh με το refresh token (7 μέρες) πριν αποσυνδέσουμε τον χρήστη.
+      if (res.status === 401) {
+        activeToken = await attemptRefresh();
+        res = await fetch(`${API_BASE_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${activeToken}` },
+        });
+      }
+
+      if (!res.ok) throw new Error("invalid token");
+      const data = await res.json();
+      const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+      const clinicId     = localStorage.getItem("clinicId") || data.clinicId || "";
+      setUser({ name: data.name, token: activeToken, role: data.role, permissions, clinicId });
+    }
+
+    restoreSession()
       .catch(() => clearAuth())
       .finally(() => setAuthLoading(false));
   }, [clearAuth]);

@@ -14,7 +14,7 @@ function flushQueue(error, token = null) {
   pendingQueue = [];
 }
 
-async function attemptRefresh() {
+export async function attemptRefresh() {
   const refreshToken = localStorage.getItem("refreshToken");
   const clinicId     = localStorage.getItem("clinicId");
   if (!refreshToken || !clinicId) throw new Error("no_refresh_token");
@@ -30,6 +30,7 @@ async function attemptRefresh() {
   const data = await res.json();
   localStorage.setItem("token", data.token);
   localStorage.setItem("refreshToken", data.refreshToken);
+  localStorage.setItem("permissions", JSON.stringify(data.permissions || []));
   return data.token;
 }
 
