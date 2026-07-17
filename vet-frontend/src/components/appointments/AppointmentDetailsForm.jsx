@@ -1,5 +1,6 @@
 import React from "react";
 import { Edit3, PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, User, Phone, X } from "lucide-react";
+import { VISIT_REASONS } from "../../constants/visitReasons.js";
 
 import PrescriptionModal from "../prescriptions/PrescriptionModal";
 import CustomerSearchBox from "../customers/CustomerSearchBox";
@@ -35,7 +36,6 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
     showPrescription,
     setShowPrescription,
     handleChange,
-    handleToggleType,
     handleSelectCustomer,
     handlePetChange,
     handleSubmit,
@@ -43,7 +43,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
   } = useAppointmentForm({ time, doctor, selectedDate, existingData, onSave });
 
   const optionsByDoctor = {
-    Ιατρείο: ["Εμβολιασμός", "Στείρωση", "Εξέταση", "Chip"],
+    Ιατρείο: VISIT_REASONS,
     Grooming: ["Μπάνιο", "Κούρεμα", "Καλλωπισμός", "Περιποίηση νυχιών"],
   };
 
@@ -114,6 +114,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           <CustomerSearchBox
             allCustomers={allCustomers}
             value={formData.clientName}
+            initialCustomer={ownerId ? { _id: ownerId, name: formData.clientName, phone: formData.phone } : null}
             onSelect={(customer) => {
               handleSelectCustomer(customer);
               setOwnerId(customer?.id || null);
@@ -199,7 +200,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           <AppointmentFormFields
             formData={formData}
             onChange={handleChange}
-            onToggleType={handleToggleType}
+            onChangeType={(next) => setFormData((prev) => ({ ...prev, type: next }))}
             optionsByDoctor={optionsByDoctor}
             doctor={doctor}
           />

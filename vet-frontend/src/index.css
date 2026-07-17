@@ -218,7 +218,7 @@ code {
 
 /* ── react-datepicker (enterprise card style) ── */
 .react-datepicker-popper {
-  z-index: 50;
+  z-index: 100;
 }
 .react-datepicker {
   font-family: inherit !important;

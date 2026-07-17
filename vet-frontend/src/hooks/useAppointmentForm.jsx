@@ -46,7 +46,7 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     } else {
       setFormData((prev) => ({
         ...prev,
-        type: doctor === "Grooming" ? ["Μπάνιο"] : ["Εξέταση"],
+        type: doctor === "Grooming" ? ["Μπάνιο"] : ["Τακτικός έλεγχος"],
       }));
     }
 
@@ -131,16 +131,6 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       ...prev,
       [name]: name === "duration" ? Number(value) : value,
     }));
-  };
-
-  const handleToggleType = (value) => {
-    setFormData((prev) => {
-      const has = prev.type.includes(value);
-      const nextType = has
-        ? prev.type.filter((t) => t !== value)
-        : [...prev.type, value];
-      return { ...prev, type: nextType };
-    });
   };
 
   const handleSelectCustomer = (customer) => {
@@ -300,7 +290,6 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     showPrescription,
     setShowPrescription,
     handleChange,
-    handleToggleType,
     handleSelectCustomer,
     handlePetChange,
     handleSubmit,

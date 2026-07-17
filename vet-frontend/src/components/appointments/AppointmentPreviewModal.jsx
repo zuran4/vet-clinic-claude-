@@ -10,11 +10,20 @@ import {
 } from "lucide-react";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { el } from "date-fns/locale";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
 import { addPetHistoryEntry, getPetsByOwner, updatePet } from "../../api/petsApi.js";
 import { getCustomerById } from "../../api/customersApi.js";
-import { updateAppointmentStatus } from "../../api/appointmentsApi.js";
+import { updateAppointmentStatus, createAppointment } from "../../api/appointmentsApi.js";
+import AppointmentDetailsForm from "./AppointmentDetailsForm.jsx";
+import Modal from "../ui/Modal.jsx";
 import request from "../../api/apiClient.js";
+import { VISIT_REASONS } from "../../constants/visitReasons.js";
+import { getClinicOccupancyClass, getGroomingOccupancyClass, isClinicOpen, isGroomingOpen, findFirstAvailableTime } from "../../utils/workingHours.js";
+
+registerLocale("el", el);
 
 const emptyConsultForm = {
   reason: "", result: "", weight: "", temperature: "", heartRate: "", diagnosis: "", treatment: "",
@@ -114,21 +123,11 @@ const isVaccination = (reason = "") => VAX_KEYWORDS.some((kw) => reason.toLowerC
 
 const SYMPTOM_CHIPS = ["Έμετος", "Διάρροια", "Ανορεξία", "Κινησιο", "Βήχας", "Χωλότητα", "Μάζα", "Επανέλεγχος", "Λήθαργος", "Κνησμός", "Πόνος", "Πυρετός"];
 
-const VISIT_REASONS = [
-  "Τακτικός έλεγχος", "Εμβολιασμός", "Αποπαρασίτωση", "Microchip",
-  "Στείρωση", "Χειρουργείο", "Επανέλεγχος",
-  "Δέρμα / Αλλεργία", "Γαστρεντερολογικό", "Αναπνευστικό",
-  "Ορθοπεδικό / Χωλότητα", "Οφθαλμολογικό", "Ωτολογικό",
-  "Οδοντολογικό", "Ουρολογικό", "Νευρολογικό", "Επείγον",
-];
-
 const BODY_SYSTEMS = [
   "Γενική εικόνα", "Δέρμα / Τρίχωμα", "Μάτια", "Αυτιά",
   "Στόμα / Δόντια", "Καρδιά / Αναπνευστικό", "Κοιλιά", "Λεμφαδένες",
   "Μυοσκελετικό", "Ουρογεννητικό", "Νευρολογικά",
 ];
-
-const GROOMING_SERVICES = ["Μπάνιο", "Κούρεμα", "Καλλωπισμός", "Νύχια", "Αυτιά", "Αδένες"];
 
 const GROOMING_COAT_TAGS = ["Κανονικό", "Μπερδέματα", "Ψύλλοι / Τσιμπούρια", "Ερεθισμός δέρματος", "Κόμποι", "Ξηροδερμία"];
 
@@ -145,6 +144,7 @@ const emptyExamForm = {
   generalState:     "Καλή",
   bodyNotes:        "",
   bodySystemStatus: {},
+  bodySystemNotes:  {},
 };
 
 function entryDotColor(reason = "", category = "Ιατρείο") {
@@ -159,6 +159,47 @@ function entryDotColor(reason = "", category = "Ιατρείο") {
 
 function SectionLabel({ children, className = "" }) {
   return <p className={`text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ${className}`}>{children}</p>;
+}
+
+// ── Dropdown με προκαθορισμένες επιλογές + "Προσαρμοσμένο..." για ελεύθερο κείμενο ──
+function SelectOrCustom({ value, onChange, options, placeholder, className }) {
+  const [customMode, setCustomMode] = useState(value !== "" && !options.includes(value));
+
+  if (customMode) {
+    return (
+      <div className="relative">
+        <input
+          autoFocus
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`${className} pr-8`}
+        />
+        <button
+          type="button"
+          onClick={() => { setCustomMode(false); onChange(""); }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => {
+        if (e.target.value === "__custom__") { setCustomMode(true); onChange(""); }
+        else onChange(e.target.value);
+      }}
+      className={className}
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      <option value="__custom__">Προσαρμοσμένο...</option>
+    </select>
+  );
 }
 
 function WeightChart({ history }) {
@@ -409,18 +450,38 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const [pendingTasks,    setPendingTasks]    = useState([]);
   const [treatmentForm,   setTreatmentForm]   = useState(emptyTreatmentForm);
   const [medicationInput, setMedicationInput] = useState({ drug: "", dose: "", frequency: "", duration: "" });
+  const [medFieldsResetKey, setMedFieldsResetKey] = useState(0);
   const [saving,          setSaving]          = useState(false);
   const [recentHistory, setRecentHistory] = useState([]);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [fullPet,       setFullPet]       = useState(null);
   const [fullCustomer,  setFullCustomer]  = useState(null);
   const [quickCard,     setQuickCard]     = useState(null);
+  const [allAppointments, setAllAppointments] = useState([]);
+  const [reminderApptDraft, setReminderApptDraft] = useState(null);
 
   const ownerId = typeof appointment?.owner === "object"
     ? appointment?.owner._id
     : appointment?.owner || null;
 
   const { pets } = useCustomerPets(ownerId);
+
+  // Κλείδωμα scroll του background όσο είναι ανοιχτό το modal
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Λίστα ραντεβού για τον χρωματισμό πληρότητας στο ημερολόγιο του reminder
+  useEffect(() => {
+    if (!isOpen) return;
+    request("/appointments").then(setAllAppointments).catch(() => setAllAppointments([]));
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -470,6 +531,22 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     }).catch(() => {});
     return () => { cancelled = true; };
   }, [isOpen, ownerId, appointment?.animalName]);
+
+  // Ολοκληρωμένο ραντεβού με ενεργό reminder τη στιγμή της καταχώρισης →
+  // ξαναδείξε το toggle/ημερομηνία ενεργά όταν το ξανανοίγεις
+  useEffect(() => {
+    if (!isOpen || appointment?.status !== "completed" || !fullPet?.history) return;
+    const match = fullPet.history.find(
+      (h) => h.nextVisit && dayjs(h.date).format("YYYY-MM-DD") === appointment.date
+    );
+    if (match) {
+      setTreatmentForm((p) => ({
+        ...p,
+        followUpReminder: true,
+        reminderDate: dayjs(match.nextVisit).format("YYYY-MM-DD"),
+      }));
+    }
+  }, [isOpen, fullPet, appointment?.status, appointment?.date]);
 
   useEffect(() => {
     if (!isOpen || !ownerId) return;
@@ -529,6 +606,29 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
   const setBodySystem = (system, value) =>
     setExamForm((p) => ({ ...p, bodySystemStatus: { ...p.bodySystemStatus, [system]: value } }));
 
+  const setBodySystemNote = (system, note) =>
+    setExamForm((p) => ({ ...p, bodySystemNotes: { ...p.bodySystemNotes, [system]: note } }));
+
+  // Επιλογή ημερομηνίας reminder → ανοίγει την κάρτα Νέου Ραντεβού προσυμπληρωμένη
+  const handleReminderDateChange = (date, doctorForReminder, storageKey) => {
+    const d = date ? dayjs(date).format("YYYY-MM-DD") : "";
+    setTreatmentForm((p) => ({ ...p, reminderDate: d }));
+    if (!d) { setReminderApptDraft(null); return; }
+    const time = findFirstAvailableTime(d, storageKey, doctorForReminder, allAppointments) || "10:00";
+    setReminderApptDraft({
+      clientName: appointment.clientName,
+      phone:      appointment.phone,
+      animalName: appointment.animalName,
+      type:       types,
+      duration:   appointment.duration || 30,
+      notes:      "",
+      date:       d,
+      time,
+      owner:      ownerId || null,
+      doctor:     doctorForReminder,
+    });
+  };
+
   const handleContinueToTherapy = () => {
     const procs = [];
     let pid = 1;
@@ -564,12 +664,17 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
         category:  "Grooming",
         reason:    consultForm.reason || "Grooming",
         result:    groomingLines.join("\n"),
-        nextVisit: treatmentForm.scheduleFollowUp && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+        nextVisit: treatmentForm.followUpReminder && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
       };
     }
 
     const doneProcedures = treatmentForm.procedures.filter((p) => p.done).map((p) => p.text);
-    const abnormal = Object.entries(examForm.bodySystemStatus).filter(([, v]) => v === "Παθολογικό").map(([k]) => k);
+    const abnormal = Object.entries(examForm.bodySystemStatus)
+      .filter(([, v]) => v === "Παθολογικό")
+      .map(([k]) => {
+        const note = examForm.bodySystemNotes?.[k]?.trim();
+        return note ? `${k} (${note})` : k;
+      });
     const medsText = treatmentForm.medications.length > 0
       ? treatmentForm.medications.map((m) => [m.drug, m.dose, m.frequency, m.duration].filter(Boolean).join(" ")).join("; ")
       : "—";
@@ -611,7 +716,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       heartRate:   consultForm.heartRate   ? parseInt(consultForm.heartRate)     : undefined,
       diagnosis:   consultForm.diagnosis   || undefined,
       treatment:   consultForm.treatment   || undefined,
-      nextVisit:   treatmentForm.scheduleFollowUp && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+      nextVisit:   treatmentForm.followUpReminder && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
     };
   };
 
@@ -770,7 +875,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
         <div className="flex flex-1 min-h-0">
 
           {/* ── Full-width content column ── */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg/30">
+          <div className="flex-1 overflow-y-auto overscroll-contain bg-gray-50 dark:bg-win-bg/30">
               <div className="p-4 space-y-4">
                 {!fullPet && (
                       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-xl px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
@@ -785,37 +890,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse flex-shrink-0" />
                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Νέα Επίσκεψη</p>
                         </div>
-
-                        {/* Visit reason chips — multi-select, sync to reason field */}
-                        <div>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">{isGrooming ? "Υπηρεσίες" : "Λόγος επίσκεψης"}</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {(isGrooming ? GROOMING_SERVICES : VISIT_REASONS).map((r) => {
-                              const active = consultForm.reason.split(",").map((s) => s.trim()).includes(r);
-                              return (
-                                <button
-                                  key={r}
-                                  type="button"
-                                  onClick={() => setConsultForm((prev) => {
-                                    const parts = prev.reason.split(",").map((s) => s.trim()).filter(Boolean);
-                                    const next = active
-                                      ? parts.filter((x) => x !== r)
-                                      : [...parts, r];
-                                    return { ...prev, reason: next.join(", ") };
-                                  })}
-                                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                    active
-                                      ? "bg-indigo-500 border-indigo-500 text-white font-medium"
-                                      : "border-gray-200 dark:border-win-border-light text-gray-600 dark:text-gray-400 hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400"
-                                  }`}
-                                >
-                                  {r}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
 
                         {/* Behavioral state + Weight side by side */}
                         <div className="flex items-start gap-4">
@@ -963,15 +1037,28 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               {BODY_SYSTEMS.map((sys) => {
                                 const val = examForm.bodySystemStatus[sys] ?? "Φυσιολογικό";
                                 const color = val === "Φυσιολογικό" ? "text-green-600 dark:text-green-400" : val === "Παθολογικό" ? "text-red-600 dark:text-red-400" : "text-gray-400";
+                                const isAbnormal = val === "Παθολογικό";
                                 return (
-                                  <div key={sys} className="flex items-center justify-between gap-2">
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 min-w-0">{sys}</span>
-                                    <select value={val} onChange={(e) => setBodySystem(sys, e.target.value)}
-                                      className={`text-xs rounded-lg px-2 py-1 border border-gray-200 dark:border-win-border focus:outline-none focus:ring-1 focus:ring-indigo-300 bg-white dark:bg-win-elevated font-medium flex-shrink-0 ${color}`}>
-                                      <option>Φυσιολογικό</option>
-                                      <option>Παθολογικό</option>
-                                      <option>Δεν εξετάστηκε</option>
-                                    </select>
+                                  <div key={sys} className="flex flex-col gap-1">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 min-w-0">{sys}</span>
+                                      <select value={val} onChange={(e) => setBodySystem(sys, e.target.value)}
+                                        className={`text-xs rounded-lg px-2 py-1 border border-gray-200 dark:border-win-border focus:outline-none focus:ring-1 focus:ring-indigo-300 bg-white dark:bg-win-elevated font-medium flex-shrink-0 ${color}`}>
+                                        <option style={{ color: "#16a34a" }}>Φυσιολογικό</option>
+                                        <option style={{ color: "#dc2626" }}>Παθολογικό</option>
+                                        <option style={{ color: "#9ca3af" }}>Δεν εξετάστηκε</option>
+                                      </select>
+                                    </div>
+                                    {isAbnormal && (
+                                      <textarea
+                                        rows={2}
+                                        autoFocus
+                                        value={examForm.bodySystemNotes?.[sys] ?? ""}
+                                        onChange={(e) => setBodySystemNote(sys, e.target.value)}
+                                        placeholder={`Τι βρέθηκε στο «${sys}»...`}
+                                        className="w-full text-xs rounded-lg px-2 py-1.5 border border-red-200 dark:border-red-800/50 bg-red-50/60 dark:bg-red-900/10 text-gray-800 dark:text-gray-100 placeholder-red-300 dark:placeholder-red-700/60 focus:outline-none focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/40 resize-none break-words"
+                                      />
+                                    )}
                                   </div>
                                 );
                               })}
@@ -1036,9 +1123,17 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               {treatmentForm.followUpReminder && (
                                 <div className="pl-12 space-y-1">
                                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">Προτεινόμενη ημερομηνία reminder</p>
-                                  <input type="date" value={treatmentForm.reminderDate}
-                                    onChange={(e) => setTreatmentForm((p) => ({ ...p, reminderDate: e.target.value }))}
-                                    className={inputClass} />
+                                  <DatePicker
+                                    locale="el"
+                                    dateFormat="dd/MM/yyyy"
+                                    selected={treatmentForm.reminderDate ? dayjs(treatmentForm.reminderDate).toDate() : null}
+                                    onChange={(date) => handleReminderDateChange(date, "Grooming", "groomingWorkingHours")}
+                                    dayClassName={(date) => getGroomingOccupancyClass(date, allAppointments)}
+                                    filterDate={isGroomingOpen}
+                                    placeholderText="Επίλεξε ημερομηνία..."
+                                    className={inputClass}
+                                    wrapperClassName="w-full"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -1070,36 +1165,9 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                     {fullPet && visitStep === 2 && (
                         <div className="space-y-3">
 
-                          {/* 1. Πράξεις που έγιναν */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Πράξεις που Έγιναν</p>
-                            </div>
-                            <div className="p-4 space-y-2">
-                              {treatmentForm.procedures.map((proc) => (
-                                <label key={proc.id} className="flex items-center gap-2.5 cursor-pointer group">
-                                  <input type="checkbox" checked={proc.done}
-                                    onChange={() => setTreatmentForm((p) => ({ ...p, procedures: p.procedures.map((pr) => pr.id === proc.id ? { ...pr, done: !pr.done } : pr) }))}
-                                    className="w-4 h-4 accent-indigo-500 flex-shrink-0" />
-                                  <span className={`text-sm ${proc.done ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{proc.text}</span>
-                                </label>
-                              ))}
-                              <button type="button"
-                                onClick={() => {
-                                  const txt = window.prompt("Νέα πράξη:");
-                                  if (txt?.trim()) setTreatmentForm((p) => ({ ...p, procedures: [...p.procedures, { id: Date.now(), text: txt.trim(), done: false }] }));
-                                }}
-                                className="mt-1 flex items-center gap-1.5 text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 font-medium transition-colors">
-                                <Plus className="w-3.5 h-3.5" />
-                                Προσθήκη πράξης
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
-                            <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
-                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
                               <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Φαρμακευτική Αγωγή</p>
                             </div>
                             <div className="p-4 space-y-3">
@@ -1118,35 +1186,43 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                   ))}
                                 </ul>
                               )}
-                              <div className="grid grid-cols-4 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                                 <DrugSearchInput
                                   value={medicationInput.drug}
                                   onChange={(v) => setMedicationInput((p) => ({ ...p, drug: v }))}
                                   onSelect={(prod) => setMedicationInput((p) => ({ ...p, drug: prod.name }))}
                                   placeholder="Αναζήτηση φαρμάκου..."
-                                  className={inputClass + " col-span-2"}
+                                  className={inputClass + " sm:col-span-2"}
                                 />
                                 <input placeholder="π.χ. 5 mg/kg" value={medicationInput.dose}
                                   onChange={(e) => setMedicationInput((p) => ({ ...p, dose: e.target.value }))}
                                   className={inputClass} />
-                                <select value={medicationInput.frequency}
-                                  onChange={(e) => setMedicationInput((p) => ({ ...p, frequency: e.target.value }))}
-                                  className={inputClass}>
-                                  <option value="">Επιλέξτε...</option>
-                                  {["1×/ημέρα","2×/ημέρα","3×/ημέρα","Κάθε 8ω","Κάθε 12ω","Εφάπαξ"].map((o) => <option key={o}>{o}</option>)}
-                                </select>
+                                <SelectOrCustom
+                                  key={`freq-${medFieldsResetKey}`}
+                                  value={medicationInput.frequency}
+                                  onChange={(v) => setMedicationInput((p) => ({ ...p, frequency: v }))}
+                                  options={["1×/ημέρα","2×/ημέρα","3×/ημέρα","Κάθε 8ω","Κάθε 12ω","Εφάπαξ"]}
+                                  placeholder="π.χ. 2×/ημέρα"
+                                  className={inputClass}
+                                />
                               </div>
-                              <div className="flex items-center gap-2">
-                                <input placeholder="π.χ. 5 ημέρες" value={medicationInput.duration}
-                                  onChange={(e) => setMedicationInput((p) => ({ ...p, duration: e.target.value }))}
-                                  className={inputClass + " flex-1"} />
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <SelectOrCustom
+                                  key={`dur-${medFieldsResetKey}`}
+                                  value={medicationInput.duration}
+                                  onChange={(v) => setMedicationInput((p) => ({ ...p, duration: v }))}
+                                  options={["1 ημέρα","2 ημέρες","3 ημέρες","5 ημέρες","1 εβδομάδα","2 εβδομάδες"]}
+                                  placeholder="π.χ. 5 ημέρες"
+                                  className={inputClass + " sm:flex-1"}
+                                />
                                 <button type="button"
                                   onClick={() => {
                                     if (!medicationInput.drug.trim()) return;
                                     setTreatmentForm((p) => ({ ...p, medications: [...p.medications, { ...medicationInput, id: Date.now() }] }));
                                     setMedicationInput({ drug: "", dose: "", frequency: "", duration: "" });
+                                    setMedFieldsResetKey((k) => k + 1);
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-xs font-semibold transition-colors flex-shrink-0">
+                                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-xs font-semibold transition-colors sm:flex-shrink-0">
                                   <Plus className="w-3.5 h-3.5" />
                                   Προσθήκη φαρμάκου
                                 </button>
@@ -1157,7 +1233,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           {/* Οδηγίες / Σχέδιο */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
-                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
                               <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Οδηγίες / Σχέδιο</p>
                             </div>
                             <div className="p-4 space-y-3">
@@ -1184,7 +1260,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           {/* Follow-up / Reminder */}
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
-                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">4</span>
+                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
                               <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Follow-up / Reminder</p>
                             </div>
                             <div className="p-4 space-y-3">
@@ -1204,9 +1280,17 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               {treatmentForm.followUpReminder && (
                                 <div className="pl-12 space-y-1">
                                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">Προτεινόμενη ημερομηνία reminder</p>
-                                  <input type="date" value={treatmentForm.reminderDate}
-                                    onChange={(e) => setTreatmentForm((p) => ({ ...p, reminderDate: e.target.value }))}
-                                    className={inputClass} />
+                                  <DatePicker
+                                    locale="el"
+                                    dateFormat="dd/MM/yyyy"
+                                    selected={treatmentForm.reminderDate ? dayjs(treatmentForm.reminderDate).toDate() : null}
+                                    onChange={(date) => handleReminderDateChange(date, "Ιατρείο", "clinicWorkingHours")}
+                                    dayClassName={(date) => getClinicOccupancyClass(date, allAppointments)}
+                                    filterDate={isClinicOpen}
+                                    placeholderText="Επίλεξε ημερομηνία..."
+                                    className={inputClass}
+                                    wrapperClassName="w-full"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -1231,6 +1315,29 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
               </div>
           </div>
         </div>
+
+        {/* ── Κάρτα Νέου Ραντεβού από reminder (προσυμπληρωμένη) ── */}
+        <Modal isOpen={!!reminderApptDraft} noPadding onClose={() => setReminderApptDraft(null)}>
+          {reminderApptDraft && (
+            <AppointmentDetailsForm
+              doctor={reminderApptDraft.doctor}
+              time={reminderApptDraft.time}
+              selectedDate={reminderApptDraft.date}
+              existingData={reminderApptDraft}
+              onCancel={() => setReminderApptDraft(null)}
+              onSave={async (details) => {
+                try {
+                  await createAppointment(details);
+                  toast.success("✅ Το ραντεβού δημιουργήθηκε.");
+                } catch (err) {
+                  toast.error("❌ " + (err.message || "Αποτυχία δημιουργίας ραντεβού."));
+                } finally {
+                  setReminderApptDraft(null);
+                }
+              }}
+            />
+          )}
+        </Modal>
 
         {/* ── Quick action card (separate overlay, doesn't replace main content) ── */}
         {quickCard && (() => {

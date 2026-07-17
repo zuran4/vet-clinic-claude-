@@ -3,10 +3,10 @@ import { X, User, UserPlus, Search } from "lucide-react";
 import request from "@/api/apiClient.js";
 import QuickCreateCustomerModal from "./QuickCreateCustomerModal.jsx";
 
-const CustomerSearchBox = ({ onSelect }) => {
+const CustomerSearchBox = ({ onSelect, initialCustomer = null }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(initialCustomer);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [loading, setLoading] = useState(false);

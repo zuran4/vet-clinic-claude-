@@ -1,12 +1,13 @@
 import React from "react";
 import { ClipboardList, Clock4, FileText } from "lucide-react";
+import MultiSelectDropdown from "../ui/MultiSelectDropdown";
 
 /**
  * AppointmentFormFields
  * - Δέχεται: formData, onChange, optionsByDoctor, doctor
- * - Δείχνει: select για type, select για duration, textarea για notes
+ * - Δείχνει: dropdown για type, select για duration, textarea για notes
  */
-const AppointmentFormFields = ({ formData, onChange, onToggleType, optionsByDoctor, doctor }) => {
+const AppointmentFormFields = ({ formData, onChange, onChangeType, optionsByDoctor, doctor }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Τύπος Ραντεβού — πολλαπλή επιλογή */}
@@ -15,26 +16,12 @@ const AppointmentFormFields = ({ formData, onChange, onToggleType, optionsByDoct
           <ClipboardList className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           Τύπος <span className="text-xs text-gray-400 font-normal">(μπορείς να διαλέξεις παραπάνω από έναν)</span>
         </label>
-        <div className="flex flex-wrap gap-2">
-          {optionsByDoctor[doctor]?.map((opt) => {
-            const selected = formData.type.includes(opt);
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onToggleType(opt)}
-                aria-pressed={selected}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                  selected
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white dark:bg-win-elevated text-gray-600 dark:text-gray-300 border-gray-300 dark:border-win-border-light hover:bg-gray-50 dark:hover:bg-win-surface"
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
+        <MultiSelectDropdown
+          options={optionsByDoctor[doctor] || []}
+          selected={formData.type}
+          onChange={onChangeType}
+          placeholder="Επίλεξε τύπο ραντεβού..."
+        />
       </div>
 
       {/* Διάρκεια */}

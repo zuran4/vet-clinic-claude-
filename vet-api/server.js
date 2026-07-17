@@ -32,6 +32,7 @@ import healthRoutes from "./routes/health.js";
 import attachRequestId from "./middlewares/requestId.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import resolveTenant from "./middlewares/resolveTenant.js";
+import checkSubscription from "./middlewares/checkSubscription.js";
 import { connectAdmin } from "./services/adminConnection.js";
 import { closeAllTenantConnections } from "./services/tenantConnectionManager.js";
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
@@ -173,6 +174,14 @@ app.use("/api", (req, res, next) => {
 app.use("/api", (req, res, next) => {
   if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
   return resolveTenant(req, res, next);
+});
+
+// ==============================
+// 💳 Subscription Enforcement — isActive / plan / trialEndsAt του Tenant
+// ==============================
+app.use("/api", (req, res, next) => {
+  if (req.path.startsWith("/auth") || req.path.startsWith("/health")) return next();
+  return checkSubscription(req, res, next);
 });
 
 // ==============================

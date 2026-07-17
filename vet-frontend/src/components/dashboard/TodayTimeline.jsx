@@ -5,55 +5,9 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
 import AppointmentPreviewModal from "../appointments/AppointmentPreviewModal.jsx";
+import { getClinicOccupancyClass, getGroomingOccupancyClass } from "../../utils/workingHours.js";
 
 registerLocale("el", el);
-
-const SLOT_DURATION = 30;
-const DEFAULT_WORKING_HOURS = {
-  monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-  tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-  wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-  thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-  friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
-  saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
-  sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
-};
-
-function getAvailableMinutes(date, storageKey) {
-  const saved = localStorage.getItem(storageKey);
-  const workingHours = saved ? JSON.parse(saved) : DEFAULT_WORKING_HOURS;
-  const dayKey = dayjs(date).locale("en").format("dddd").toLowerCase();
-  const schedule = workingHours?.[dayKey];
-  if (!schedule || !schedule.enabled) return 0;
-  const intervals = schedule.intervals || [{ start: "09:00", end: "17:00" }];
-  return intervals.reduce((sum, { start, end }) => {
-    const [sh, sm] = start.split(":").map(Number);
-    const [eh, em] = end.split(":").map(Number);
-    return sum + ((eh * 60 + em) - (sh * 60 + sm));
-  }, 0);
-}
-
-function getOccupancyClass(date, appointments, { storageKey, doctor }) {
-  const availableMinutes = getAvailableMinutes(date, storageKey);
-  if (!availableMinutes) return undefined;
-  const dateStr = dayjs(date).format("YYYY-MM-DD");
-  const bookedMinutes = appointments
-    .filter((a) => a.date === dateStr && (a.doctor || "Ιατρείο") === doctor)
-    .reduce((sum, a) => sum + (a.duration || SLOT_DURATION), 0);
-  const ratio = bookedMinutes / availableMinutes;
-  if (ratio > 0.89) return "day-occupancy-high";
-  if (ratio > 0.51) return "day-occupancy-medium";
-  if (ratio > 0.2) return "day-occupancy-mid";
-  return "day-occupancy-low";
-}
-
-function getClinicOccupancyClass(date, appointments) {
-  return getOccupancyClass(date, appointments, { storageKey: "clinicWorkingHours", doctor: "Ιατρείο" });
-}
-
-function getGroomingOccupancyClass(date, appointments) {
-  return getOccupancyClass(date, appointments, { storageKey: "groomingWorkingHours", doctor: "Grooming" });
-}
 
 const TYPE_COLORS = {
   "Εξέταση":       "bg-indigo-100 text-indigo-700",
