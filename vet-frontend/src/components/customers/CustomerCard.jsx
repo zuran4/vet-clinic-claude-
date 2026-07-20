@@ -103,6 +103,11 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
               </span>
             )}
           </div>
+          {customer.alert && (
+            <p className="text-xs text-red-600 dark:text-red-400 font-semibold mt-0.5 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0" />{customer.alert}
+            </p>
+          )}
           {customer.notes && (
             <p className="text-xs text-amber-600 mt-0.5 flex items-center gap-1">
               <StickyNote className="w-3 h-3" />{customer.notes}

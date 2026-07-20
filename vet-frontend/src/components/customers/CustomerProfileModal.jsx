@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
-import { X, User, Phone, Mail, MapPin, Home, FileText, StickyNote, Bell, ShoppingBag, Pencil } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, User, Phone, Mail, MapPin, Home, FileText, StickyNote, Bell, ShoppingBag, Pencil, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
+import { getCustomerById } from "../../api/customersApi.js";
 
 const NOTIFICATION_LABELS = [
   { key: "email", label: "Email" },
@@ -33,6 +34,8 @@ const IconField = ({ icon: Icon, label, value }) => {
 };
 
 const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
+  const [customerData, setCustomerData] = useState(customer);
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
@@ -42,9 +45,21 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
     };
   }, []);
 
-  if (!customer) return null;
+  // Ο πελάτης που έρχεται ως prop μπορεί να είναι απαρχαιωμένος (π.χ. αν η λίστα
+  // φορτώθηκε πριν αποθηκευτεί ένα alert από αλλού) — φέρνουμε πάντα φρέσκα στοιχεία.
+  useEffect(() => {
+    setCustomerData(customer);
+    if (!customer?._id) return;
+    let cancelled = false;
+    getCustomerById(customer._id)
+      .then((fresh) => { if (!cancelled) setCustomerData(fresh); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [customer?._id]);
 
-  const { _id, name, phone, email, address, city, afm, notes, notifications } = customer;
+  if (!customerData) return null;
+
+  const { _id, name, phone, email, address, city, afm, notes, notifications, alert } = customerData;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
@@ -101,6 +116,14 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
             </div>
           </div>
 
+          {/* Μόνιμη προειδοποίηση */}
+          {alert && (
+            <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl px-4 py-3">
+              <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700 dark:text-red-300 font-medium">{alert}</p>
+            </div>
+          )}
+
           {/* Σημειώσεις */}
           {notes && (
             <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light p-4">
@@ -144,7 +167,7 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
           <Button variant="secondary" size="sm" onClick={() => onPurchases(_id)}>
             <ShoppingBag className="w-4 h-4" /> Ιστορικό Αγορών
           </Button>
-          <Button variant="primary" size="sm" onClick={() => onEdit(customer)}>
+          <Button variant="primary" size="sm" onClick={() => onEdit(customerData)}>
             <Pencil className="w-4 h-4" /> Επεξεργασία
           </Button>
         </div>

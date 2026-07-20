@@ -64,6 +64,49 @@ export const deletePetHistoryEntry = (id, entryId) =>
     method: "DELETE",
   });
 
+// ===============================
+// 📎 Αρχεία Κατοικιδίου
+// (μόνο desktop προς το παρόν)
+// ===============================
+
+// 👉 Ίδιο base URL με το apiClient (χρειάζεται raw fetch για multipart/form-data)
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
+
+// 🔹 Ανέβασμα αρχείου
+export const uploadPetFile = async (id, file) => {
+  const token = localStorage.getItem("token");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE_URL}${PETS_ENDPOINT}/${id}/files`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const msg =
+      errorData.message ||
+      (typeof errorData.error === "string" ? errorData.error : errorData.error?.message) ||
+      `Σφάλμα ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return await res.json();
+};
+
+// 🔹 Λήψη λίστας αρχείων
+export const getPetFiles = (id) => request(`${PETS_ENDPOINT}/${id}/files`);
+
+// 🔹 Διαγραφή αρχείου
+export const deletePetFile = (id, fileId) =>
+  request(`${PETS_ENDPOINT}/${id}/files/${fileId}`, { method: "DELETE" });
+
 // ✅ Ενοποιημένη εξαγωγή
 const petsApi = {
   createPet,
@@ -76,6 +119,9 @@ const petsApi = {
   addPetHistoryEntry,
   getPetHistory,
   deletePetHistoryEntry,
+  uploadPetFile,
+  getPetFiles,
+  deletePetFile,
 };
 
 export default petsApi;

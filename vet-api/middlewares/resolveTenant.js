@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import { getTenantModels } from "../services/tenantConnectionManager.js";
 
 /**
@@ -14,6 +15,10 @@ export default function resolveTenant(req, res, next) {
   try {
     req.models = getTenantModels(clinicId);
     req.clinicId = clinicId;
+
+    // Ώστε κάθε error σε αυτό το request να φιλτράρεται ανά κλινική στο Sentry
+    Sentry.setTag("clinicId", clinicId);
+
     next();
   } catch (err) {
     next(err);

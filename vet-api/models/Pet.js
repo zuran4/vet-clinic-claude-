@@ -46,6 +46,14 @@ const petSchema = new mongoose.Schema({
     trim: true,
   },
 
+  // ⚠️ Μόνιμη προειδοποίηση για το κατοικίδιο (π.χ. δαγκώνει) — παραμένει
+  // ορατή σε κάθε μελλοντικό ραντεβού, ανεξάρτητα από τα γενικά notes.
+  alert: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+  },
+
   // ✅ Ιστορικό ενεργειών
   history: [
     {
@@ -60,6 +68,18 @@ const petSchema = new mongoose.Schema({
       treatment: { type: String },
       nextVisit: { type: Date },
       vet: { type: String },
+    },
+  ],
+
+  // ✅ Συνημμένα αρχεία (έγγραφα, φωτογραφίες, εξετάσεις κλπ)
+  files: [
+    {
+      name: { type: String, required: true, trim: true },
+      url: { type: String, required: true },
+      filename: { type: String, required: true },
+      mimeType: { type: String },
+      size: { type: Number },
+      uploadedAt: { type: Date, default: Date.now },
     },
   ],
 

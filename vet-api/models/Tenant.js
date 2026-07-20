@@ -11,6 +11,12 @@ const tenantSchema = new mongoose.Schema(
     ownerPhone: { type: String, trim: true, default: "" },
     plan:       { type: String, enum: ["trial", "basic", "pro"], default: "trial" },
     trialEndsAt: { type: Date, default: null },
+
+    // Επιχειρηματικά/τιμολόγησης στοιχεία
+    companyName: { type: String, trim: true, default: "" },
+    vatNumber:   { type: String, trim: true, default: "" },
+    taxOffice:   { type: String, trim: true, default: "" },
+    address:     { type: String, trim: true, default: "" },
   },
   { timestamps: true }
 );

@@ -168,3 +168,56 @@ export async function deleteHistoryEntry(petId, entryId, { Pet }) {
     throw err;
   }
 }
+
+// ✅ Συνημμένα αρχεία
+
+export async function addFile(petId, fileData, { Pet }) {
+  try {
+    const pet = await Pet.findById(petId);
+    if (!pet) {
+      logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για προσθήκη αρχείου (id: ${petId})`);
+      return null;
+    }
+    pet.files.push(fileData);
+    await pet.save();
+    logger.info(`📎 Προστέθηκε αρχείο για κατοικίδιο: ${pet.name}`);
+    return pet;
+  } catch (err) {
+    logger.error("❌ Σφάλμα κατά την προσθήκη αρχείου", { stack: err.stack });
+    throw err;
+  }
+}
+
+export async function getFiles(petId, { Pet }) {
+  try {
+    const pet = await Pet.findById(petId);
+    if (!pet) {
+      logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για λήψη αρχείων (id: ${petId})`);
+      return null;
+    }
+    logger.info(`📎 Επιστράφηκαν ${pet.files.length} αρχεία για ${pet.name}`);
+    return pet.files;
+  } catch (err) {
+    logger.error("❌ Σφάλμα κατά τη λήψη αρχείων κατοικιδίου", { stack: err.stack });
+    throw err;
+  }
+}
+
+export async function deleteFile(petId, fileId, { Pet }) {
+  try {
+    const pet = await Pet.findById(petId);
+    if (!pet) {
+      logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για διαγραφή αρχείου (id: ${petId})`);
+      return null;
+    }
+    const target = pet.files.id(fileId);
+    const deletedFilename = target?.filename;
+    pet.files = pet.files.filter((f) => f._id.toString() !== fileId);
+    await pet.save();
+    logger.info(`🗑️ Διαγράφηκε αρχείο για κατοικίδιο ${pet.name}`);
+    return { files: pet.files, deletedFilename };
+  } catch (err) {
+    logger.error("❌ Σφάλμα κατά τη διαγραφή αρχείου", { stack: err.stack });
+    throw err;
+  }
+}

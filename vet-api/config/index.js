@@ -106,6 +106,10 @@ const logLevel = optionalEnv("LOG_LEVEL", "info");
 
 const jwtExpiresIn = optionalEnv("JWT_EXPIRES_IN", "15m");
 
+// Service-to-service auth για /api/internal/* (π.χ. το control plane) —
+// κενό default σκόπιμα: αν δεν έχει οριστεί, το requireServiceKey μπλοκάρει τα πάντα.
+const internalApiKey = optionalEnv("INTERNAL_API_KEY", "");
+
 const redisUrl = optionalEnv("REDIS_URL", "");
 
 // Registry worker
@@ -147,6 +151,7 @@ const config = Object.freeze({
   jwtSecret,
   jwtExpiresIn,
   encryptionKey,
+  internalApiKey,
 
   redisUrl,
 

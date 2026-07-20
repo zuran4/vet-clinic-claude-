@@ -9,6 +9,7 @@ import express from "express";
 import baseRoutes from "./base.js";
 import ownerRoutes from "./owner.js";
 import historyRoutes from "./history.js";
+import fileRoutes from "./files.js";
 
 const router = express.Router();
 
@@ -20,5 +21,8 @@ router.use("/", ownerRoutes);
 
 // 📜 ιστορικό κατοικιδίων
 router.use("/", historyRoutes);
+
+// 📎 αρχεία κατοικιδίων
+router.use("/", fileRoutes);
 
 export default router;

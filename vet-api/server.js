@@ -29,6 +29,8 @@ import exportRoutes from "./routes/export.js";
 import registryRoutes from "./routes/registry/index.js";
 import userRoutes from "./routes/users/index.js";
 import healthRoutes from "./routes/health.js";
+import internalTenantRoutes from "./routes/internal/tenants.js";
+import internalSystemRoutes from "./routes/internal/system.js";
 import attachRequestId from "./middlewares/requestId.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import resolveTenant from "./middlewares/resolveTenant.js";
@@ -162,6 +164,13 @@ app.use(limiter);
 // 🏥 Health check — unauthenticated, before the auth guard
 // ==============================
 app.use("/api/health", healthRoutes);
+
+// ==============================
+// 🔒 Internal service-to-service API (π.χ. control plane) — δικό του auth
+// (requireServiceKey), πριν από το γενικό JWT guard.
+// ==============================
+app.use("/api/internal/tenants", internalTenantRoutes);
+app.use("/api/internal/system", internalSystemRoutes);
 
 // ==============================
 // 🔐 Auth Guard + Tenant Resolution

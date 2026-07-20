@@ -18,3 +18,8 @@ export { default as getPetsCount } from "./getPetsCount.js";
 export { default as addHistoryEntry } from "./history/addHistoryEntry.js";
 export { default as getPetHistory } from "./history/getPetHistory.js";
 export { default as deleteHistoryEntry } from "./history/deleteHistoryEntry.js";
+
+// 📎 Αρχεία Κατοικιδίων
+export { default as addPetFile } from "./files/addPetFile.js";
+export { default as getPetFiles } from "./files/getPetFiles.js";
+export { default as deletePetFile } from "./files/deletePetFile.js";

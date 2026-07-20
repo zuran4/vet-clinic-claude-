@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse, ClipboardList } from "lucide-react";
+import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse, ClipboardList, AlertTriangle } from "lucide-react";
 import PetHistory from "./PetHistory";
 import MedicalEventsTab from "./MedicalEventsTab";
 import ChangeOwnerModal from "./ChangeOwnerModal";
@@ -106,6 +106,14 @@ const PetProfile = ({ petId, initialTab }) => {
           </button>
         )}
       </div>
+
+      {/* Μόνιμη προειδοποίηση */}
+      {pet.alert && (
+        <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl px-4 py-3">
+          <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700 dark:text-red-300 font-medium">{pet.alert}</p>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm p-[3px] sm:p-1">

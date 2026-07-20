@@ -49,7 +49,40 @@
       "Bash(cat routes/customers/index.js)",
       "Bash(powershell -c \"Get-Content routes/customers/index.js\")",
       "Bash(powershell -c \"Get-Content routes/products/index.js\")",
-      "Bash(powershell -c \"Get-ChildItem routes/products/\")"
+      "Bash(powershell -c \"Get-ChildItem routes/products/\")",
+      "Bash(PORT=5001 node --import ./instrument.js server.js)",
+      "Bash(curl -s http://localhost:5001/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:5001/api/internal/tenants -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s -X POST http://localhost:5001/api/internal/tenants -H 'Content-Type: application/json' -H 'X-Internal-Key: fa346cdeda88063be8d55d22dcc0b4beb31434ea7d1fab6dd341b33448a60aa6' -d '{\"clinicId\":\"cptest\",\"clinicName\":\"Control Plane Test Clinic\",\"adminName\":\"Test Admin\",\"adminPin\":\"9999\"}')",
+      "Bash(curl -s -X POST http://localhost:5001/api/auth/login -H \"Content-Type: application/json\" -d '{\"clinicId\":\"cptest\",\"pin\":\"9999\"}')",
+      "Bash(rm -rf \"C:/Users/zuran/AppData/Local/Temp/jscanify_inspect\")",
+      "Bash(node -e ' *)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(curl -s -X POST http://localhost:5001/api/auth/login -H \"Content-Type: application/json\" -d '{\"clinicId\":\"cptest\",\"userId\":\"6a5dea4bcc4bb00b597ae84a\",\"pin\":\"9999\"}')",
+      "PowerShell(Get-Process -Id 15456 -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5001 -ErrorAction SilentlyContinue)",
+      "Bash(grep -vi \"^\\\\s*//\")",
+      "Bash(curl -s http://localhost:5001/api/internal/tenants/storage -H \"X-Internal-Key: fa346cdeda88063be8d55d22dcc0b4beb31434ea7d1fab6dd341b33448a60aa6\")",
+      "Bash(curl -s http://localhost:5900/api/health)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"ProcessId = 15456\")",
+      "PowerShell(pm2 list)",
+      "PowerShell(pm2 restart vet-api)",
+      "Bash(curl -s http://localhost:5000/api/health)",
+      "Bash(curl -s http://localhost:5000/api/internal/tenants/storage -H \"X-Internal-Key: fa346cdeda88063be8d55d22dcc0b4beb31434ea7d1fab6dd341b33448a60aa6\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"clinicId\":\"agiosstefanos\",\"userId\":\"000000000000000000000000\",\"pin\":\"0000\"}')",
+      "Bash(npm install *)",
+      "Bash(curl -s http://localhost:5001/api/internal/system -H \"X-Internal-Key: fa346cdeda88063be8d55d22dcc0b4beb31434ea7d1fab6dd341b33448a60aa6\")",
+      "PowerShell(Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 15 Id, ProcessName, @{N='RAM_MB';E={[math]::Round\\($_.WorkingSet/1MB,1\\)}})",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5180/src/components/EditTenantModal.jsx)",
+      "Bash(gh auth *)",
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(gh --version 2>&1)",
+      "PowerShell(winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements)",
+      "Bash(cmd.exe /c up.bat)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\zuran\\AppData\\Local\\Temp\\jscanify_inspect",
+      "C:\\Users\\zuran\\Desktop\\vet-control-plane"
     ]
   }
 }

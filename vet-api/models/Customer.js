@@ -47,6 +47,14 @@ const customerSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ⚠️ Μόνιμη προειδοποίηση για τον πελάτη (π.χ. περίεργη συμπεριφορά) —
+    // παραμένει ορατή σε κάθε μελλοντικό ραντεβού, ανεξάρτητα από τα γενικά notes.
+    alert: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+
     // Ρυθμίσεις ειδοποιήσεων πελάτη
     notifications: {
       email: { type: Boolean, default: true },

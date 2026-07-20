@@ -17,6 +17,8 @@ export default Joi.object({
 
   notes: Joi.string().trim().max(500).allow("").optional(),
 
+  alert: Joi.string().trim().max(500).allow("").optional(),
+
   notifications: Joi.object({
     email: Joi.boolean(),
     sms: Joi.boolean(),
