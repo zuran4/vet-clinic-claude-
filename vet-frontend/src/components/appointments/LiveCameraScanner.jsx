@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Camera as CameraIcon, Loader2 } from "lucide-react";
-import { loadScanner } from "../../utils/documentScanner.js";
+import { loadScanner, detectDocumentCorners } from "../../utils/documentScanner.js";
 
 const DETECT_INTERVAL_MS = 350;
 const DETECT_WIDTH = 320;
@@ -44,29 +44,22 @@ export default function LiveCameraScanner({ onCapture, onCancel, onFallback }) {
       canvas.getContext("2d").drawImage(video, 0, 0, dw, dh);
 
       let mat = null;
-      let contour = null;
       try {
         mat = window.cv.imread(canvas);
-        contour = scanner.findPaperContour(mat);
-        if (contour) {
-          const pts = scanner.getCornerPoints(contour);
-          if (pts?.topLeftCorner && pts?.topRightCorner && pts?.bottomLeftCorner && pts?.bottomRightCorner) {
-            setCorners({
-              tl: { x: pts.topLeftCorner.x / dw, y: pts.topLeftCorner.y / dh },
-              tr: { x: pts.topRightCorner.x / dw, y: pts.topRightCorner.y / dh },
-              bl: { x: pts.bottomLeftCorner.x / dw, y: pts.bottomLeftCorner.y / dh },
-              br: { x: pts.bottomRightCorner.x / dw, y: pts.bottomRightCorner.y / dh },
-            });
-          } else {
-            setCorners(null);
-          }
+        const detected = detectDocumentCorners(mat);
+        if (detected) {
+          setCorners({
+            tl: { x: detected.tl.x / dw, y: detected.tl.y / dh },
+            tr: { x: detected.tr.x / dw, y: detected.tr.y / dh },
+            bl: { x: detected.bl.x / dw, y: detected.bl.y / dh },
+            br: { x: detected.br.x / dw, y: detected.br.y / dh },
+          });
         } else {
           setCorners(null);
         }
       } catch {
         // Αγνοούμε σφάλμα ανίχνευσης ενός frame — ξαναπροσπαθούμε στο επόμενο tick.
       } finally {
-        contour?.delete();
         mat?.delete();
       }
     }

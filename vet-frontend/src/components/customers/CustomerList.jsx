@@ -182,7 +182,6 @@ const CustomerList = () => {
             setShowCustomerModal(true);
           }}
           onPurchases={(id) => {
-            setViewingCustomer(null);
             setSelectedCustomerId(id);
             setShowPurchasesModal(true);
           }}
@@ -214,6 +213,7 @@ const CustomerList = () => {
             setSelectedCustomerId(null);
           }}
           customerId={selectedCustomerId}
+          lockScroll={!viewingCustomer}
         />
       )}
 

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
-import { loadScanner } from "../../utils/documentScanner.js";
+import { loadScanner, detectDocumentCorners } from "../../utils/documentScanner.js";
 
 function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
@@ -46,15 +46,14 @@ export default function DocumentScanEditor({ file, onCancel, onConfirm }) {
       const scanner = await loadScanner();
       scannerRef.current = scanner;
       const img = window.cv.imread(imgRef.current);
-      const contour = scanner.findPaperContour(img);
-      let pts = null;
-      if (contour) {
-        pts = scanner.getCornerPoints(contour);
-        contour.delete();
+      let detected = null;
+      try {
+        detected = detectDocumentCorners(img);
+      } finally {
+        img.delete();
       }
-      img.delete();
-      if (pts?.topLeftCorner && pts?.topRightCorner && pts?.bottomLeftCorner && pts?.bottomRightCorner) {
-        setCorners({ tl: pts.topLeftCorner, tr: pts.topRightCorner, bl: pts.bottomLeftCorner, br: pts.bottomRightCorner });
+      if (detected) {
+        setCorners(detected);
       } else {
         setCorners(defaultCorners(w, h));
         toast("Δεν εντοπίστηκε αυτόματα το έγγραφο — προσαρμόστε τις γωνίες.", { icon: "✍️" });

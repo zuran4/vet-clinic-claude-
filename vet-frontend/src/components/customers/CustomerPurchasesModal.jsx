@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import request from "../../api/apiClient.js";
 
-const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
+const CustomerPurchasesModal = ({ isOpen, onClose, customerId, lockScroll = true }) => {
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [customerName, setCustomerName] = useState("");
@@ -21,15 +21,17 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId }) => {
   const [undoTimeout, setUndoTimeout] = useState(null);
   const [fadeOut, setFadeOut] = useState(false);
 
+  // Όταν ανοίγει πάνω από την κάρτα πελάτη (CustomerList), εκείνη ήδη κλειδώνει
+  // το scroll — δεν πρέπει να το ξεκλειδώσουμε εμείς όταν κλείνουμε από πάνω της.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !lockScroll) return;
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
     };
-  }, [isOpen]);
+  }, [isOpen, lockScroll]);
 
   useEffect(() => {
     if (!isOpen || !customerId) return;
