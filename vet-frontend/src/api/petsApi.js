@@ -1,5 +1,5 @@
 // src/api/petsApi.js
-import request from "./apiClient";
+import request, { API_BASE_URL } from "./apiClient";
 
 /**
  * 🐶 Pets API
@@ -68,10 +68,6 @@ export const deletePetHistoryEntry = (id, entryId) =>
 // 📎 Αρχεία Κατοικιδίου
 // (μόνο desktop προς το παρόν)
 // ===============================
-
-// 👉 Ίδιο base URL με το apiClient (χρειάζεται raw fetch για multipart/form-data)
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
 
 // 🔹 Ανέβασμα αρχείου
 export const uploadPetFile = async (id, file) => {

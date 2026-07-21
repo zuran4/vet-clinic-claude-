@@ -1,5 +1,5 @@
 // src/api/settingsApi.js
-import request from "./apiClient";
+import request, { API_BASE_URL } from "./apiClient";
 
 /**
  * ⚙️ Settings API
@@ -34,12 +34,6 @@ export const uploadLogo = async (file) => {
   const formData = new FormData();
   formData.append("logo", file);
 
-  // 👉 Ίδιο base URL με το apiClient:
-  // - Σε production: VITE_API_BASE_URL (Render)
-  // - Local/LAN: http://<host>:5000/api
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
-
   const res = await fetch(`${API_BASE_URL}${UPLOAD_LOGO_ENDPOINT}`, {
     method: "POST",
     headers: {
@@ -50,7 +44,11 @@ export const uploadLogo = async (file) => {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || `Σφάλμα ${res.status}`);
+    const msg =
+      errorData.message ||
+      (typeof errorData.error === "string" ? errorData.error : errorData.error?.message) ||
+      `Σφάλμα ${res.status}`;
+    throw new Error(msg);
   }
 
   return await res.json();

@@ -1,5 +1,5 @@
 // src/api/apiClient.js
-const API_BASE_URL =
+export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (window.location.protocol === "https:"
     ? `${window.location.origin}/api`
