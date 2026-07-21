@@ -177,7 +177,6 @@ const CustomerList = () => {
           customer={viewingCustomer}
           onClose={() => setViewingCustomer(null)}
           onEdit={(cust) => {
-            setViewingCustomer(null);
             setEditingCustomer(cust);
             setShowCustomerModal(true);
           }}
@@ -194,6 +193,7 @@ const CustomerList = () => {
           initialData={editingCustomer}
           onSaved={(saved) => {
             saveCustomer(saved, editingCustomer);
+            setViewingCustomer((prev) => (prev ? saved : prev));
             setShowCustomerModal(false);
             setEditingCustomer(null);
           }}

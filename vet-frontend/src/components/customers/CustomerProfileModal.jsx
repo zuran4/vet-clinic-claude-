@@ -45,10 +45,15 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
     };
   }, []);
 
+  // Συγχρονισμός άμεσα με το prop — καλύπτει και την περίπτωση που ο γονέας
+  // στέλνει ενημερωμένα στοιχεία μετά από αποθήκευση (ίδιο _id, νέο αντικείμενο).
+  useEffect(() => {
+    setCustomerData(customer);
+  }, [customer]);
+
   // Ο πελάτης που έρχεται ως prop μπορεί να είναι απαρχαιωμένος (π.χ. αν η λίστα
   // φορτώθηκε πριν αποθηκευτεί ένα alert από αλλού) — φέρνουμε πάντα φρέσκα στοιχεία.
   useEffect(() => {
-    setCustomerData(customer);
     if (!customer?._id) return;
     let cancelled = false;
     getCustomerById(customer._id)
@@ -97,13 +102,34 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
               <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ιδιοκτήτης</span>
             </div>
 
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
-                {display(name) !== "—" ? display(name).charAt(0).toUpperCase() : "?"}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
+                  {display(name) !== "—" ? display(name).charAt(0).toUpperCase() : "?"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-gray-900 dark:text-gray-100">{display(name)}</p>
+                    {alert && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 text-[11px] font-medium">
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                        {alert}
+                      </span>
+                    )}
+                  </div>
+                  {city && <p className="text-xs text-gray-400 dark:text-gray-500">{display(city)}</p>}
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-gray-900 dark:text-gray-100">{display(name)}</p>
-                {city && <p className="text-xs text-gray-400 dark:text-gray-500">{display(city)}</p>}
+
+              <div className="flex items-center gap-2 sm:flex-shrink-0">
+                <Button variant="secondary" size="sm" className="flex-1 sm:flex-initial justify-center whitespace-nowrap" onClick={() => onPurchases(_id)}>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span className="sm:hidden">Ιστ. Αγορών</span>
+                  <span className="hidden sm:inline">Ιστορικό Αγορών</span>
+                </Button>
+                <Button variant="primary" size="sm" className="flex-1 sm:flex-initial justify-center" onClick={() => onEdit(customerData)}>
+                  <Pencil className="w-4 h-4" /> Επεξεργασία
+                </Button>
               </div>
             </div>
 
@@ -115,14 +141,6 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
               <IconField icon={FileText} label="ΑΦΜ" value={display(afm)} />
             </div>
           </div>
-
-          {/* Μόνιμη προειδοποίηση */}
-          {alert && (
-            <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl px-4 py-3">
-              <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-300 font-medium">{alert}</p>
-            </div>
-          )}
 
           {/* Σημειώσεις */}
           {notes && (
@@ -160,16 +178,6 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Κατοικίδια</h3>
             <CustomerPetsExpanded ownerId={_id} />
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100 dark:border-win-border bg-white dark:bg-win-surface flex-shrink-0">
-          <Button variant="secondary" size="sm" onClick={() => onPurchases(_id)}>
-            <ShoppingBag className="w-4 h-4" /> Ιστορικό Αγορών
-          </Button>
-          <Button variant="primary" size="sm" onClick={() => onEdit(customerData)}>
-            <Pencil className="w-4 h-4" /> Επεξεργασία
-          </Button>
         </div>
       </div>
     </div>
