@@ -35,6 +35,7 @@ export function useCustomers() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
+      setError("");
       const result = await customersApi.getAllCustomers(page, pageSize, debouncedSearch);
 
       // Το API επιστρέφει array σε search mode, αντικείμενο {data, total} σε pagination mode

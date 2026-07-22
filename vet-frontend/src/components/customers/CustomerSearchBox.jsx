@@ -14,6 +14,12 @@ const CustomerSearchBox = ({ onSelect, initialCustomer = null }) => {
   const skipSearch = useRef(false);
   const wrapperRef = useRef(null);
 
+  // Ο γονέας μπορεί να συμπληρώσει το όνομα/τηλέφωνο του πελάτη ασύγχρονα
+  // (π.χ. σε επεξεργασία ραντεβού) — συγχρονίζουμε όποτε αλλάξουν πραγματικά.
+  useEffect(() => {
+    setSelected(initialCustomer);
+  }, [initialCustomer?._id, initialCustomer?.name, initialCustomer?.phone]);
+
   useEffect(() => {
     const handleClick = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {

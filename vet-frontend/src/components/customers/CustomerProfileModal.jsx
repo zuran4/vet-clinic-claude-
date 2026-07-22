@@ -80,10 +80,7 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
                 {name?.charAt(0)?.toUpperCase() || "?"}
               </span>
             </div>
-            <div>
-              <p className="text-white font-bold text-base leading-tight">{name}</p>
-              <p className="text-white/70 text-xs mt-0.5">Προφίλ Πελάτη</p>
-            </div>
+            <p className="text-white font-bold text-base leading-tight">Προφίλ Πελάτη</p>
           </div>
           <button
             onClick={onClose}
@@ -97,40 +94,47 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
         <div className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1 p-5 space-y-4">
           {/* Κάρτα Ιδιοκτήτη — ίδιο στιλ με την κάρτα ιδιοκτήτη στο προφίλ κατοικιδίου */}
           <div className="rounded-2xl bg-white dark:bg-win-elevated/50 border border-gray-100 dark:border-win-border-light shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
-              <User className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
-              <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ιδιοκτήτης</span>
+            <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
+                <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ιδιοκτήτης</span>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2">
+                <Button variant="secondary" size="sm" className="justify-center whitespace-nowrap px-2.5 py-1 text-xs" onClick={() => onPurchases(_id)}>
+                  <ShoppingBag className="w-3.5 h-3.5" /> Ιστορικό Αγορών
+                </Button>
+                <Button variant="primary" size="sm" className="justify-center px-2.5 py-1 text-xs" onClick={() => onEdit(customerData)}>
+                  <Pencil className="w-3.5 h-3.5" /> Επεξεργασία
+                </Button>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
-                  {display(name) !== "—" ? display(name).charAt(0).toUpperCase() : "?"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-gray-900 dark:text-gray-100">{display(name)}</p>
-                    {alert && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 text-[11px] font-medium">
-                        <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                        {alert}
-                      </span>
-                    )}
-                  </div>
-                  {city && <p className="text-xs text-gray-400 dark:text-gray-500">{display(city)}</p>}
-                </div>
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
+                {display(name) !== "—" ? display(name).charAt(0).toUpperCase() : "?"}
               </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-bold text-gray-900 dark:text-gray-100">{display(name)}</p>
+                  {alert && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 text-[11px] font-medium">
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                      {alert}
+                    </span>
+                  )}
+                </div>
+                {city && <p className="text-xs text-gray-400 dark:text-gray-500">{display(city)}</p>}
+              </div>
+            </div>
 
-              <div className="flex items-center gap-2 sm:flex-shrink-0">
-                <Button variant="secondary" size="sm" className="flex-1 sm:flex-initial justify-center whitespace-nowrap" onClick={() => onPurchases(_id)}>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span className="sm:hidden">Ιστ. Αγορών</span>
-                  <span className="hidden sm:inline">Ιστορικό Αγορών</span>
-                </Button>
-                <Button variant="primary" size="sm" className="flex-1 sm:flex-initial justify-center" onClick={() => onEdit(customerData)}>
-                  <Pencil className="w-4 h-4" /> Επεξεργασία
-                </Button>
-              </div>
+            <div className="flex sm:hidden items-center gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border">
+              <Button variant="secondary" size="sm" className="flex-1 justify-center whitespace-nowrap" onClick={() => onPurchases(_id)}>
+                <ShoppingBag className="w-4 h-4" /> Ιστ. Αγορών
+              </Button>
+              <Button variant="primary" size="sm" className="flex-1 justify-center" onClick={() => onEdit(customerData)}>
+                <Pencil className="w-4 h-4" /> Επεξεργασία
+              </Button>
             </div>
 
             <div className="px-4 py-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">

@@ -7,6 +7,7 @@ import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 import { sendWelcomeEmail } from "../../utils/emailService.js";
 import { sendSMS } from "../../utils/smsService.js";
+import { emitChange } from "../../utils/realtime.js";
 
 // ===============================
 // POST /api/customers
@@ -32,6 +33,7 @@ export const createCustomer = async (req, res, next) => {
     const saved = await c.save();
 
     logger.info(`✅ Δημιουργήθηκε πελάτης: ${saved.name}`);
+    emitChange("customers");
 
     // --------------------------------------------
     // 🔹 EMAIL ειδοποίηση (αν είναι ενεργή)

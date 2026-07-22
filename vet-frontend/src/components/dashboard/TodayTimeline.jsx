@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Plus, StickyNote, CheckCircle2 } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Trash2, Plus, StickyNote, CheckCircle2 } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
@@ -41,7 +41,7 @@ function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
 function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-100 text-gray-600"; }
 function getTypeDot(type)   { return TYPE_DOT[firstType(type)]    || "bg-gray-400"; }
 
-function AppointmentItem({ appt, onClick, onConsult }) {
+function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
   const isCompleted = appt.status === "completed";
   return (
     <li className={`flex items-center gap-3 p-3 rounded-xl border transition-colors group ${
@@ -59,8 +59,36 @@ function AppointmentItem({ appt, onClick, onConsult }) {
         onClick={onConsult}
         className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
       >
-        <span className={`text-sm font-bold w-12 flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
-        <div className="flex-1 min-w-0">
+        {/* Mobile: 2 γραμμές — ώρα/πελάτης, divider, κατοικίδιο/λόγος */}
+        <div className="sm:hidden flex-1 min-w-0">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className={`text-sm font-bold flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
+            <span className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.clientName}</span>
+          </div>
+          <div className="my-1.5 border-t border-gray-200/70 dark:border-win-border/50" />
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`text-xs font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-600 dark:text-gray-300"}`}>{appt.animalName}</span>
+            {isCompleted ? (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                Ολοκληρώθηκε
+              </span>
+            ) : (
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 truncate ${getTypeColor(appt.type)}`}>
+                {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
+              </span>
+            )}
+          </div>
+          {appt.notes && (
+            <p title={appt.notes} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 truncate mt-1">
+              <StickyNote className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{appt.notes}</span>
+            </p>
+          )}
+        </div>
+
+        {/* Desktop: μία γραμμή, όπως πριν */}
+        <span className={`hidden sm:inline text-sm font-bold w-12 flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
+        <div className="hidden sm:block flex-1 min-w-0">
           <p className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
           {appt.notes && (
@@ -71,11 +99,11 @@ function AppointmentItem({ appt, onClick, onConsult }) {
           )}
         </div>
         {isCompleted ? (
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <span className="hidden sm:inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
             Ολοκληρώθηκε
           </span>
         ) : (
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
+          <span className={`hidden sm:inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
             {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
           </span>
         )}
@@ -87,6 +115,18 @@ function AppointmentItem({ appt, onClick, onConsult }) {
         className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center flex-shrink-0 transition-colors"
       >
         <Pencil className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (window.confirm("Θέλεις σίγουρα να διαγράψεις το ραντεβού;")) {
+            onDelete?.(appt._id);
+          }
+        }}
+        title="Διαγραφή"
+        className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-win-border/40 hover:bg-red-100 dark:hover:bg-red-900/30 flex items-center justify-center flex-shrink-0 transition-colors"
+      >
+        <Trash2 className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 hover:text-red-500" />
       </button>
     </li>
   );
@@ -107,7 +147,7 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
 
 const MAX_VISIBLE = 4;
 
-function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, onShowAll, onEditAppointment, onConsult, extra }) {
+function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, onShowAll, onEditAppointment, onDeleteAppointment, onConsult, extra }) {
   const visible = appointments.slice(0, MAX_VISIBLE);
   const remaining = appointments.length - MAX_VISIBLE;
 
@@ -152,6 +192,7 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, o
                   appt={appt}
                   onClick={() => onEditAppointment?.(appt)}
                   onConsult={() => onConsult?.(appt)}
+                  onDelete={onDeleteAppointment}
                 />
               ))}
             </ul>
@@ -170,7 +211,7 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, o
   );
 }
 
-export default function TodayTimeline({ appointments = [], onShowAppointments, onNewAppointment, onEditAppointment, onJumpToDate }) {
+export default function TodayTimeline({ appointments = [], onShowAppointments, onNewAppointment, onEditAppointment, onDeleteAppointment, onJumpToDate }) {
   const [consultAppt, setConsultAppt] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
@@ -225,6 +266,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             onNew={() => onNewAppointment?.("Ιατρείο")}
             onShowAll={() => onShowAppointments?.("Ιατρείο")}
             onEditAppointment={onEditAppointment}
+            onDeleteAppointment={onDeleteAppointment}
             onConsult={setConsultAppt}
             extra={
               onJumpToDate && (
@@ -250,6 +292,7 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             onNew={() => onNewAppointment?.("Grooming")}
             onShowAll={() => onShowAppointments?.("Grooming")}
             onEditAppointment={onEditAppointment}
+            onDeleteAppointment={onDeleteAppointment}
             onConsult={setConsultAppt}
             extra={
               onJumpToDate && (

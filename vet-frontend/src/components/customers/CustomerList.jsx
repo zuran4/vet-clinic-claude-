@@ -13,7 +13,6 @@ import CustomerImportModal from "./CustomerImportModal.jsx";
 import CustomerPurchasesModal from "./CustomerPurchasesModal.jsx";
 import { useCustomers } from "../../hooks/useCustomers.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
-import PetModal from "../pets/PetModal.jsx";
 
 const CustomerList = () => {
   // -------------------------------------
@@ -41,8 +40,6 @@ const CustomerList = () => {
   const [editingCustomer, setEditingCustomer]     = useState(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
-  const [showPetModal, setShowPetModal]           = useState(false);
-  const [selectedCustomer, setSelectedCustomer]   = useState(null);
   const [showImportModal, setShowImportModal]     = useState(false);
   const [viewingCustomer, setViewingCustomer]     = useState(null);
 
@@ -133,10 +130,6 @@ const CustomerList = () => {
           setSelectedCustomerId(id);
           setShowPurchasesModal(true);
         }}
-        onAddPet={(cust) => {
-          setSelectedCustomer(cust);
-          setShowPetModal(true);
-        }}
         onView={(cust) => setViewingCustomer(cust)}
       />
     ))
@@ -214,15 +207,6 @@ const CustomerList = () => {
           }}
           customerId={selectedCustomerId}
           lockScroll={!viewingCustomer}
-        />
-      )}
-
-      {/* Modal Κατοικιδίου */}
-      {showPetModal && (
-        <PetModal
-          owner={selectedCustomer}
-          onCancel={() => { setShowPetModal(false); setSelectedCustomer(null); }}
-          onSaved={() => { setShowPetModal(false); setSelectedCustomer(null); }}
         />
       )}
 

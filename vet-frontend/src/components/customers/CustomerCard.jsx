@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trash2, Pencil, PawPrint, ShoppingBag, ChevronRight, Phone, Mail, MapPin, StickyNote, AlertTriangle } from "lucide-react";
+import { Trash2, Pencil, PawPrint, ShoppingBag, Phone, Mail, MapPin, StickyNote, AlertTriangle } from "lucide-react";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
 
 const DeleteConfirmModal = ({ name, onConfirm, onCancel }) => {
@@ -53,7 +53,7 @@ const DeleteConfirmModal = ({ name, onConfirm, onCancel }) => {
   );
 };
 
-const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onView }) => {
+const CustomerCard = ({ customer, onEdit, onDelete, onPurchases, onView }) => {
   const [expanded, setExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -61,16 +61,6 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
     <li className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Main row */}
       <div className="flex items-center gap-3 px-4 py-3">
-
-        {/* Chevron expand */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex-shrink-0 transition-transform duration-200"
-          style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}
-          title="Κατοικίδια"
-        >
-          <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 hover:text-indigo-400 transition-colors" />
-        </button>
 
         {/* Avatar + Info — πατώντας ανοίγει το πλήρες προφίλ */}
         <div
@@ -127,8 +117,8 @@ const CustomerCard = ({ customer, onEdit, onDelete, onAddPet, onPurchases, onVie
           </button>
           <button
             title="Κατοικίδια"
-            onClick={() => onAddPet(customer)}
-            className="p-1.5 rounded-xl hover:bg-blue-50 text-blue-400 transition-colors"
+            onClick={() => setExpanded((prev) => !prev)}
+            className={`p-1.5 rounded-xl hover:bg-blue-50 transition-colors ${expanded ? "bg-blue-50 text-blue-500" : "text-blue-400"}`}
           >
             <PawPrint className="w-4 h-4" />
           </button>

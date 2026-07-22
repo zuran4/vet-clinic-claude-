@@ -5,6 +5,7 @@
 
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { emitChange } from "../../utils/realtime.js";
 
 // ===============================
 // PUT /api/customers/:id
@@ -24,6 +25,7 @@ export const updateCustomer = async (req, res, next) => {
     }
 
     logger.info(`✏️ Ενημερώθηκε πελάτης: ${updated.name}`);
+    emitChange("customers");
     res.json(updated);
   } catch (err) {
     logger.error("❌ Σφάλμα κατά την ενημέρωση πελάτη", { stack: err.stack });

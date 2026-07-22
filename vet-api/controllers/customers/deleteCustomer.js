@@ -5,6 +5,7 @@
 
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { emitChange } from "../../utils/realtime.js";
 
 // ===============================
 // DELETE /api/customers/:id
@@ -24,6 +25,8 @@ export const deleteCustomer = async (req, res, next) => {
     // 🔹 Cascade: διαγραφή όλων των κατοικιδίων του πελάτη
     const { deletedCount } = await Pet.deleteMany({ owner: req.params.id });
     logger.info(`🗑️ Διαγράφηκαν ${deletedCount} κατοικίδια του πελάτη: ${deleted.name}`);
+    emitChange("customers");
+    if (deletedCount > 0) emitChange("pets");
     res.json({ message: "✅ Ο πελάτης διαγράφηκε επιτυχώς" });
   } catch (err) {
     logger.error("❌ Σφάλμα κατά τη διαγραφή πελάτη", { stack: err.stack });

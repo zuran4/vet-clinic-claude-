@@ -311,6 +311,7 @@ function MainLayout({
                 onEditAppointment(appt);
                 openPanel("appointments");
               }}
+              onDeleteAppointment={onDeleteAppointment}
               onJumpToDate={(date) => {
                 setAppointmentsDoctorFilter(null);
                 setSelectedDate(dayjs(date).format("YYYY-MM-DD"));

@@ -83,6 +83,17 @@ async function main() {
   contextRef = context;
   runtime.sharedPage = page;
 
+  // Αν ο browser/page κλείσει απροσδόκητα (crash, π.χ. "Network service crashed"),
+  // ο worker έμενε ζωντανός αλλά κολλημένος σε NO_PAGE για πάντα. Κάνουμε exit
+  // ώστε το PM2 (autorestart: true) να τον ξανασηκώσει με φρέσκο browser —
+  // το startup sequence ήδη κάνει login αυτόματα.
+  const exitForRestart = (reason) => {
+    console.error(`[Registry worker] ⚠️ ${reason} — τερματισμός για αυτόματο restart από PM2.`);
+    process.exit(1);
+  };
+  page.once("close", () => exitForRestart("Η σελίδα έκλεισε απροσδόκητα"));
+  context.once("close", () => exitForRestart("Το browser context έκλεισε απροσδόκητα"));
+
   installGracefulShutdown({ context: contextRef, server: serverRef });
 
   await runStartupSequence({

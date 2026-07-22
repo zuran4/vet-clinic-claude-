@@ -4,6 +4,7 @@
 // ===============================================
 
 import logger from "../../utils/logger.js";
+import { emitChange } from "../../utils/realtime.js";
 
 const ALLOWED = ["name", "phone", "email", "address", "notes"];
 
@@ -51,6 +52,7 @@ export const importCustomers = async (req, res, next) => {
     }
 
     logger.info(`📥 Bulk import πελατών: ${inserted} εισήχθησαν, ${errors.length} σφάλματα`);
+    if (inserted > 0) emitChange("customers");
     res.json({ inserted, errors });
   } catch (err) {
     next(err);

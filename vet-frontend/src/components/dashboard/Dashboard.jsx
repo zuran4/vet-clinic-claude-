@@ -14,6 +14,7 @@ const Dashboard = ({
   onShowAppointments,
   onNewAppointment,
   onEditAppointment,
+  onDeleteAppointment,
   onJumpToDate,
   onShowProducts,
   onShowCustomers,
@@ -90,6 +91,7 @@ const Dashboard = ({
         onShowAppointments={onShowAppointments}
         onNewAppointment={onNewAppointment}
         onEditAppointment={onEditAppointment}
+        onDeleteAppointment={onDeleteAppointment}
         onJumpToDate={onJumpToDate}
       />
 

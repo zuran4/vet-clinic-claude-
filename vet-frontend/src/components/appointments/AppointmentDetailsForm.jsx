@@ -88,11 +88,11 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="divide-y divide-gray-100 dark:divide-win-border/50 px-5 pb-5">
+      <form onSubmit={handleSubmit} className="px-5 pt-4 pb-5 space-y-3">
 
         {/* Ώρα & Ημερομηνία (μόνο σε επεξεργασία) */}
         {existingData && (
-          <div className="py-3">
+          <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
               Ώρα & Ημερομηνία
             </p>
@@ -107,7 +107,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         )}
 
         {/* Πελάτης */}
-        <div className="py-3 space-y-2">
+        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3 space-y-2">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
             Πελάτης
           </p>
@@ -128,13 +128,13 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
               placeholder="Τηλέφωνο"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full border border-gray-200 dark:border-win-border-light pl-9 pr-3 py-2 rounded-xl text-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="w-full border border-gray-200 dark:border-win-border-light pl-9 pr-3 py-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             />
           </div>
         </div>
 
         {/* Κατοικίδιο */}
-        <div className="py-3">
+        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
             Κατοικίδιο
           </p>
@@ -193,7 +193,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Λεπτομέρειες */}
-        <div className="py-3">
+        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
             Λεπτομέρειες
           </p>
@@ -207,7 +207,7 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
         </div>
 
         {/* Actions */}
-        <div className="pt-3 flex items-center justify-between flex-wrap gap-2">
+        <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
           {existingData && (
             <Button
               type="button"
