@@ -97,17 +97,6 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
               className={INPUT}
             />
           </div>
-          {productInfo.category !== "Τροφή" && (
-            <div>
-              <label className={LABEL}>Απόθεμα</label>
-              <input
-                type="number"
-                value={productInfo.quantity || 0}
-                onChange={(e) => updateField("quantity", Number(e.target.value))}
-                className={INPUT}
-              />
-            </div>
-          )}
         </div>
       </div>
 
