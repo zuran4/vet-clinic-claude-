@@ -15,7 +15,7 @@ export default Joi.object({
   quantity: Joi.number().integer().min(0),
   threshold: Joi.number().integer().min(0),
   unit: Joi.string().trim().allow(""),
-  expirationDate: Joi.date().optional(),
+  expirationDate: Joi.date().empty("").optional(),
   expirationWarningDays: Joi.number().integer().min(0),
   retailPrice: Joi.number().min(0).allow(null),
   notes: Joi.string().trim().allow(""),
