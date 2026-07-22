@@ -3,8 +3,8 @@ import Joi from "joi";
 const batchSchema = Joi.object({
   batchNumber: Joi.string().trim().allow(""),
   quantity: Joi.number().integer().min(0).default(0),
-  purchaseDate: Joi.date().optional(),
-  expirationDate: Joi.date().optional(),
+  purchaseDate: Joi.date().empty("").optional(),
+  expirationDate: Joi.date().empty("").optional(),
   invoiceNumber: Joi.string().trim().allow(""),
 });
 

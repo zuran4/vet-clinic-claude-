@@ -7,16 +7,16 @@ const objectId = Joi.string().regex(/^[0-9a-fA-F]{24}$/);
 const addBatch = Joi.object({
   batchNumber: Joi.string().allow(""),
   quantity: Joi.number().integer().min(0).required(),
-  purchaseDate: Joi.date().allow(null),
-  expirationDate: Joi.date().allow(null),
+  purchaseDate: Joi.date().empty("").allow(null),
+  expirationDate: Joi.date().empty("").allow(null),
   invoiceNumber: Joi.string().allow(""),
 });
 
 const patchBatch = Joi.object({
   batchNumber: Joi.string().allow(""),
   quantity: Joi.number().integer().min(0),
-  purchaseDate: Joi.date(),
-  expirationDate: Joi.date(),
+  purchaseDate: Joi.date().empty(""),
+  expirationDate: Joi.date().empty(""),
   invoiceNumber: Joi.string().allow(""),
 }).min(1); // τουλάχιστον ένα πεδίο για update
 
