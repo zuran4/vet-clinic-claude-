@@ -68,8 +68,7 @@ router.post("/logo", requirePermission("settings:write"), (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    const fileUrl = `/uploads/${req.file.filename}`;
 
     logger.info("✅ Logo uploaded:", req.file.filename);
     res.json({ url: fileUrl });

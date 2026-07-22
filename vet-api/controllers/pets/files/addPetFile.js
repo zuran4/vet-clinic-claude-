@@ -7,10 +7,9 @@ export default async function addPetFile(req, res, next) {
     const { id } = req.params;
     const file = req.uploadedFile;
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
     const fileData = {
       name: (file.originalname || file.filename).slice(0, 200),
-      url: `${baseUrl}/uploads/${file.filename}`,
+      url: `/uploads/${file.filename}`,
       filename: file.filename,
       mimeType: file.mimetype,
       size: file.size,
