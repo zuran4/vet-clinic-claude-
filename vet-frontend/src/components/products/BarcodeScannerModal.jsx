@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { X, ScanBarcode, AlertTriangle } from "lucide-react";
 
 const SCANNER_ELEMENT_ID = "barcode-scanner-viewport";
@@ -28,7 +28,23 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       scanner
         .start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 260, height: 140 }, aspectRatio: 1.0 }, // fixes tripled camera image bug on mobile portrait
+          {
+            fps: 10,
+            qrbox: { width: 260, height: 140 },
+            aspectRatio: 1.0, // fixes tripled camera image bug on mobile portrait
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.QR_CODE,
+            ],
+            // prefer the OS-native barcode detector when available (much more
+            // reliable for curved/warped 1D barcodes on bottles/cans)
+            experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+          },
           (decodedText) => {
             if (stoppedRef.current) return;
             stoppedRef.current = true;
