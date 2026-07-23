@@ -56,8 +56,19 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
 
     return () => {
       document.body.style.overflow = "";
+      const alreadyStopped = stoppedRef.current;
       stoppedRef.current = true;
-      scanner?.stop().then(() => scanner.clear()).catch(() => {});
+      // Αν είχε ήδη σταματήσει (επιτυχής σάρωση), ένα δεύτερο stop() πετάει
+      // synchronous exception στο html5-qrcode — μόνο clear() χρειάζεται τότε.
+      try {
+        if (!alreadyStopped) {
+          scanner?.stop().then(() => scanner.clear()).catch(() => {});
+        } else {
+          scanner?.clear();
+        }
+      } catch {
+        // ο scanner μπορεί να έχει ήδη καθαριστεί — αγνοούμε
+      }
     };
   }, [onScanned]);
 
