@@ -68,7 +68,7 @@ function diffBatches(initial = [], current = []) {
   return { adds, updates, removes };
 }
 
-export function useProductModal(productId) {
+export function useProductModal(productId, initialBarcode = "") {
   const [productInfo, setProductInfo] = useState(null);
   const [batches, setBatches] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -91,7 +91,7 @@ export function useProductModal(productId) {
           setProductInfo({
             name: "",
             category: "Άλλο",
-            barcode: "",
+            barcode: initialBarcode || "",
             unit: "",
             threshold: 5,
             supplier: "",

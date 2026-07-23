@@ -1,11 +1,12 @@
 // src/components/products/ProductList.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Edit, Trash2, Plus, Minus, Download, ChevronRight, Upload } from "lucide-react";
+import { Edit, Trash2, Plus, Minus, Download, ChevronRight, Upload, ScanBarcode } from "lucide-react";
 import Button from "../ui/button.jsx";
 import SearchBar from "../ui/SearchBar.jsx";
 import ProductModal from "./ProductModal.jsx";
 import ProductImportModal from "./ProductImportModal.jsx";
 import QuickStockModal from "./QuickStockModal.jsx";
+import BarcodeScannerModal from "./BarcodeScannerModal.jsx";
 import BatchList from "../dashboard/BatchList.jsx";
 import PurchaseHistoryList from "./PurchaseHistoryList.jsx";
 import { useProductList } from "../../hooks/useProductList.jsx";
@@ -24,6 +25,8 @@ const ProductList = () => {
   const [initialTab, setInitialTab]       = useState("info");
   const [quickStockProduct, setQuickStockProduct] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState("");
 
   const BATCHED_CATEGORIES = ["Τροφή", "Φάρμακο"];
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -35,6 +38,7 @@ const ProductList = () => {
   useEffect(() => {
     const openModal = () => {
       setProductId(null);
+      setScannedBarcode("");
       setShowForm(true);
     };
     document.addEventListener("openProductModal", openModal);
@@ -90,6 +94,29 @@ const ProductList = () => {
   );
 }, [setProducts]);
 
+  // Αποτέλεσμα σάρωσης barcode: αν βρεθεί προϊόν, ανοίγει η προσθήκη αποθέματος
+  // (παρτίδες ή απλό απόθεμα ανάλογα την κατηγορία) — αλλιώς η φόρμα νέου προϊόντος
+  // με προσυμπληρωμένο το barcode.
+  const handleBarcodeScanned = useCallback((decodedText) => {
+    setShowScanner(false);
+    const code = (decodedText ?? "").trim();
+    const found = products.find((p) => (p?.barcode ?? "").toString().trim() === code);
+
+    if (found) {
+      if (BATCHED_CATEGORIES.includes(found.category)) {
+        setProductId(found._id);
+        setInitialTab("stock");
+        setShowForm(true);
+      } else {
+        setQuickStockProduct(found);
+      }
+    } else {
+      setScannedBarcode(code);
+      setProductId(null);
+      setInitialTab("info");
+      setShowForm(true);
+    }
+  }, [products]);
 
   // Φίλτρα
   const filteredProducts = products.filter((p) => {
@@ -156,7 +183,7 @@ const ProductList = () => {
           {canDo("products:write") && (
             <button
               type="button"
-              onClick={() => { setProductId(null); setInitialTab("info"); setShowForm(true); }}
+              onClick={() => { setProductId(null); setInitialTab("info"); setScannedBarcode(""); setShowForm(true); }}
               className="sm:hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-sm active:scale-95 transition"
             >
               <Plus className="w-4 h-4" /> Νέο Προϊόν
@@ -173,6 +200,17 @@ const ProductList = () => {
             <Upload className="w-4 h-4" />
             <span className="hidden sm:inline">Εισαγωγή CSV</span>
           </button>
+          {canDo("products:write") && (
+            <button
+              type="button"
+              onClick={() => setShowScanner(true)}
+              title="Σάρωση barcode"
+              aria-label="Σάρωση barcode"
+              className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-full border border-orange-200 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700 dark:hover:bg-orange-900/60 active:scale-95 transition"
+            >
+              <ScanBarcode className="w-4 h-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -470,6 +508,7 @@ const ProductList = () => {
         <ProductModal
           productId={productId}
           initialTab={initialTab}
+          initialBarcode={scannedBarcode}
           onSave={(payload) => {
             // Περίπτωση Α: ήρθε full product (create/update info)
             if (payload && payload._id) {
@@ -488,6 +527,7 @@ const ProductList = () => {
 );
 
               setShowForm(false);
+              setScannedBarcode("");
               return;
             }
 
@@ -506,17 +546,20 @@ const ProductList = () => {
                 [payload.productId]: (prev[payload.productId] || 0) + 1,
               }));
               setShowForm(false);
+              setScannedBarcode("");
               return;
             }
 
 
             // Fallback: κλείσιμο χωρίς αλλαγή
             setShowForm(false);
+            setScannedBarcode("");
           }}
           onClose={() => {
             setShowForm(false);
             setProductId(null);
             setInitialTab("info");
+            setScannedBarcode("");
           }}
         />
       )}
@@ -526,6 +569,14 @@ const ProductList = () => {
         <ProductImportModal
           onClose={() => setShowImportModal(false)}
           onImport={importProducts}
+        />
+      )}
+
+      {/* Barcode Scanner (mobile) */}
+      {showScanner && (
+        <BarcodeScannerModal
+          onScanned={handleBarcodeScanned}
+          onClose={() => setShowScanner(false)}
         />
       )}
     </>

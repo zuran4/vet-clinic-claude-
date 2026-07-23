@@ -6,7 +6,7 @@ import { Button } from "../ui/button.jsx";
 import Modal from "../ui/Modal.jsx";
 import { useProductModal } from "../../hooks/useProductModal.jsx";
 
-const ProductModal = ({ productId, onSave, onClose, initialTab = "info" }) => {
+const ProductModal = ({ productId, onSave, onClose, initialTab = "info", initialBarcode = "" }) => {
   const [activeTab, setActiveTab]       = useState(initialTab);
   const [isDirty, setIsDirty]           = useState(false);
   const [showConfirm, setShowConfirm]   = useState(false);
@@ -23,7 +23,7 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info" }) => {
     saveProductInfo,
     saveBatches,
     isBatched,
-  } = useProductModal(productId);
+  } = useProductModal(productId, initialBarcode);
 
   // Κάθε αλλαγή σε πεδίο → dirty
   const handleChange = (updated) => {
