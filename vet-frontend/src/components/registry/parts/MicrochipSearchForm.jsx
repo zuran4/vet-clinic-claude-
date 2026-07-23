@@ -10,60 +10,36 @@ export default function MicrochipSearchForm({
   formatDateTime,
 }) {
   return (
-    <form
-      onSubmit={onSubmit}
-      className="grid gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-win-surface px-3 py-3 sm:grid-cols-[minmax(0,1.6fr)_auto] sm:px-4 sm:py-4"
-    >
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="registry-microchip"
-          className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400"
-        >
-          Αριθμός microchip
-        </label>
-
-        <div className="relative">
+    <form onSubmit={onSubmit} className="space-y-1.5">
+      <div className="flex gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
             id="registry-microchip"
             type="text"
             value={microchip}
             onChange={(e) => onChangeMicrochip(e.target.value)}
-            placeholder="Πληκτρολόγησε microchip..."
-            className="block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-win-elevated px-3 py-2 pr-9 text-sm text-slate-900 dark:text-slate-100 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-win-elevated focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Αριθμός microchip..."
+            className="block w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-win-elevated pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-slate-100 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-win-elevated focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         </div>
 
-        {existingSearch && (
-          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-            <Clock className="h-3 w-3 text-slate-400 dark:text-slate-500" />
-            <span>
-              Έχει ξανααναζητηθεί{" "}
-              {existingSearch.lastSearchedAt
-                ? `στις ${formatDateTime(existingSearch.lastSearchedAt)}`
-                : "στο παρελθόν"}
-              .
-            </span>
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-end sm:justify-end">
         <button
           type="submit"
           disabled={isLoading}
-          className="inline-flex w-full items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400 sm:w-auto"
+          className="flex-shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
         >
-          {isLoading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Αναζήτηση…</span>
-            </span>
-          ) : (
-            "Αναζήτηση"
-          )}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Αναζήτηση"}
         </button>
       </div>
+
+      {existingSearch && (
+        <p className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
+          <Clock className="h-3 w-3" />
+          Έχει ξανααναζητηθεί{" "}
+          {existingSearch.lastSearchedAt ? `στις ${formatDateTime(existingSearch.lastSearchedAt)}` : "στο παρελθόν"}
+        </p>
+      )}
     </form>
   );
 }

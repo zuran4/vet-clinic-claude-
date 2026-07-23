@@ -1,10 +1,12 @@
 import React, { useState, useRef } from "react";
 import { User, X, AlertTriangle } from "lucide-react";
 import CustomerForm from "./CustomerForm.jsx";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const CustomerModal = ({ initialData, onSaved, onCancel }) => {
   const [isDirty, setIsDirty] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const scrollRef = useModalScrollLock(true);
 
   const handleClose = () => {
     if (isDirty) {
@@ -15,7 +17,7 @@ const CustomerModal = ({ initialData, onSaved, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
       {/* Backdrop click — blocked */}
       <div className="absolute inset-0" onClick={() => {}} />
 
@@ -45,7 +47,11 @@ const CustomerModal = ({ initialData, onSaved, onCancel }) => {
         </div>
 
         {/* Form Area */}
-        <div className="bg-gray-50 dark:bg-win-surface/50 p-5 max-h-[80vh] overflow-y-auto">
+        <div
+          ref={scrollRef}
+          className="bg-gray-50 dark:bg-win-surface/50 p-5 max-h-[80vh] overflow-y-auto"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           <CustomerForm
             initialData={initialData}
             onSaved={onSaved}

@@ -6,6 +6,7 @@ import {
   UserPlus, FolderOpen, BadgeCheck, AlertCircle, HeartPulse,
 } from "lucide-react";
 import MedicalEventsTab from "../pets/MedicalEventsTab";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const SPECIES_EMOJI = {
   "Σκύλος": "🐕",
@@ -22,6 +23,7 @@ function speciesEmoji(s) {
 
 export default function PetDetailsModal({ open, onClose, data, onAction }) {
   const [tab, setTab] = useState("summary");
+  const scrollRef = useModalScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -92,7 +94,7 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
   const emoji = speciesEmoji(species);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm px-3 py-4">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm px-3 py-4" style={{ touchAction: "none" }}>
       <button type="button" className="absolute inset-0 h-full w-full cursor-default" onClick={onClose} aria-label="Κλείσιμο" />
 
       <div
@@ -174,7 +176,11 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         </div>
 
         {/* ── BODY ── */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg px-5 py-4">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-bg px-5 py-4"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           {!data ? (
             <EmptyState text="Δεν υπάρχουν δεδομένα για εμφάνιση." />
           ) : tab === "summary" ? (

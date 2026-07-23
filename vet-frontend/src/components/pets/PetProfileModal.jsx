@@ -1,21 +1,15 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { X, PawPrint } from "lucide-react";
 import PetProfile from "./PetProfile";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const PetProfileModal = ({ petId, onClose, initialTab }) => {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
-  }, []);
+  const scrollRef = useModalScrollLock(!!petId);
 
   if (!petId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative w-full max-w-[600px] rounded-2xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col">
 
@@ -39,7 +33,11 @@ const PetProfileModal = ({ petId, onClose, initialTab }) => {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1">
+        <div
+          ref={scrollRef}
+          className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           <PetProfile petId={petId} onClose={onClose} initialTab={initialTab} />
         </div>
       </div>

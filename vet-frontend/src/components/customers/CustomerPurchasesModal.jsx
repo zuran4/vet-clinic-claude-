@@ -11,6 +11,7 @@ import {
   Clock,
 } from "lucide-react";
 import request from "../../api/apiClient.js";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const CustomerPurchasesModal = ({ isOpen, onClose, customerId, lockScroll = true }) => {
   const [purchases, setPurchases] = useState([]);
@@ -23,15 +24,7 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId, lockScroll = true
 
   // Όταν ανοίγει πάνω από την κάρτα πελάτη (CustomerList), εκείνη ήδη κλειδώνει
   // το scroll — δεν πρέπει να το ξεκλειδώσουμε εμείς όταν κλείνουμε από πάνω της.
-  useEffect(() => {
-    if (!isOpen || !lockScroll) return;
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
-  }, [isOpen, lockScroll]);
+  const scrollRef = useModalScrollLock(isOpen, lockScroll);
 
   useEffect(() => {
     if (!isOpen || !customerId) return;
@@ -100,6 +93,7 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId, lockScroll = true
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-6"
+      style={{ touchAction: "none" }}
       onClick={onClose}
     >
       <div
@@ -152,7 +146,11 @@ const CustomerPurchasesModal = ({ isOpen, onClose, customerId, lockScroll = true
         </div>
 
         {/* ── Content ── */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-surface/50">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto bg-gray-50 dark:bg-win-surface/50"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <div className="w-8 h-8 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />

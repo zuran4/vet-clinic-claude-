@@ -197,7 +197,7 @@ function MainLayout({
       case "prescriptions":
         return { title: "Συνταγές", subtitle: "Έκδοση και διαχείριση συνταγών." };
       case "export":
-        return { title: "Εξαγωγή Προϊόντος", subtitle: "Εισαγωγή και ενημέρωση αποθέματος." };
+        return { title: "Πωλήσεις", subtitle: "Καταχώρηση πωλήσεων και ενημέρωση αποθέματος." };
       case "settings":
         return { title: "Ρυθμίσεις", subtitle: "Διαμόρφωση κλινικής και συστήματος." };
       default:

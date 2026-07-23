@@ -5,6 +5,7 @@ import {
   StickyNote, Stethoscope, Search, User,
 } from "lucide-react";
 import request from "@/api/apiClient.js";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100";
 const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
@@ -216,6 +217,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
   const [form, setForm] = useState({ medicines: [], dosage: "", notes: "", doctor: "" });
   const [doctors, setDoctors] = useState([]);
   const [customDoctor, setCustomDoctor] = useState(false);
+  const scrollRef = useModalScrollLock(isOpen);
 
   // Φόρτωση γιατρών από settings
   useEffect(() => {
@@ -267,7 +269,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative w-full max-w-[560px] shadow-2xl z-10 rounded-2xl overflow-visible">
 
@@ -290,7 +292,12 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-win-surface/50 p-5 space-y-3 rounded-b-2xl max-h-[80vh] overflow-y-auto">
+        <form
+          ref={scrollRef}
+          onSubmit={handleSubmit}
+          className="bg-gray-50 dark:bg-win-surface/50 p-5 space-y-3 rounded-b-2xl max-h-[80vh] overflow-y-auto"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
 
           {/* Πελάτης & Κατοικίδιο */}
           <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border-light px-4 py-3">

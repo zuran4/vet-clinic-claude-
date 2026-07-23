@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { LogOut, Settings, Menu, Package, Users, PawPrint, Pill, Upload, ChevronRight } from "lucide-react";
+import { LogOut, Settings, Menu, Package, Users, PawPrint, Pill, ShoppingCart, ChevronRight } from "lucide-react";
 import logoFallback from "../../assets/logo.svg";
 import { Button } from "./button";
 import dayjs, { getSavedTimeZone } from "../../utils/dayjsConfig";
@@ -55,7 +55,7 @@ function HeaderBar({
     { key: "customers",     label: "Πελάτες",    icon: Users,    onClick: onShowCustomers,    iconBg: "bg-indigo-100 dark:bg-indigo-900/40",    iconColor: "text-indigo-500 dark:text-indigo-400" },
     { key: "pets",          label: "Κατοικίδια", icon: PawPrint, onClick: onShowPets,         iconBg: "bg-sky-100 dark:bg-sky-900/40",          iconColor: "text-sky-500 dark:text-sky-400" },
     { key: "prescriptions", label: "Συνταγές",   icon: Pill,     onClick: onShowPrescriptions,iconBg: "bg-violet-100 dark:bg-violet-900/40",    iconColor: "text-violet-500 dark:text-violet-400" },
-    { key: "export",        label: "Εξαγωγή",    icon: Upload,   onClick: onShowExportPanel,  iconBg: "bg-emerald-100 dark:bg-emerald-900/40",  iconColor: "text-emerald-500 dark:text-emerald-400" },
+    { key: "export",        label: "Πωλήσεις",   icon: ShoppingCart, onClick: onShowExportPanel, iconBg: "bg-emerald-100 dark:bg-emerald-900/40",  iconColor: "text-emerald-500 dark:text-emerald-400" },
   ];
 
   return (

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { User, Phone, Mail, MapPin, StickyNote, Bell, X, Save, UserPlus } from "lucide-react";
 import request from "@/api/apiClient.js";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-win-elevated dark:text-gray-100";
 const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
@@ -24,6 +25,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const scrollRef = useModalScrollLock(true);
 
   const update = (field, value) => setForm((p) => ({ ...p, [field]: value }));
   const updateNotif = (key, checked) =>
@@ -46,7 +48,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
       <div className="absolute inset-0" onClick={onCancel} />
 
       <div className="relative w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl z-10">
@@ -68,7 +70,12 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-win-elevated/50 p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+        <form
+          ref={scrollRef}
+          onSubmit={handleSubmit}
+          className="bg-gray-50 dark:bg-win-elevated/50 p-5 space-y-3 max-h-[80vh] overflow-y-auto"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
 
           {/* Στοιχεία Επικοινωνίας */}
           <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-200 dark:border-win-border-light px-4 py-3">

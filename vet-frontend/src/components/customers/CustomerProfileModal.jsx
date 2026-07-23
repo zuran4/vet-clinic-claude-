@@ -3,6 +3,7 @@ import { X, User, Phone, Mail, MapPin, Home, FileText, StickyNote, Bell, Shoppin
 import { Button } from "../ui/button";
 import CustomerPetsExpanded from "./CustomerPetsExpanded.jsx";
 import { getCustomerById } from "../../api/customersApi.js";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const NOTIFICATION_LABELS = [
   { key: "email", label: "Email" },
@@ -35,15 +36,7 @@ const IconField = ({ icon: Icon, label, value }) => {
 
 const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
   const [customerData, setCustomerData] = useState(customer);
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
-  }, []);
+  const scrollRef = useModalScrollLock(true);
 
   // Συγχρονισμός άμεσα με το prop — καλύπτει και την περίπτωση που ο γονέας
   // στέλνει ενημερωμένα στοιχεία μετά από αποθήκευση (ίδιο _id, νέο αντικείμενο).
@@ -67,7 +60,7 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
   const { _id, name, phone, email, address, city, afm, notes, notifications, alert } = customerData;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }} onClick={onClose}>
       <div
         className="relative w-full max-w-[600px] rounded-2xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col bg-white dark:bg-win-surface"
         onClick={(e) => e.stopPropagation()}
@@ -91,7 +84,11 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1 p-5 space-y-4">
+        <div
+          ref={scrollRef}
+          className="bg-gray-50 dark:bg-win-surface/50 overflow-y-auto flex-1 p-5 space-y-4"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           {/* Κάρτα Ιδιοκτήτη — ίδιο στιλ με την κάρτα ιδιοκτήτη στο προφίλ κατοικιδίου */}
           <div className="rounded-2xl bg-white dark:bg-win-elevated/50 border border-gray-100 dark:border-win-border-light shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">

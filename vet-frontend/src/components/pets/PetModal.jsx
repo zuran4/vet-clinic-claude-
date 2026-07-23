@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PawPrint, X, AlertTriangle } from "lucide-react";
 import PetForm from "./PetForm.jsx";
+import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
   const [isDirty, setIsDirty] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
-  }, []);
+  const scrollRef = useModalScrollLock(true);
 
   const handleClose = () => {
     if (isDirty) setShowConfirm(true);
@@ -21,7 +14,7 @@ const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
       <div className="absolute inset-0" onClick={() => {}} />
 
       <div className="relative w-full max-w-[560px] rounded-2xl overflow-hidden shadow-2xl z-10">
@@ -50,7 +43,11 @@ const PetModal = ({ initialData, onSaved, onCancel, owner }) => {
         </div>
 
         {/* Form Area */}
-        <div className="bg-gray-50 dark:bg-win-surface p-5 max-h-[80vh] overflow-y-auto">
+        <div
+          ref={scrollRef}
+          className="bg-gray-50 dark:bg-win-surface p-5 max-h-[80vh] overflow-y-auto"
+          style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
+        >
           <PetForm
             initialData={initialData}
             owner={owner}

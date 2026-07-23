@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import {
-  Package, Users, Pill, Upload, PawPrint, ChevronRight, LayoutGrid,
+  Package, Users, Pill, ShoppingCart, PawPrint, ChevronRight, LayoutGrid,
 } from "lucide-react";
 
 import RegistryMicrochipSearchBlock from "../registry/RegistryMicrochipSearchBlock.jsx";
@@ -70,9 +70,9 @@ const Dashboard = ({
       },
       {
         key: "export",
-        title: "Εξαγωγή",
-        description: "Εισαγωγή/ενημέρωση προϊόντων",
-        icon: Upload,
+        title: "Πωλήσεις",
+        description: "Καταχώρηση πωλήσεων",
+        icon: ShoppingCart,
         onClick: onShowExportPanel,
         iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
         iconColor: "text-emerald-500 dark:text-emerald-400",
