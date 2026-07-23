@@ -28,7 +28,7 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       scanner
         .start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 260, height: 140 } },
+          { fps: 10, qrbox: { width: 260, height: 140 }, aspectRatio: 1.0 }, // fixes tripled camera image bug on mobile portrait
           (decodedText) => {
             if (stoppedRef.current) return;
             stoppedRef.current = true;
