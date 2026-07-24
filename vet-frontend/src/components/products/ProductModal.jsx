@@ -18,10 +18,8 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info", initial
     setBatches,
     suppliers,
     loading,
-    savingBatches,
     error,
     saveProductInfo,
-    saveBatches,
     isBatched,
   } = useProductModal(productId, initialBarcode);
 
@@ -31,9 +29,14 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info", initial
     setIsDirty(true);
   };
 
+  // Οι παρτίδες πλέον αποθηκεύονται κατευθείαν στο backend από το StockSection
+  // (δεν χρειάζεται πια το γενικό "Αποθήκευση Αποθέματος" για να μη χαθούν).
+  // Συγχρονίζουμε εδώ μόνο το τοπικό σύνολο ώστε να είναι σωστό αν πατηθεί
+  // το κουμπί αργότερα.
   const handleBatchChange = (updated) => {
     setBatches(updated);
-    setIsDirty(true);
+    const total = updated.reduce((sum, b) => sum + (Number(b.quantity) || 0), 0);
+    setProductInfo((prev) => (prev ? { ...prev, quantity: total } : prev));
   };
 
   // Προσπάθεια κλεισίματος
@@ -123,12 +126,13 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info", initial
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-2 justify-end pt-4 border-t border-gray-100 mt-4">
-          <Button variant="danger" onClick={tryClose}>
-            Ακύρωση
-          </Button>
-          {activeTab === "info" && (
+        {/* Actions — μόνο για την καρτέλα Στοιχείων· οι παρτίδες αποθηκεύονται
+            ήδη αυτόματα, δεν χρειάζονται ξεχωριστό Ακύρωση/Αποθήκευση. */}
+        {activeTab === "info" && (
+          <div className="flex gap-2 justify-end pt-4 border-t border-gray-100 mt-4">
+            <Button variant="danger" onClick={tryClose}>
+              Ακύρωση
+            </Button>
             <Button
               variant="success"
               onClick={() => {
@@ -139,21 +143,8 @@ const ProductModal = ({ productId, onSave, onClose, initialTab = "info", initial
               <Save className="w-4 h-4" />
               Αποθήκευση
             </Button>
-          )}
-          {activeTab === "stock" && (
-            <Button
-              variant="success"
-              onClick={() => {
-                saveBatches(batches, productId, onSave);
-                setIsDirty(false);
-              }}
-              disabled={savingBatches}
-            >
-              <Save className="w-4 h-4" />
-              {savingBatches ? "Αποθήκευση…" : "Αποθήκευση Αποθέματος"}
-            </Button>
-          )}
-        </div>
+          </div>
+        )}
       </Modal>
 
       {/* Confirmation Dialog */}

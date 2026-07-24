@@ -1,6 +1,7 @@
 // src/hooks/useProductList.jsx
 import { useState, useEffect } from "react";
 import productsApi from "../api/productsApi";
+import { useRealtimeSync } from "./useRealtimeSync.jsx";
 
 export function useProductList() {
   const [products, setProducts] = useState([]);
@@ -58,6 +59,10 @@ export function useProductList() {
       setLoading(false);
     }
   };
+
+  // 🔹 Αυτόματη ανανέωση όταν αλλάζει το απόθεμα από αλλού (π.χ. προσθήκη
+  // παρτίδας μέσα στο ProductModal, ή από άλλη συσκευή/tab).
+  useRealtimeSync({ products: fetchProducts });
 
   // 🔹 Διαγραφή προϊόντος
   const handleDeleteProduct = async (id) => {

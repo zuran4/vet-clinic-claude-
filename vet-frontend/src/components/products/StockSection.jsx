@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import dayjs from "dayjs";
 import { PlusCircle, Trash2, Save, XCircle, Edit } from "lucide-react";
 import { Button } from "../ui/button";
+import request from "../../api/apiClient.js";
 
 const INPUT = "mt-1 w-full border border-gray-300 dark:border-win-border-light rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100";
 const LABEL = "block text-sm font-medium text-gray-700 dark:text-gray-300";
@@ -10,9 +11,11 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
   const [adding, setAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editBatch, setEditBatch] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [newBatch, setNewBatch] = useState({
     batchNumber: "",
-    quantity: 0,
+    quantity: "",
     expirationDate: "",
     purchaseDate: "",
     invoiceNumber: "",
@@ -22,23 +25,69 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
     return <p className="text-gray-500 dark:text-gray-400">Αποθήκευσε πρώτα το προϊόν για να προσθέσεις παρτίδες.</p>;
   }
 
-  const handleSaveNewBatch = () => {
-    onChange([...batches, newBatch]);
-    setNewBatch({ batchNumber: "", quantity: 0, expirationDate: "", purchaseDate: "", invoiceNumber: "" });
+  // Κάθε ενέργεια αποθηκεύεται κατευθείαν στο backend — όχι μόνο στο τοπικό
+  // state — ώστε να μη χάνεται η παρτίδα αν κλείσεις το modal χωρίς να
+  // πατήσεις ξεχωριστά το γενικό "Αποθήκευση Αποθέματος".
+  const persistAction = async (payload) => {
+    setSaveError("");
+    setSaving(true);
+    try {
+      const result = await request(`/products/${productId}/batches`, {
+        method: "PUT",
+        body: payload,
+      });
+      onChange(result.batches ?? batches);
+      return true;
+    } catch (err) {
+      setSaveError(err.message || "Σφάλμα αποθήκευσης παρτίδας.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveNewBatch = async () => {
+    const ok = await persistAction({
+      action: "add",
+      batch: {
+        batchNumber: newBatch.batchNumber || "",
+        quantity: Number(newBatch.quantity || 0),
+        purchaseDate: newBatch.purchaseDate || null,
+        expirationDate: newBatch.expirationDate || null,
+        invoiceNumber: newBatch.invoiceNumber || "",
+      },
+    });
+    if (!ok) return;
+    setNewBatch({ batchNumber: "", quantity: "", expirationDate: "", purchaseDate: "", invoiceNumber: "" });
     setAdding(false);
   };
 
-  const handleSaveEdit = (index, updatedBatch) => {
-    const updated = [...batches];
-    updated[index] = updatedBatch;
-    onChange(updated);
+  // Auto-save: κάθε πεδίο της γραμμής επεξεργασίας αποθηκεύεται μόνο του
+  // όταν φεύγεις από αυτό (blur) — χωρίς ξεχωριστό κουμπί "Αποθήκευση".
+  const persistEditField = (updatedBatch) => {
+    if (!updatedBatch?._id) return;
+    persistAction({
+      action: "update",
+      batchId: updatedBatch._id,
+      patch: {
+        batchNumber: updatedBatch.batchNumber || "",
+        quantity: Number(updatedBatch.quantity || 0),
+        purchaseDate: updatedBatch.purchaseDate || null,
+        expirationDate: updatedBatch.expirationDate || null,
+        invoiceNumber: updatedBatch.invoiceNumber || "",
+      },
+    });
+  };
+
+  const closeEditRow = () => {
     setEditingIndex(null);
     setEditBatch(null);
   };
 
-  const removeBatch = (index) => {
-    const updated = batches.filter((_, i) => i !== index);
-    onChange(updated);
+  const removeBatch = async (index) => {
+    const target = batches[index];
+    if (!target?._id) return;
+    await persistAction({ action: "remove", batchId: target._id });
   };
 
   const getRowClass = (b) => {
@@ -51,6 +100,9 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
 
   return (
     <div className="space-y-6">
+      {saveError && (
+        <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">{saveError}</p>
+      )}
       {batches.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">Δεν υπάρχουν παρτίδες. Πρόσθεσε μία.</p>
       ) : (
@@ -77,40 +129,40 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
                           <label className={LABEL}>Αρ. Παρτίδας</label>
                           <input type="text" value={editBatch.batchNumber}
                             onChange={(e) => setEditBatch({ ...editBatch, batchNumber: e.target.value })}
+                            onBlur={() => persistEditField(editBatch)}
                             className={INPUT} />
                         </td>
                         <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ποσότητα</label>
-                          <input type="number" value={editBatch.quantity}
+                          <input type="number" inputMode="numeric" value={editBatch.quantity}
                             onChange={(e) => setEditBatch({ ...editBatch, quantity: Number(e.target.value) })}
+                            onBlur={() => persistEditField(editBatch)}
                             className={INPUT} />
                         </td>
                         <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Α/Α Τιμολογίου</label>
                           <input type="text" value={editBatch.invoiceNumber}
                             onChange={(e) => setEditBatch({ ...editBatch, invoiceNumber: e.target.value })}
+                            onBlur={() => persistEditField(editBatch)}
                             className={INPUT} />
                         </td>
                         <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ημ. Αγοράς</label>
                           <input type="date"
                             value={editBatch.purchaseDate ? dayjs(editBatch.purchaseDate).format("YYYY-MM-DD") : ""}
-                            onChange={(e) => setEditBatch({ ...editBatch, purchaseDate: e.target.value })}
+                            onChange={(e) => { const next = { ...editBatch, purchaseDate: e.target.value }; setEditBatch(next); persistEditField(next); }}
                             className={INPUT} />
                         </td>
                         <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
                           <label className={LABEL}>Ημ. Λήξης</label>
                           <input type="date"
                             value={editBatch.expirationDate ? dayjs(editBatch.expirationDate).format("YYYY-MM-DD") : ""}
-                            onChange={(e) => setEditBatch({ ...editBatch, expirationDate: e.target.value })}
+                            onChange={(e) => { const next = { ...editBatch, expirationDate: e.target.value }; setEditBatch(next); persistEditField(next); }}
                             className={INPUT} />
                         </td>
-                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light flex gap-2">
-                          <Button onClick={() => handleSaveEdit(i, editBatch)} variant="success" className="flex items-center gap-1">
-                            <Save size={16} /> Αποθήκευση
-                          </Button>
-                          <Button onClick={() => { setEditingIndex(null); setEditBatch(null); }} variant="secondary" className="flex items-center gap-1">
-                            <XCircle size={16} /> Ακύρωση
+                        <td className="px-2 py-1 border border-gray-200 dark:border-win-border-light">
+                          <Button onClick={closeEditRow} variant="secondary" className="flex items-center gap-1">
+                            <XCircle size={16} /> Κλείσιμο
                           </Button>
                         </td>
                       </>
@@ -129,7 +181,7 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
                           <Button onClick={() => { setEditingIndex(i); setEditBatch({ ...b }); }} variant="secondary" className="flex items-center gap-1">
                             <Edit size={16} /> Επεξεργασία
                           </Button>
-                          <Button onClick={() => removeBatch(i)} variant="danger" className="flex items-center gap-1">
+                          <Button onClick={() => removeBatch(i)} disabled={saving} variant="danger" className="flex items-center gap-1">
                             <Trash2 size={16} /> Διαγραφή
                           </Button>
                         </td>
@@ -154,7 +206,7 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
                   <Button onClick={() => setEditingIndex(i)} variant="secondary" className="flex items-center gap-1">
                     <Edit size={16} /> Επεξεργασία
                   </Button>
-                  <Button onClick={() => removeBatch(i)} variant="danger" className="flex items-center gap-1">
+                  <Button onClick={() => removeBatch(i)} disabled={saving} variant="danger" className="flex items-center gap-1">
                     <Trash2 size={16} /> Διαγραφή
                   </Button>
                 </div>
@@ -176,8 +228,8 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
             </div>
             <div>
               <label className={LABEL}>Ποσότητα</label>
-              <input type="number" value={newBatch.quantity}
-                onChange={(e) => setNewBatch({ ...newBatch, quantity: Number(e.target.value) })}
+              <input type="number" inputMode="numeric" placeholder="0" value={newBatch.quantity}
+                onChange={(e) => setNewBatch({ ...newBatch, quantity: e.target.value })}
                 className={INPUT} />
             </div>
             <div>
@@ -200,8 +252,8 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
             </div>
           </div>
           <div className="flex gap-3">
-            <Button onClick={handleSaveNewBatch} variant="success" className="flex items-center gap-2">
-              <Save size={18} /> Αποθήκευση
+            <Button onClick={handleSaveNewBatch} disabled={saving} variant="success" className="flex items-center gap-2">
+              <Save size={18} /> {saving ? "Αποθήκευση…" : "Αποθήκευση"}
             </Button>
             <Button onClick={() => setAdding(false)} variant="secondary" className="flex items-center gap-2">
               <XCircle size={18} /> Ακύρωση

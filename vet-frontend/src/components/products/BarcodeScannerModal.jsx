@@ -20,7 +20,20 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       return;
     }
 
+    // cancelled: το component ζήτησε cleanup (unmount/remount) πριν προλάβει
+    // να ολοκληρωθεί το async start() — π.χ. React StrictMode double-invoke.
+    // started: το start() έχει πραγματικά ολοκληρωθεί (η κάμερα τρέχει).
+    // Το stop() πριν ολοκληρωθεί το start() πετάει σφάλμα ΚΑΙ αφήνει το
+    // camera stream ανοιχτό — γι' αυτό δεν το καλούμε ποτέ πριν το started.
+    let cancelled = false;
+    let started = false;
     let scanner;
+
+    const stopAndClear = () => {
+      stoppedRef.current = true;
+      return scanner?.stop().then(() => scanner.clear()).catch(() => {});
+    };
+
     try {
       scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
       scannerRef.current = scanner;
@@ -59,7 +72,14 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
             // per-frame "δεν βρέθηκε barcode" — αγνοείται σκόπιμα
           }
         )
+        .then(() => {
+          started = true;
+          // Αν είχαμε ήδη ζητήσει cleanup μέχρι να ξεκινήσει πραγματικά η
+          // κάμερα, σταμάτα την τώρα — αλλιώς μένει "κρεμασμένο" ανοιχτό stream.
+          if (cancelled) stopAndClear();
+        })
         .catch((err) => {
+          if (cancelled) return;
           setError(
             err?.name === "NotAllowedError"
               ? "Δεν δόθηκε πρόσβαση στην κάμερα."
@@ -72,19 +92,16 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
 
     return () => {
       document.body.style.overflow = "";
-      const alreadyStopped = stoppedRef.current;
-      stoppedRef.current = true;
-      // Αν είχε ήδη σταματήσει (επιτυχής σάρωση), ένα δεύτερο stop() πετάει
-      // synchronous exception στο html5-qrcode — μόνο clear() χρειάζεται τότε.
-      try {
-        if (!alreadyStopped) {
-          scanner?.stop().then(() => scanner.clear()).catch(() => {});
-        } else {
-          scanner?.clear();
-        }
-      } catch {
-        // ο scanner μπορεί να έχει ήδη καθαριστεί — αγνοούμε
+      cancelled = true;
+      if (stoppedRef.current) {
+        // Είχε ήδη σταματήσει (πετυχημένη σάρωση) — μόνο clear, το stop()
+        // θα πετούσε synchronous exception σε ήδη-σταματημένο scanner.
+        try { scanner?.clear(); } catch {}
+      } else if (started) {
+        stopAndClear();
       }
+      // Αν ούτε το start() έχει ολοκληρωθεί ακόμα, δεν κάνουμε τίποτα εδώ —
+      // το .then() παραπάνω θα δει cancelled=true και θα σταματήσει μόνο του.
     };
   }, [onScanned]);
 
