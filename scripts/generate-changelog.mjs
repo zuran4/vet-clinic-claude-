@@ -146,11 +146,12 @@ ${result.simple || "-"}
     ? fs.readFileSync(CHANGELOG_PATH, "utf8")
     : "# Changelog\n\nΑυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.\n\n";
 
-  const headerEnd = existing.indexOf("\n\n") + 2;
-  const header = existing.slice(0, headerEnd);
-  const rest = existing.slice(headerEnd);
+  const firstEntryIdx = existing.indexOf("\n## ");
+  const insertPos = firstEntryIdx === -1 ? existing.length : firstEntryIdx + 1;
 
-  fs.writeFileSync(CHANGELOG_PATH, header + entry + rest, "utf8");
+  const newContent = existing.slice(0, insertPos) + entry + existing.slice(insertPos);
+
+  fs.writeFileSync(CHANGELOG_PATH, newContent, "utf8");
 
   console.log(`Γράφτηκε entry για v${newVersion}.`);
 }
