@@ -2,6 +2,25 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.4.0 — 2026-07-24 (63a0f76)
+
+### Προσθήκη πεδίου μεγέθους συσκευασίας προϊόντων
+
+**🔧 Τεχνική περιγραφή**
+
+- Νέο πεδίο `packageSize` στο μοντέλο `Product` (String, default "") για διάκριση variants (π.χ. "400g", "2kg", "500ml")
+- Ενημέρωση `createSchema.js`/`updateSchema.js` (Joi) ώστε να δέχονται το `packageSize`
+- Προσθήκη του `packageSize` στα `ALLOWED` πεδία του import προϊόντων (`importProducts.js`)
+- Ενημέρωση `productService.js`: αναζήτηση (`$regex`) και `$project` σε `listAll`/`getById` να περιλαμβάνουν `packageSize`
+- Frontend: εμφάνιση/επεξεργασία `packageSize` σε `ProductInfoSection`, `ProductList` (πίνακας, mobile view, CSV export, φιλτράρισμα), `ProductExport` (καλάθι & αναζήτηση), `QuickStockModal`
+- Βελτιώσεις στο `BarcodeScannerModal.jsx`: warm-up του native `BarcodeDetector` για αποφυγή αποτυχίας στο πρώτο άνοιγμα, και explicit stop των video tracks (`forceStopVideoTracks`) για να μην μένει αναμμένη η κάμερα σε iOS Safari
+
+**🌱 Σε απλά λόγια**
+
+Προστέθηκε η δυνατότητα να καταγράφεται το μέγεθος συσκευασίας ενός προϊόντος (π.χ. 400g, 2kg, 500ml), ώστε να ξεχωρίζουν εύκολα παρόμοια προϊόντα διαφορετικού μεγέθους σε όλες τις οθόνες (λίστα, εξαγωγή, γρήγορη προσθήκη αποθέματος). Επίσης διορθώθηκε πρόβλημα με το σκάνερ barcode που κάποιες φορές δεν διάβαζε σωστά την πρώτη φορά ή άφηνε την κάμερα ανοιχτή σε iPhone.
+
+---
+
 ## v1.3.0 — 2026-07-24 (f99748e)
 
 ### Αυτόματη δημιουργία changelog με AI μετά από push
