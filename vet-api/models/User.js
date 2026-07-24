@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     // ❌ αφαιρέθηκε το legacy `pin`
     pinHash: { type: String, required: true, index: true },
     isActive: { type: Boolean, default: true, index: true },
+    lastSeenAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

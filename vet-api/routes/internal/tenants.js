@@ -54,29 +54,32 @@ router.get("/storage", requireServiceKey, async (req, res, next) => {
   }
 });
 
-// Active kiosks/logins per clinic -- each non-expired RefreshToken = one connected kiosk/device.
+const ONLINE_THRESHOLD_MS = 2 * 60 * 1000; // θεωρείται online αν είδαμε δραστηριότητα τα τελευταία 2 λεπτά
+
+// Διαφορετικοί χρήστες που έχουν ενεργό (μη ληγμένο) login σε αυτή την κλινική,
+// με live online/offline βάσει lastSeenAt (ενημερώνεται σε κάθε request τους).
 router.get("/:clinicId/sessions", requireServiceKey, async (req, res, next) => {
   try {
     const { clinicId } = req.params;
     const { RefreshToken, User } = getTenantModels(clinicId);
 
-    const tokens = await RefreshToken.find().sort({ createdAt: -1 }).lean();
+    const tokens = await RefreshToken.find().select("userId").lean();
     const userIds = [...new Set(tokens.map((t) => String(t.userId)))];
-    const users = await User.find({ _id: { $in: userIds } }).select("name role isActive").lean();
-    const userById = new Map(users.map((u) => [String(u._id), u]));
+    const users = await User.find({ _id: { $in: userIds } }).select("name role lastSeenAt").lean();
 
-    const sessions = tokens.map((t) => {
-      const user = userById.get(String(t.userId));
-      return {
-        userId: t.userId,
-        name: user?.name || "Unknown",
-        role: user?.role || null,
-        loginAt: t.createdAt,
-        expiresAt: t.expiresAt,
-      };
-    });
+    const now = Date.now();
+    const result = users
+      .map((u) => {
+        const lastSeenAt = u.lastSeenAt || null;
+        const online = lastSeenAt ? now - new Date(lastSeenAt).getTime() < ONLINE_THRESHOLD_MS : false;
+        return { userId: u._id, name: u.name, role: u.role, lastSeenAt, online };
+      })
+      .sort((a, b) => {
+        if (a.online !== b.online) return a.online ? -1 : 1;
+        return new Date(b.lastSeenAt || 0) - new Date(a.lastSeenAt || 0);
+      });
 
-    res.json({ activeKiosks: sessions.length, sessions });
+    res.json({ users: result });
   } catch (err) {
     next(err);
   }

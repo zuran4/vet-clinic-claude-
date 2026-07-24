@@ -1,6 +1,21 @@
 import * as Sentry from "@sentry/node";
 import { getTenantModels } from "../services/tenantConnectionManager.js";
 
+// Throttle των lastSeenAt updates ώστε να μη γράφουμε στη Mongo σε κάθε
+// request — αρκεί μία ενημέρωση κάθε λίγα δευτερόλεπτα ανά χρήστη.
+const LAST_SEEN_THROTTLE_MS = 20_000;
+const lastSeenThrottle = new Map(); // "clinicId:userId" -> timestamp
+
+function touchLastSeen(models, userId, clinicId) {
+  const key = `${clinicId}:${userId}`;
+  const now = Date.now();
+  const last = lastSeenThrottle.get(key) || 0;
+  if (now - last < LAST_SEEN_THROTTLE_MS) return;
+
+  lastSeenThrottle.set(key, now);
+  models.User.updateOne({ _id: userId }, { lastSeenAt: new Date() }).catch(() => {});
+}
+
 /**
  * Τρέχει ΜΕΤΑ το requireAuth.
  * Διαβάζει το clinicId από το JWT (req.user.clinicId) και φορτώνει
@@ -18,6 +33,10 @@ export default function resolveTenant(req, res, next) {
 
     // Ώστε κάθε error σε αυτό το request να φιλτράρεται ανά κλινική στο Sentry
     Sentry.setTag("clinicId", clinicId);
+
+    if (req.user?.userId) {
+      touchLastSeen(req.models, req.user.userId, clinicId);
+    }
 
     next();
   } catch (err) {
