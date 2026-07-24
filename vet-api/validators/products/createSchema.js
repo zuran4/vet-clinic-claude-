@@ -12,6 +12,7 @@ export default Joi.object({
   name: Joi.string().trim().min(2).required(),
   category: Joi.string().valid("Φάρμακο", "Τροφή", "Αξεσουάρ", "Παιχνίδι", "Άλλο").required(),
   barcode: Joi.string().trim().empty("").optional(),
+  packageSize: Joi.string().trim().allow(""),
   quantity: Joi.number().integer().min(0).default(0),
   threshold: Joi.number().integer().min(0).default(5),
   unit: Joi.string().trim().allow(""),

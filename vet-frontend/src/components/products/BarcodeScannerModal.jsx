@@ -20,6 +20,24 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       return;
     }
 
+    // "Ζέσταμα" του native BarcodeDetector: ο browser φορτώνει το detection
+    // model του lazy, την πρώτη φορά που καλείται — αν δεν έχει προλάβει να
+    // φορτώσει πριν αρχίσουν να περνάνε frames από την κάμερα, το πρώτο άνοιγμα
+    // δεν διαβάζει τίποτα (δουλεύει μόνο στο επόμενο άνοιγμα). Το ξεκινάμε εδώ
+    // παράλληλα με το αίτημα κάμερας, ώστε να προλάβει.
+    if (window.BarcodeDetector) {
+      try {
+        const warmupCanvas = document.createElement("canvas");
+        warmupCanvas.width = 2;
+        warmupCanvas.height = 2;
+        new window.BarcodeDetector({
+          formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "qr_code"],
+        }).detect(warmupCanvas).catch(() => {});
+      } catch {
+        // αγνοείται — απλά δεν προλάβαμε να ζεστάνουμε το detector
+      }
+    }
+
     // cancelled: το component ζήτησε cleanup (unmount/remount) πριν προλάβει
     // να ολοκληρωθεί το async start() — π.χ. React StrictMode double-invoke.
     // started: το start() έχει πραγματικά ολοκληρωθεί (η κάμερα τρέχει).
@@ -29,8 +47,29 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
     let started = false;
     let scanner;
 
+    // Εφεδρικό: σε κάποιες συσκευές (π.χ. iOS Safari με το πειραματικό native
+    // BarcodeDetector path) το scanner.stop() "πετυχαίνει" στο JS αλλά δεν
+    // κλείνει πάντα το πραγματικό camera track — μένει αναμμένη η κάμερα
+    // (iOS δείχνει "still recording" indicator). Σταματάμε το raw MediaStream
+    // απευθείας ως extra ασφάλεια, ανεξάρτητα από τη βιβλιοθήκη.
+    const forceStopVideoTracks = () => {
+      try {
+        const container = document.getElementById(SCANNER_ELEMENT_ID);
+        const videoEl = container?.querySelector("video");
+        const stream = videoEl?.srcObject;
+        if (stream && typeof stream.getTracks === "function") {
+          stream.getTracks().forEach((t) => t.stop());
+        }
+      } catch {
+        // αγνοείται
+      }
+    };
+
     const stopAndClear = () => {
       stoppedRef.current = true;
+      // Πιάνουμε/σταματάμε το raw track ΠΡΙΝ το scanner.clear() αφαιρέσει
+      // το video element από το DOM.
+      forceStopVideoTracks();
       return scanner?.stop().then(() => scanner.clear()).catch(() => {});
     };
 
@@ -61,6 +100,7 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
           (decodedText) => {
             if (stoppedRef.current) return;
             stoppedRef.current = true;
+            forceStopVideoTracks();
             scanner
               .stop()
               .catch(() => {})
@@ -96,6 +136,8 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       if (stoppedRef.current) {
         // Είχε ήδη σταματήσει (πετυχημένη σάρωση) — μόνο clear, το stop()
         // θα πετούσε synchronous exception σε ήδη-σταματημένο scanner.
+        // Ξανακαλούμε το force-stop σαν δεύτερη ασφάλεια (idempotent).
+        forceStopVideoTracks();
         try { scanner?.clear(); } catch {}
       } else if (started) {
         stopAndClear();

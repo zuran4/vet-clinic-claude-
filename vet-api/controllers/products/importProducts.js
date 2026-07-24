@@ -6,7 +6,7 @@
 import logger from "../../utils/logger.js";
 
 const VALID_CATEGORIES = ["Φάρμακο", "Τροφή", "Παιχνίδι", "Αξεσουάρ", "Άλλο"];
-const ALLOWED = ["name", "category", "quantity", "unit", "threshold", "barcode", "supplier", "notes"];
+const ALLOWED = ["name", "category", "packageSize", "quantity", "unit", "threshold", "barcode", "supplier", "notes"];
 
 // Κανονικοποίηση κατηγορίας (ανεξαρτήτως πεζών/κεφαλαίων)
 function normalizeCategory(raw = "") {

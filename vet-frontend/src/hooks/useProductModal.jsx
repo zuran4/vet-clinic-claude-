@@ -22,6 +22,7 @@ export function useProductModal(productId, initialBarcode = "") {
             name: "",
             category: "Άλλο",
             barcode: initialBarcode || "",
+            packageSize: "",
             unit: "",
             threshold: 5,
             supplier: "",

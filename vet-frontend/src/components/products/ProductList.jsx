@@ -53,7 +53,7 @@ const ProductList = () => {
 
   // Εξαγωγή CSV για χαμηλά/εξαντλημένα
   function exportCsv(rows) {
-    const headers = ["Όνομα", "Κατηγορία", "Barcode", "Ποσότητα", "Τιμή Λιανικής", "Κατάσταση"];
+    const headers = ["Όνομα", "Μέγεθος Συσκευασίας", "Κατηγορία", "Barcode", "Ποσότητα", "Τιμή Λιανικής", "Κατάσταση"];
     const lines = [headers.join(",")];
     rows.forEach((p) => {
       const cfg = getThresholdForCategory(p?.category);
@@ -61,6 +61,7 @@ const ProductList = () => {
       const { label } = getStockStatus(totalQty, cfg);
       const values = [
         (p?.name ?? "").replaceAll('"', '""'),
+        (p?.packageSize ?? "").replaceAll('"', '""'),
         (p?.category ?? "").replaceAll('"', '""'),
         String(p?.barcode ?? ""),
         String(totalQty),
@@ -124,7 +125,8 @@ const ProductList = () => {
       q === "" ||
       lower(p?.name).includes(q) ||
       (p?.barcode ?? "").toString().includes(q) ||
-      lower(p?.category).includes(q);
+      lower(p?.category).includes(q) ||
+      lower(p?.packageSize).includes(q);
 
     const matchesCategory = selectedCategory === "all" || p?.category === selectedCategory;
 
@@ -265,7 +267,14 @@ const ProductList = () => {
                           <ChevronRight className="w-4 h-4 text-gray-300 hover:text-orange-400 transition-colors" />
                         </button>
 
-                        {product.name}
+                        <span className="flex items-center gap-2 min-w-0">
+                          <span className="truncate">{product.name}</span>
+                          {product.packageSize && (
+                            <span className="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-win-elevated2 text-gray-500 dark:text-gray-400">
+                              {product.packageSize}
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{product.category}</td>
                       <td className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 font-mono">{product.barcode || "—"}</td>
@@ -381,6 +390,11 @@ const ProductList = () => {
                       style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}
                     />
                     <span className="font-bold text-base text-gray-900 dark:text-gray-100 truncate">{product.name}</span>
+                    {product.packageSize && (
+                      <span className="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-win-elevated2 text-gray-500 dark:text-gray-400">
+                        {product.packageSize}
+                      </span>
+                    )}
                   </button>
 
                   <div className="flex gap-1.5 flex-shrink-0">

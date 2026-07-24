@@ -99,7 +99,7 @@ const ProductExport = () => {
     setCart((prev) => {
       const exists = prev.find((p) => p.id === prod._id);
       if (exists) return prev.map((p) => p.id === prod._id ? { ...p, quantity: p.quantity + 1 } : p);
-      return [...prev, { id: prod._id, name: prod.name, quantity: 1 }];
+      return [...prev, { id: prod._id, name: prod.name, packageSize: prod.packageSize || "", quantity: 1 }];
     });
     setProductQuery("");
     setProductResults([]);
@@ -190,7 +190,10 @@ const ProductExport = () => {
               </div>
               {cart.map((p) => (
                 <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 dark:text-gray-200">{p.name}</span>
+                  <span className="text-gray-700 dark:text-gray-200">
+                    {p.name}
+                    {p.packageSize && <span className="text-gray-400 dark:text-gray-500"> · {p.packageSize}</span>}
+                  </span>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">x{p.quantity}</span>
                 </div>
               ))}
@@ -389,6 +392,11 @@ const ProductExport = () => {
                               <Plus className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                             </div>
                             <span className="font-medium text-sm text-gray-800 dark:text-gray-100 truncate">{prod.name}</span>
+                            {prod.packageSize && (
+                              <span className="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                                {prod.packageSize}
+                              </span>
+                            )}
                           </div>
                           <span className="text-xs text-gray-400 flex-shrink-0">απόθ. {prod.quantity ?? prod.stockTotal ?? 0}</span>
                         </button>

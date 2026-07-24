@@ -42,6 +42,16 @@ const ProductInfoSection = ({ productInfo, suppliers, onChange }) => {
             />
           </div>
           <div>
+            <label className={LABEL}>Μέγεθος Συσκευασίας</label>
+            <input
+              type="text"
+              value={productInfo.packageSize || ""}
+              onChange={(e) => updateField("packageSize", e.target.value)}
+              placeholder="π.χ. 400g, 2kg, 500ml"
+              className={INPUT}
+            />
+          </div>
+          <div>
             <label className={LABEL}>Κατηγορία</label>
             <select
               value={productInfo.category || "Άλλο"}

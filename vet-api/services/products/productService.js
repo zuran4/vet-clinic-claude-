@@ -11,6 +11,7 @@ export async function listAll(search = "", { Product }) {
         { name: { $regex: search, $options: "i" } },
         { category: { $regex: search, $options: "i" } },
         { barcode: { $regex: search, $options: "i" } },
+        { packageSize: { $regex: search, $options: "i" } },
       ]}}
     : null;
 
@@ -19,7 +20,7 @@ export async function listAll(search = "", { Product }) {
     { $sort: { name: 1 } },
     {
       $project: {
-        _id: 1, name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
+        _id: 1, name: 1, category: 1, barcode: 1, packageSize: 1, supplier: 1, unit: 1,
         threshold: 1, retailPrice: 1, expirationWarningDays: 1, batches: 1,
         manualReorder: 1, manualReorderQty: 1,
         createdAt: 1, updatedAt: 1,
@@ -49,7 +50,7 @@ export async function getById(id, { Product }) {
     { $match: { _id: new mongoose.Types.ObjectId(id) } },
     {
       $project: {
-        name: 1, category: 1, barcode: 1, supplier: 1, unit: 1,
+        name: 1, category: 1, barcode: 1, packageSize: 1, supplier: 1, unit: 1,
         threshold: 1, retailPrice: 1, expirationWarningDays: 1, notes: 1,
         manualReorder: 1, manualReorderQty: 1,
         createdAt: 1, updatedAt: 1, batches: 1,

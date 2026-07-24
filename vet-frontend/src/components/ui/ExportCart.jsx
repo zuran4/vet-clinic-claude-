@@ -29,7 +29,14 @@ export default function ExportCart({ items = [], onChange }) {
       <ul className="divide-y divide-emerald-50 dark:divide-emerald-700/30">
         {items.map((p) => (
           <li key={p.id} className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-win-surface hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors">
-            <span className="font-medium text-sm text-gray-800 dark:text-gray-100 flex-1 min-w-0 truncate pr-3">{p.name}</span>
+            <span className="flex items-center gap-2 flex-1 min-w-0 pr-3">
+              <span className="font-medium text-sm text-gray-800 dark:text-gray-100 truncate">{p.name}</span>
+              {p.packageSize && (
+                <span className="flex-shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                  {p.packageSize}
+                </span>
+              )}
+            </span>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <button
                 onClick={() => decQty(p.id)}

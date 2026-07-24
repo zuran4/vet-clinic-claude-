@@ -79,7 +79,10 @@ export default function QuickStockModal({ product, onSave, onClose }) {
             <PackagePlus className="w-5 h-5" />
             <div>
               <p className="text-lg font-bold leading-tight">Προσθήκη Αποθέματος</p>
-              <p className="text-sm text-white/70 mt-0.5">{product?.name}</p>
+              <p className="text-sm text-white/70 mt-0.5">
+                {product?.name}
+                {product?.packageSize && ` · ${product.packageSize}`}
+              </p>
             </div>
           </div>
         </div>

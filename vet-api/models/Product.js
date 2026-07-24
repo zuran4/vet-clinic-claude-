@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema(
     },
     barcode: { type: String, unique: true, sparse: true },
 
+    // 📦 Μέγεθος συσκευασίας — ξεχωρίζει variants του ίδιου προϊόντος
+    // (π.χ. "400g", "2kg", "500ml") από το ελεύθερο όνομα.
+    packageSize: { type: String, default: "" },
+
     // Συνολική ποσότητα που εμφανίζουμε στη λίστα
     quantity: { type: Number, default: 0 },
 
