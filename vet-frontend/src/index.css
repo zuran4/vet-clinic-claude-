@@ -78,8 +78,9 @@ code {
 /* Thin vertical scrollbar for tables     */
 /* ===================================== */
 .thin-scroll {
-  /* Σταθερό layout όταν εμφανίζεται η μπάρα */
-  scrollbar-gutter: stable both-edges;
+  /* Σταθερό layout όταν εμφανίζεται η μπάρα — μόνο από την πλευρά της
+     scrollbar, όχι "both-edges" (άφηνε λευκό κενό στην απέναντι πλευρά). */
+  scrollbar-gutter: stable;
 
   /* Firefox */
   scrollbar-width: thin;

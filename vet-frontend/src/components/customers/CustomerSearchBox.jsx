@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, User, UserPlus, Search } from "lucide-react";
+import { X, User, UserPlus, Search, PawPrint } from "lucide-react";
 import request from "@/api/apiClient.js";
 import QuickCreateCustomerModal from "./QuickCreateCustomerModal.jsx";
 
@@ -112,7 +112,7 @@ const CustomerSearchBox = ({ onSelect, initialCustomer = null }) => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Όνομα ή τηλέφωνο πελάτη..."
+          placeholder="Όνομα, τηλέφωνο ή κατοικίδιο..."
           className="w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-win-elevated dark:text-gray-100"
         />
 
@@ -136,9 +136,17 @@ const CustomerSearchBox = ({ onSelect, initialCustomer = null }) => {
                           <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
                             <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400">{c.name?.charAt(0)?.toUpperCase()}</span>
                           </div>
-                          <div>
-                            <span className="font-medium text-sm text-gray-800 dark:text-gray-100">{c.name}</span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{c.phone}</span>
+                          <div className="min-w-0">
+                            <div>
+                              <span className="font-medium text-sm text-gray-800 dark:text-gray-100">{c.name}</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{c.phone}</span>
+                            </div>
+                            {c.matchedPets?.length > 0 && (
+                              <div className="flex items-center gap-1 mt-0.5 text-xs text-indigo-400 dark:text-indigo-400">
+                                <PawPrint className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{c.matchedPets.join(", ")}</span>
+                              </div>
+                            )}
                           </div>
                         </button>
                       </li>

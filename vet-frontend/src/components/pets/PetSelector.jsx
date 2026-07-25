@@ -51,26 +51,24 @@ const PetSelector = ({
             required
           />
 
-          <div className="flex gap-2">
-            <select
-              value={newPetSpecies}
-              onChange={(e) => onChangeSpecies(e.target.value)}
-              className={`${SELECT} flex-1`}
-            >
-              <option value="Σκύλος">Σκύλος</option>
-              <option value="Γάτα">Γάτα</option>
-              <option value="Άλλο">Άλλο</option>
-            </select>
+          <select
+            value={newPetSpecies}
+            onChange={(e) => onChangeSpecies(e.target.value)}
+            className={`${SELECT} w-full`}
+          >
+            <option value="Σκύλος">Σκύλος</option>
+            <option value="Γάτα">Γάτα</option>
+            <option value="Άλλο">Άλλο</option>
+          </select>
 
-            <select
-              value={newPetGender}
-              onChange={(e) => onChangeGender(e.target.value)}
-              className={`${SELECT} flex-1`}
-            >
-              <option value="Αρσενικό">Αρσενικό</option>
-              <option value="Θηλυκό">Θηλυκό</option>
-            </select>
-          </div>
+          <select
+            value={newPetGender}
+            onChange={(e) => onChangeGender(e.target.value)}
+            className={`${SELECT} w-full`}
+          >
+            <option value="Αρσενικό">Αρσενικό</option>
+            <option value="Θηλυκό">Θηλυκό</option>
+          </select>
         </div>
       )}
     </div>

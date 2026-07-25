@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { normalizeGreek } from "../utils/greekNormalize.js";
 
 const petSchema = new mongoose.Schema({
   owner: {
@@ -12,6 +13,12 @@ const petSchema = new mongoose.Schema({
     required: true,
     trim: true,
     index: true, // ✅ για γρήγορη αναζήτηση με όνομα
+  },
+  // 🔎 Κανονικοποιημένη μορφή του name (χωρίς τόνους, ομόηχα ενοποιημένα) —
+  // γεμίζει αυτόματα, χρησιμοποιείται μόνο για αναζήτηση.
+  nameNormalized: {
+    type: String,
+    index: true,
   },
   species: {
     type: String,
@@ -100,6 +107,24 @@ const petSchema = new mongoose.Schema({
 
 // ✅ Index για αναζήτηση με όνομα + ιδιοκτήτη
 petSchema.index({ name: 1, owner: 1 });
+
+// 🔹 Συγχρονισμός nameNormalized σε κάθε save (create/save)
+petSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.nameNormalized = normalizeGreek(this.name);
+  }
+  next();
+});
+
+// 🔹 Συγχρονισμός nameNormalized και σε findOneAndUpdate/findByIdAndUpdate
+petSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() || {};
+  const newName = update.name ?? update.$set?.name;
+  if (newName != null) {
+    this.set({ nameNormalized: normalizeGreek(newName) });
+  }
+  next();
+});
 
 export { petSchema };
 const Pet = mongoose.model("Pet", petSchema);

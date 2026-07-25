@@ -22,7 +22,7 @@ const Modal = ({ isOpen, onClose, children, preventBackdropClose = false, noPadd
         {/* Inner: scrollable — μόνο κάθετο pan, χωρίς rubber-band προς τα έξω */}
         <div
           ref={scrollRef}
-          className={`overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-purple-400 hover:scrollbar-thumb-purple-500 scrollbar-track-gray-100 dark:scrollbar-track-win-elevated ${noPadding ? "" : "p-4 sm:p-6"}`}
+          className={`overflow-y-auto flex-1 no-scrollbar ${noPadding ? "" : "p-4 sm:p-6"}`}
           style={{ touchAction: "pan-y", overscrollBehavior: "contain" }}
         >
           {!noPadding && (

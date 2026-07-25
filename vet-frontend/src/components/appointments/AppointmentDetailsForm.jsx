@@ -1,14 +1,17 @@
 import React from "react";
-import { Edit3, PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, User, Phone, X } from "lucide-react";
+import { PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, X } from "lucide-react";
 import { VISIT_REASONS } from "../../constants/visitReasons.js";
 
 import PrescriptionModal from "../prescriptions/PrescriptionModal";
 import CustomerSearchBox from "../customers/CustomerSearchBox";
 import PetSelector from "../pets/PetSelector";
 import TimeSelector from "../ui/TimeSelector";
-import AppointmentFormFields from "./AppointmentFormFields";
+import MultiSelectDropdown from "../ui/MultiSelectDropdown";
 import { Button } from "../ui/button";
 import { useAppointmentForm } from "../../hooks/useAppointmentForm";
+
+const LABEL = "text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide";
+const CONTROL = "w-full border border-gray-200 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300";
 
 const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSave, onCancel }) => {
   const {
@@ -106,104 +109,119 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           </div>
         )}
 
-        {/* Πελάτης */}
-        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3 space-y-2">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-            Πελάτης
-          </p>
-          <CustomerSearchBox
-            allCustomers={allCustomers}
-            value={formData.clientName}
-            initialCustomer={ownerId ? { _id: ownerId, name: formData.clientName, phone: formData.phone } : null}
-            onSelect={(customer) => {
-              handleSelectCustomer(customer);
-              setOwnerId(customer?.id || null);
-            }}
-          />
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
-            <input
-              type="text"
-              name="phone"
-              placeholder="Τηλέφωνο"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full border border-gray-200 dark:border-win-border-light pl-9 pr-3 py-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-        </div>
-
-        {/* Κατοικίδιο */}
-        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-            Κατοικίδιο
-          </p>
-          <PetSelector
-            ownerId={ownerId}
-            selectedPetId={selectedPetId}
-            animalName={formData.animalName}
-            newPetSpecies={newPetSpecies}
-            newPetGender={newPetGender}
-            onChangePet={handlePetChange}
-            onChangeAnimalName={(name) =>
-              setFormData((prev) => ({ ...prev, animalName: name }))
-            }
-            onChangeSpecies={setNewPetSpecies}
-            onChangeGender={setNewPetGender}
-          />
-
-          {!existingData && extraPets.map((ep, idx) => (
-            <div key={ep.key} className="mt-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                  Κατοικίδιο #{idx + 2}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeExtraPet(ep.key)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <PetSelector
-                ownerId={ownerId}
-                selectedPetId={ep.selectedPetId}
-                animalName={ep.animalName}
-                newPetSpecies={ep.species}
-                newPetGender={ep.gender}
-                onChangePet={(petId) => handleExtraPetChange(ep.key, petId)}
-                onChangeAnimalName={(name) => updateExtraPet(ep.key, { animalName: name })}
-                onChangeSpecies={(v) => updateExtraPet(ep.key, { species: v })}
-                onChangeGender={(v) => updateExtraPet(ep.key, { gender: v })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Αριστερή στήλη: Πελάτης, Τύπος, Διάρκεια */}
+          <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3 space-y-3">
+            <div>
+              <p className={`${LABEL} mb-1.5`}>Πελάτης</p>
+              <CustomerSearchBox
+                allCustomers={allCustomers}
+                value={formData.clientName}
+                initialCustomer={ownerId ? { _id: ownerId, name: formData.clientName, phone: formData.phone } : null}
+                onSelect={(customer) => {
+                  handleSelectCustomer(customer);
+                  setOwnerId(customer?.id || null);
+                }}
               />
             </div>
-          ))}
 
-          {!existingData && (
-            <button
-              type="button"
-              onClick={addExtraPet}
-              className="mt-3 flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              Προσθήκη κι άλλου κατοικιδίου
-            </button>
-          )}
-        </div>
+            <div>
+              <label className={`${LABEL} block mb-1.5`}>
+                Τύπος <span className="normal-case font-normal tracking-normal text-gray-400 dark:text-gray-500">(μπορείς να διαλέξεις παραπάνω από έναν)</span>
+              </label>
+              <MultiSelectDropdown
+                options={optionsByDoctor[doctor] || []}
+                selected={formData.type}
+                onChange={(next) => setFormData((prev) => ({ ...prev, type: next }))}
+                placeholder="Επίλεξε τύπο ραντεβού..."
+              />
+            </div>
 
-        {/* Λεπτομέρειες */}
-        <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-            Λεπτομέρειες
-          </p>
-          <AppointmentFormFields
-            formData={formData}
-            onChange={handleChange}
-            onChangeType={(next) => setFormData((prev) => ({ ...prev, type: next }))}
-            optionsByDoctor={optionsByDoctor}
-            doctor={doctor}
-          />
+            <div>
+              <label className={`${LABEL} block mb-1.5`}>Διάρκεια</label>
+              <select
+                name="duration"
+                value={formData.duration}
+                onChange={handleChange}
+                className={CONTROL}
+              >
+                <option value={30}>30 λεπτά</option>
+                <option value={60}>1 ώρα</option>
+                <option value={90}>1 ώρα & 30 λεπτά</option>
+                <option value={120}>2 ώρες</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Δεξιά στήλη: Κατοικίδιο */}
+          <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
+            <p className={`${LABEL} mb-2`}>Κατοικίδιο</p>
+            <PetSelector
+              ownerId={ownerId}
+              selectedPetId={selectedPetId}
+              animalName={formData.animalName}
+              newPetSpecies={newPetSpecies}
+              newPetGender={newPetGender}
+              onChangePet={handlePetChange}
+              onChangeAnimalName={(name) =>
+                setFormData((prev) => ({ ...prev, animalName: name }))
+              }
+              onChangeSpecies={setNewPetSpecies}
+              onChangeGender={setNewPetGender}
+            />
+
+            {!existingData && extraPets.map((ep, idx) => (
+              <div key={ep.key} className="mt-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                    Κατοικίδιο #{idx + 2}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeExtraPet(ep.key)}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <PetSelector
+                  ownerId={ownerId}
+                  selectedPetId={ep.selectedPetId}
+                  animalName={ep.animalName}
+                  newPetSpecies={ep.species}
+                  newPetGender={ep.gender}
+                  onChangePet={(petId) => handleExtraPetChange(ep.key, petId)}
+                  onChangeAnimalName={(name) => updateExtraPet(ep.key, { animalName: name })}
+                  onChangeSpecies={(v) => updateExtraPet(ep.key, { species: v })}
+                  onChangeGender={(v) => updateExtraPet(ep.key, { gender: v })}
+                />
+              </div>
+            ))}
+
+            {!existingData && (
+              <button
+                type="button"
+                onClick={addExtraPet}
+                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Προσθήκη κι άλλου κατοικιδίου
+              </button>
+            )}
+          </div>
+
+          {/* Σημειώσεις — πλήρες πλάτος, κάτω από τις 2 στήλες */}
+          <div className="sm:col-span-2 bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
+            <label className={`${LABEL} block mb-1.5`}>Σημειώσεις</label>
+            <textarea
+              name="notes"
+              placeholder="Σημειώσεις (προαιρετικό)"
+              value={formData.notes}
+              onChange={handleChange}
+              className={`${CONTROL} placeholder-gray-400 dark:placeholder-gray-500 resize-none`}
+              rows={3}
+            />
+          </div>
         </div>
 
         {/* Actions */}

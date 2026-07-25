@@ -7,21 +7,51 @@
 
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { normalizeGreek } from "../../utils/greekNormalize.js";
 
 export const getAllCustomers = async (req, res, next) => {
   try {
-    const { Customer } = req.models;
+    const { Customer, Pet } = req.models;
     const raw = (req.query.search ?? req.query.q ?? "").trim();
     if (raw.length >= 2) {
       const safe = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const regex = new RegExp(safe, "i");
+      const regex = new RegExp(safe, "i"); // για το τηλέφωνο (δεν χρειάζεται normalization)
 
-      const results = await Customer.find(
-        { $or: [{ name: regex }, { phone: regex }] },
-        { name: 1, phone: 1 } // μόνο ό,τι χρειάζεται για dropdown
-      )
-        .limit(20)
-        .lean();
+      const normQuery = normalizeGreek(raw).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const nameRegex = new RegExp(normQuery, "i"); // ανεκτικό σε τόνους/ομόηχα
+
+      // Ψάχνουμε πελάτες (όνομα/τηλέφωνο) ΚΑΙ κατοικίδια (όνομα) — έτσι το
+      // προσωπικό μπορεί να βρει τον ιδιοκτήτη γράφοντας το όνομα του ζώου.
+      // Η αναζήτηση ονόματος γίνεται πάνω στο nameNormalized (χωρίς τόνους,
+      // με ομόηχα ενοποιημένα) ώστε "περλα"/"παιρλα" να βρίσκουν "Πέρλα".
+      const [customerMatches, petMatches] = await Promise.all([
+        Customer.find(
+          { $or: [{ nameNormalized: nameRegex }, { phone: regex }] },
+          { name: 1, phone: 1 } // μόνο ό,τι χρειάζεται για dropdown
+        ).limit(20).lean(),
+        Pet.find({ nameNormalized: nameRegex }, { name: 1, owner: 1 }).limit(20).lean(),
+      ]);
+
+      const byId = new Map(customerMatches.map((c) => [String(c._id), c]));
+
+      const petOwnerIds = [...new Set(petMatches.map((p) => String(p.owner || "")).filter(Boolean))]
+        .filter((id) => !byId.has(id));
+
+      const petOwners = petOwnerIds.length
+        ? await Customer.find({ _id: { $in: petOwnerIds } }, { name: 1, phone: 1 }).lean()
+        : [];
+      for (const c of petOwners) byId.set(String(c._id), c);
+
+      // Ποιο/ποια κατοικίδια ταίριαξαν, ανά ιδιοκτήτη — για να ξεχωρίζει το UI
+      // ίδια ονόματα κατοικιδίων διαφορετικών ιδιοκτητών (π.χ. δύο σκύλοι "Rex").
+      for (const pet of petMatches) {
+        const oid = String(pet.owner || "");
+        const owner = byId.get(oid);
+        if (!owner) continue;
+        owner.matchedPets = owner.matchedPets ? [...owner.matchedPets, pet.name] : [pet.name];
+      }
+
+      const results = [...byId.values()].slice(0, 20);
 
       logger.info(`🔍 Customers search "${raw}" → ${results.length} αποτελέσματα`);
       return res.json(results); // 🔸 λίστα, όχι αντικείμενο

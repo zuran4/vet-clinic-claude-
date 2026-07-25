@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { normalizeGreek } from "../utils/greekNormalize.js";
 
 // 🧩 Υπομοντέλο για αγορές
 const purchaseSchema = new mongoose.Schema(
@@ -17,6 +18,13 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      index: true,
+    },
+    // 🔎 Κανονικοποιημένη μορφή του name (χωρίς τόνους, ομόηχα ενοποιημένα)
+    // — γεμίζει αυτόματα (pre-save / pre-findOneAndUpdate hook παρακάτω).
+    // Χρησιμοποιείται ΜΟΝΟ για αναζήτηση, ποτέ δεν εμφανίζεται στο UI.
+    nameNormalized: {
+      type: String,
       index: true,
     },
     phone: {
@@ -73,6 +81,25 @@ const customerSchema = new mongoose.Schema(
 
 // 🔎 Indexes για ταχύτερα queries & search
 customerSchema.index({ name: 1, phone: 1 });
+
+// 🔹 Συγχρονισμός nameNormalized σε κάθε save (create/save)
+customerSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.nameNormalized = normalizeGreek(this.name);
+  }
+  next();
+});
+
+// 🔹 Συγχρονισμός nameNormalized και σε findOneAndUpdate/findByIdAndUpdate
+// (δεν περνάνε από το pre("save") hook παραπάνω)
+customerSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() || {};
+  const newName = update.name ?? update.$set?.name;
+  if (newName != null) {
+    this.set({ nameNormalized: normalizeGreek(newName) });
+  }
+  next();
+});
 
 export { customerSchema };
 const Customer = mongoose.model("Customer", customerSchema);
