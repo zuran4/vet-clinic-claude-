@@ -3,6 +3,7 @@ import { Pill, Calendar, Stethoscope, FilePlus, Printer } from "lucide-react";
 import dayjs from "dayjs";
 import request from "../../api/apiClient.js";
 import PrescriptionFormModal from "../prescriptions/PrescriptionFormModal.jsx";
+import { useRealtimeSync } from "../../hooks/useRealtimeSync.jsx";
 
 const handlePrint = (rx) => {
   const logoUrl = `${window.location.origin}/clinic-logo.png`;
@@ -86,6 +87,9 @@ const InlinePrescriptions = ({ petId, pet, customer }) => {
   useEffect(() => {
     fetchPrescriptions();
   }, [petId]);
+
+  // 🔹 Real-time ενημέρωση όταν προστίθεται συνταγή από άλλη συσκευή
+  useRealtimeSync({ prescriptions: fetchPrescriptions });
 
   const handleSubmit = async (prescriptionData) => {
     try {

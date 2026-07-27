@@ -1,6 +1,7 @@
 import * as petService from "../../../services/petService.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
+import { emitChange } from "../../../utils/realtime.js";
 
 export default async function addHistoryEntry(req, res, next) {
   try {
@@ -13,6 +14,7 @@ export default async function addHistoryEntry(req, res, next) {
     }
 
     logger.info(`🩺 Προστέθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);
+    emitChange("pets");
     res.status(201).json(pet);
   } catch (error) {
     logger.error("❌ Σφάλμα κατά την προσθήκη εγγραφής ιστορικού", { stack: error.stack });

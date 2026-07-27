@@ -27,6 +27,14 @@ export function getTenantModel() {
   return Tenant;
 }
 
+// Χρησιμοποιείται από το /api/health — το app δεν χρησιμοποιεί ποτέ το
+// default mongoose.connection (μόνο createConnection ανά admin/tenant DB),
+// οπότε ένα health check που κοιτάζει το default connection θα δείχνει
+// πάντα "disconnected" ό,τι κι αν γίνεται.
+export function getAdminConnectionState() {
+  return adminConn?.readyState ?? 0;
+}
+
 // Χρησιμοποιείται ΜΟΝΟ σε tests για να κάνει inject mock connection
 export function _setForTest(conn, tenantModel) {
   adminConn = conn;

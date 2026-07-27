@@ -1,6 +1,7 @@
 import * as petService from "../../../services/petService.js";
 import ApiError from "../../../utils/apiError.js";
 import logger from "../../../utils/logger.js";
+import { emitChange } from "../../../utils/realtime.js";
 
 export default async function deleteHistoryEntry(req, res, next) {
   try {
@@ -13,6 +14,7 @@ export default async function deleteHistoryEntry(req, res, next) {
     }
 
     logger.info(`🗑️ Διαγράφηκε εγγραφή ιστορικού για κατοικίδιο ${id}`);
+    emitChange("pets");
     res.json({ message: "✅ Εγγραφή ιστορικού διαγράφηκε", history });
   } catch (error) {
     logger.error("❌ Σφάλμα κατά τη διαγραφή εγγραφής ιστορικού", { stack: error.stack });

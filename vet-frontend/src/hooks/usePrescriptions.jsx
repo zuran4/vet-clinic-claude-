@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import request from "../api/apiClient.js"; // ✅ κεντρικός API client
+import { useRealtimeSync } from "./useRealtimeSync.jsx";
 
 export function usePrescriptions() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -37,6 +38,9 @@ export function usePrescriptions() {
   useEffect(() => {
     fetchPrescriptions();
   }, []);
+
+  // 🔹 Real-time ενημέρωση όταν προστίθεται συνταγή από άλλη συσκευή
+  useRealtimeSync({ prescriptions: fetchPrescriptions });
 
   return { prescriptions, error, addPrescription, fetchPrescriptions };
 }

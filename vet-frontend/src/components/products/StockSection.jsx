@@ -197,19 +197,64 @@ const StockSection = ({ productId, batches = [], expirationWarningDays = 30, onC
           <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
             {batches.map((b, i) => (
               <div key={i} className={`p-3 border border-gray-200 dark:border-win-border-light rounded-lg shadow ${getRowClass(b)}`}>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Αρ. Παρτίδας:</strong> {b.batchNumber || "-"}</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ποσότητα:</strong> {b.quantity}</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Α/Α Τιμολογίου:</strong> {b.invoiceNumber || "-"}</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ημ. Αγοράς:</strong> {b.purchaseDate ? dayjs(b.purchaseDate).format("DD/MM/YYYY") : "-"}</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ημ. Λήξης:</strong> {b.expirationDate ? dayjs(b.expirationDate).format("DD/MM/YYYY") : "-"}</p>
-                <div className="flex gap-2 mt-2">
-                  <Button onClick={() => setEditingIndex(i)} variant="secondary" className="flex items-center gap-1">
-                    <Edit size={16} /> Επεξεργασία
-                  </Button>
-                  <Button onClick={() => removeBatch(i)} disabled={saving} variant="danger" className="flex items-center gap-1">
-                    <Trash2 size={16} /> Διαγραφή
-                  </Button>
-                </div>
+                {editingIndex === i ? (
+                  <div className="space-y-2">
+                    <div>
+                      <label className={LABEL}>Αρ. Παρτίδας</label>
+                      <input type="text" value={editBatch.batchNumber}
+                        onChange={(e) => setEditBatch({ ...editBatch, batchNumber: e.target.value })}
+                        onBlur={() => persistEditField(editBatch)}
+                        className={INPUT} />
+                    </div>
+                    <div>
+                      <label className={LABEL}>Ποσότητα</label>
+                      <input type="number" inputMode="numeric" value={editBatch.quantity}
+                        onChange={(e) => setEditBatch({ ...editBatch, quantity: Number(e.target.value) })}
+                        onBlur={() => persistEditField(editBatch)}
+                        className={INPUT} />
+                    </div>
+                    <div>
+                      <label className={LABEL}>Α/Α Τιμολογίου</label>
+                      <input type="text" value={editBatch.invoiceNumber}
+                        onChange={(e) => setEditBatch({ ...editBatch, invoiceNumber: e.target.value })}
+                        onBlur={() => persistEditField(editBatch)}
+                        className={INPUT} />
+                    </div>
+                    <div>
+                      <label className={LABEL}>Ημ. Αγοράς</label>
+                      <input type="date"
+                        value={editBatch.purchaseDate ? dayjs(editBatch.purchaseDate).format("YYYY-MM-DD") : ""}
+                        onChange={(e) => { const next = { ...editBatch, purchaseDate: e.target.value }; setEditBatch(next); persistEditField(next); }}
+                        className={INPUT} />
+                    </div>
+                    <div>
+                      <label className={LABEL}>Ημ. Λήξης</label>
+                      <input type="date"
+                        value={editBatch.expirationDate ? dayjs(editBatch.expirationDate).format("YYYY-MM-DD") : ""}
+                        onChange={(e) => { const next = { ...editBatch, expirationDate: e.target.value }; setEditBatch(next); persistEditField(next); }}
+                        className={INPUT} />
+                    </div>
+                    <Button onClick={closeEditRow} variant="secondary" className="flex items-center gap-1 w-full justify-center">
+                      <XCircle size={16} /> Κλείσιμο
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Αρ. Παρτίδας:</strong> {b.batchNumber || "-"}</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ποσότητα:</strong> {b.quantity}</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Α/Α Τιμολογίου:</strong> {b.invoiceNumber || "-"}</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ημ. Αγοράς:</strong> {b.purchaseDate ? dayjs(b.purchaseDate).format("DD/MM/YYYY") : "-"}</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200"><strong>Ημ. Λήξης:</strong> {b.expirationDate ? dayjs(b.expirationDate).format("DD/MM/YYYY") : "-"}</p>
+                    <div className="flex gap-2 mt-2">
+                      <Button onClick={() => { setEditingIndex(i); setEditBatch({ ...b }); }} variant="secondary" className="flex items-center gap-1">
+                        <Edit size={16} /> Επεξεργασία
+                      </Button>
+                      <Button onClick={() => removeBatch(i)} disabled={saving} variant="danger" className="flex items-center gap-1">
+                        <Trash2 size={16} /> Διαγραφή
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

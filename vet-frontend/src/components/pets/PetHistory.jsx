@@ -2,6 +2,77 @@ import React, { useState, useEffect } from "react";
 import { Clock, Plus, Trash2, CalendarDays, FileText, ChevronDown, ChevronUp, Activity } from "lucide-react";
 import request from "@/api/apiClient.js";
 import dayjs from "dayjs";
+import { useRealtimeSync } from "../../hooks/useRealtimeSync.jsx";
+
+const SECTION_HEADER_RE = /^\d+\.\s/;
+
+// Το "result" μιας εξέτασης αποθηκεύεται ήδη δομημένο σε γραμμές (αριθμημένες
+// ενότητες, "Ετικέτα: τιμή") — εδώ απλά το εμφανίζουμε σωστά αντί να το
+// αφήνουμε να κολλήσει όλο σε μία γραμμή μέσα σε ένα <p>. Το expand/collapse
+// ελέγχεται από τον γονέα (κλικ σε όλη τη γραμμή, όχι ξεχωριστό κουμπί).
+function ConsultResult({ text, expanded }) {
+  const lines = text.split("\n").filter((l) => l.trim());
+  const isStructured = lines.some((l) => SECTION_HEADER_RE.test(l));
+
+  if (!isStructured) {
+    return (
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-start gap-1">
+        <FileText className="w-3 h-3 flex-shrink-0 mt-0.5" />
+        <span>{text}</span>
+      </p>
+    );
+  }
+
+  if (!expanded) {
+    return (
+      <p className="text-xs text-sky-500 dark:text-sky-400 mt-0.5 flex items-center gap-1">
+        <ChevronDown className="w-3 h-3" />
+        Πλήρες ιστορικό εξέτασης
+      </p>
+    );
+  }
+
+  // Η πρώτη γραμμή είναι πάντα "Λόγος επίσκεψης: ..." — περιττή, αφού ο
+  // λόγος φαίνεται ήδη ως τίτλος της εγγραφής.
+  const bodyLines = lines.slice(1);
+
+  return (
+    <div className="mt-1">
+      <div className="space-y-0.5 mb-1">
+        {bodyLines.map((line, i) => {
+          if (SECTION_HEADER_RE.test(line)) {
+            return (
+              <p
+                key={i}
+                className="text-[10px] font-bold uppercase tracking-wide text-sky-600 dark:text-sky-400 mt-2 first:mt-0"
+              >
+                {line.replace(SECTION_HEADER_RE, "")}
+              </p>
+            );
+          }
+          const idx = line.indexOf(":");
+          if (idx > 0 && idx < 40) {
+            return (
+              <p key={i} className="text-xs text-gray-600 dark:text-gray-300">
+                <span className="font-medium text-gray-500 dark:text-gray-400">{line.slice(0, idx)}:</span>
+                {line.slice(idx + 1)}
+              </p>
+            );
+          }
+          return (
+            <p key={i} className="text-xs text-gray-600 dark:text-gray-300">
+              {line}
+            </p>
+          );
+        })}
+      </div>
+      <p className="flex items-center gap-1 text-xs font-medium text-sky-500 dark:text-sky-400">
+        <ChevronUp className="w-3 h-3" />
+        Λιγότερα
+      </p>
+    </div>
+  );
+}
 
 const emptyForm = {
   reason: "",
@@ -21,6 +92,16 @@ const PetHistory = ({ petId }) => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [showClinical, setShowClinical] = useState(false);
+  const [expandedIds, setExpandedIds] = useState(() => new Set());
+
+  const toggleExpanded = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const fetchHistory = async () => {
     try {
@@ -37,6 +118,9 @@ const PetHistory = ({ petId }) => {
   useEffect(() => {
     if (petId) fetchHistory();
   }, [petId]);
+
+  // 🔹 Real-time ενημέρωση όταν προστίθεται/διαγράφεται εγγραφή από άλλη συσκευή
+  useRealtimeSync({ pets: () => petId && fetchHistory() });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -221,7 +305,8 @@ const PetHistory = ({ petId }) => {
           {history.map((entry) => (
             <li
               key={entry._id}
-              className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors"
+              onClick={() => toggleExpanded(entry._id)}
+              className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light px-4 py-3 flex items-start justify-between gap-3 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-colors cursor-pointer"
             >
               <div className="flex gap-3 min-w-0 flex-1">
                 <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -238,10 +323,7 @@ const PetHistory = ({ petId }) => {
                     {entry.reason}
                   </p>
                   {entry.result && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
-                      <FileText className="w-3 h-3" />
-                      {entry.result}
-                    </p>
+                    <ConsultResult text={entry.result} expanded={expandedIds.has(entry._id)} />
                   )}
 
                   {/* Κλινικά badges */}
@@ -289,7 +371,7 @@ const PetHistory = ({ petId }) => {
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(entry._id)}
+                onClick={(e) => { e.stopPropagation(); handleDelete(entry._id); }}
                 className="p-1.5 rounded-xl hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors flex-shrink-0"
               >
                 <Trash2 className="w-3.5 h-3.5" />

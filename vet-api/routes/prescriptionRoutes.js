@@ -2,6 +2,7 @@ import express from "express";
 
 import requirePermission from "../middlewares/auth/requirePermission.js";
 import logger from "../utils/logger.js";
+import { emitChange } from "../utils/realtime.js";
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.post("/", requirePermission("prescriptions:write"), async (req, res) => {
     }
     const newPrescription = new Prescription(req.body);
     const saved = await newPrescription.save();
+    emitChange("prescriptions");
     res.status(201).json(saved);
   } catch (err) {
     logger.error("❌ Σφάλμα καταχώρησης συνταγής:", err);

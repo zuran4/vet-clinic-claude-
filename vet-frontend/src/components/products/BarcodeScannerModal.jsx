@@ -7,7 +7,16 @@ const SCANNER_ELEMENT_ID = "barcode-scanner-viewport";
 const BarcodeScannerModal = ({ onScanned, onClose }) => {
   const scannerRef = useRef(null);
   const stoppedRef = useRef(false);
+  const onScannedRef = useRef(onScanned);
   const [error, setError] = useState("");
+
+  // Κρατάει πάντα την τελευταία onScanned χωρίς να είναι dependency του effect
+  // από κάτω — αλλιώς κάθε re-render του γονέα με νέο reference (π.χ. αφού
+  // αλλάξει η λίστα προϊόντων μέσω realtime sync) θα ξανάτρεχε το effect και
+  // θα έκανε restart την κάμερα ΕΝΩ ο χρήστης σαρώνει.
+  useEffect(() => {
+    onScannedRef.current = onScanned;
+  }, [onScanned]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -105,7 +114,7 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
               .stop()
               .catch(() => {})
               .finally(() => {
-                onScanned(decodedText);
+                onScannedRef.current(decodedText);
               });
           },
           () => {
@@ -145,7 +154,7 @@ const BarcodeScannerModal = ({ onScanned, onClose }) => {
       // Αν ούτε το start() έχει ολοκληρωθεί ακόμα, δεν κάνουμε τίποτα εδώ —
       // το .then() παραπάνω θα δει cancelled=true και θα σταματήσει μόνο του.
     };
-  }, [onScanned]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
