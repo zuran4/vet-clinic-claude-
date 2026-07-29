@@ -2,6 +2,42 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.4.4 — 2026-07-29 (3c9d92c)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-frontend/package-lock.json                     |  18 ++
+ vet-frontend/package.json                          |   2 +
+ .../appointments/AppointmentDetailsForm.jsx        |  84 ++----
+ .../src/components/customers/CustomerForm.jsx      | 303 +++++++++++++--------
+ .../customers/QuickCreateCustomerModal.jsx         | 195 +++++++++----
+ .../components/customers/hooks/useCustomerForm.js  |  72 ++++-
+ .../src/components/dashboard/Dashboard.jsx         |   2 -
+ .../src/components/dashboard/TodayTimeline.jsx     |  93 ++++---
+ .../components/dashboard/WeekMonthAgendaModal.jsx  | 240 ++++++++++++++++
+ vet-frontend/src/components/pets/PetSelector.jsx   | 155 ++++++++---
+ .../components/settings/TouchscreenSettings.jsx    |  41 +++
+ .../src/components/ui/OnScreenKeyboard.jsx         | 228 ++++++++++++++++
+ vet-frontend/src/hooks/useAppointmentForm.jsx      | 130 +++------
+ vet-frontend/src/hooks/useCustomerPets.jsx         |  42 +--
+ vet-frontend/src/index.css                         | 100 +++++++
+ vet-frontend/src/layout/MainLayout.jsx             |   4 -
+ vet-frontend/src/main.jsx                          |   4 +
+ vet-frontend/src/pages/SettingsPage.jsx            |  11 +-
+ 18 files changed, 1313 insertions(+), 411 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.4.3 — 2026-07-29 (1e86319)
 
 ### Ενίσχυση αξιοπιστίας παραγωγής changelog
