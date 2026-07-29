@@ -49,6 +49,27 @@ function getDiff() {
   return diff || "(κενό diff)";
 }
 
+function getDiffStat() {
+  try {
+    if (BEFORE_SHA && BEFORE_SHA !== ZERO_SHA) {
+      return sh(`git diff --stat ${BEFORE_SHA} ${AFTER_SHA} -- . ":(exclude)CHANGELOG.md"`).trim();
+    }
+    return sh(`git show --stat --format="" ${AFTER_SHA} -- . ":(exclude)CHANGELOG.md"`).trim();
+  } catch {
+    return "";
+  }
+}
+
+function isUsableResult(result) {
+  return (
+    result &&
+    typeof result.technical === "string" &&
+    result.technical.trim().length > 0 &&
+    typeof result.simple === "string" &&
+    result.simple.trim().length > 0
+  );
+}
+
 function bumpVersion(current, bump) {
   const [maj, min, patch] = current.split(".").map((n) => parseInt(n, 10) || 0);
   if (bump === "major") return `${maj + 1}.0.0`;
@@ -87,7 +108,7 @@ ${diff}`;
     },
     body: JSON.stringify({
       model: "claude-sonnet-5",
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -98,8 +119,22 @@ ${diff}`;
 
   const data = await res.json();
   const text = data.content?.[0]?.text?.trim() || "{}";
+  console.log(`[askClaude] stop_reason=${data.stop_reason} raw_response=${text}`);
   const cleaned = text.replace(/^```(json)?/, "").replace(/```$/, "").trim();
   return JSON.parse(cleaned);
+}
+
+async function askClaudeWithRetry(commitMessages, diff) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const result = await askClaude(commitMessages, diff);
+      if (isUsableResult(result)) return result;
+      console.warn(`[askClaudeWithRetry] attempt ${attempt}: το AI επέστρεψε ελλιπές αποτέλεσμα, ${attempt < 2 ? "ξαναδοκιμάζω" : "παραιτούμαι"}.`);
+    } catch (err) {
+      console.warn(`[askClaudeWithRetry] attempt ${attempt} απέτυχε: ${err.message}`);
+    }
+  }
+  return null;
 }
 
 async function main() {
@@ -116,7 +151,17 @@ async function main() {
     process.exit(0);
   }
 
-  const result = await askClaude(commitMessages, diff);
+  let result = await askClaudeWithRetry(commitMessages, diff);
+  if (!result) {
+    const stat = getDiffStat();
+    result = {
+      bump: "patch",
+      title: "Ενημέρωση κώδικα",
+      technical: stat ? `Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):\n\n\`\`\`\n${stat}\n\`\`\`` : "-",
+      simple: "Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.",
+    };
+    console.warn("Χρησιμοποιήθηκε fallback περιγραφή (diff stat) — το AI δεν έδωσε χρήσιμο αποτέλεσμα.");
+  }
 
   const pkg = JSON.parse(fs.readFileSync(PKG_PATH, "utf8"));
   const newVersion = bumpVersion(pkg.version || "1.0.0", result.bump || "patch");
