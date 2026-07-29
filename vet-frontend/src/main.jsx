@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App";
+import OnScreenKeyboard from "./components/ui/OnScreenKeyboard";
 
 // 🛰️ Sentry — error tracking για το frontend (κενό DSN = απενεργοποιημένο)
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
@@ -83,6 +84,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     >
       <App />
     </Sentry.ErrorBoundary>
+
+    {/* ⌨️ Global on-screen keyboard — ενεργό μόνο αν το device-level setting είναι on */}
+    <OnScreenKeyboard />
 
     {/* ✅ Toaster: εμφανίζει όλα τα toast μηνύματα της εφαρμογής */}
     <Toaster

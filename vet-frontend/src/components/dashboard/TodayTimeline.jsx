@@ -5,6 +5,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
 import AppointmentPreviewModal from "../appointments/AppointmentPreviewModal.jsx";
+import WeekMonthAgendaModal from "./WeekMonthAgendaModal.jsx";
 import { getClinicOccupancyClass, getGroomingOccupancyClass } from "../../utils/workingHours.js";
 
 registerLocale("el", el);
@@ -86,27 +87,27 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           )}
         </div>
 
-        {/* Desktop: μία γραμμή, όπως πριν */}
+        {/* Desktop: μία οριζόντια γραμμή — όνομα, πελάτης και τύπος κολλητά, χωρίς κενό ανάμεσά τους */}
         <span className={`hidden sm:inline text-sm font-bold w-12 flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
-        <div className="hidden sm:block flex-1 min-w-0">
+        <div className="hidden sm:flex items-center gap-1.5 min-w-0 flex-shrink">
           <p className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{appt.clientName}</p>
+          <span className="text-gray-300 dark:text-gray-600 flex-shrink-0">·</span>
+          <p className={`text-xs truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-400 dark:text-gray-500"}`}>{appt.clientName}</p>
+          {isCompleted ? (
+            <span className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              Ολοκληρώθηκε
+            </span>
+          ) : (
+            <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
+              {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
+            </span>
+          )}
           {appt.notes && (
-            <p title={appt.notes} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 truncate mt-0.5">
-              <StickyNote className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{appt.notes}</span>
-            </p>
+            <span title={appt.notes} className="flex-shrink-0">
+              <StickyNote className="w-3 h-3 text-amber-500 dark:text-amber-400" />
+            </span>
           )}
         </div>
-        {isCompleted ? (
-          <span className="hidden sm:inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-            Ολοκληρώθηκε
-          </span>
-        ) : (
-          <span className={`hidden sm:inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${getTypeColor(appt.type)}`}>
-            {Array.isArray(appt.type) ? appt.type.join(", ") : appt.type}
-          </span>
-        )}
       </button>
       <button
         type="button"
@@ -145,12 +146,7 @@ const JumpToDateButton = forwardRef(({ onClick }, ref) => (
   </button>
 ));
 
-const MAX_VISIBLE = 4;
-
-function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, onShowAll, onEditAppointment, onDeleteAppointment, onConsult, extra }) {
-  const visible = appointments.slice(0, MAX_VISIBLE);
-  const remaining = appointments.length - MAX_VISIBLE;
-
+function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, onEditAppointment, onDeleteAppointment, onConsult, extra }) {
   return (
     <div className="flex-1 min-w-0 rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
       {/* Column sub-header */}
@@ -184,9 +180,11 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, o
             <p className="text-xs text-gray-400 dark:text-gray-500">{emptyText}</p>
           </div>
         ) : (
-          <>
+          // Σταθερό ύψος ~4 γραμμών· τα υπόλοιπα φαίνονται με scroll μέσα
+          // στη στήλη (όχι στη σελίδα) όταν περνάει το ποντίκι από πάνω.
+          <div className="max-h-[300px] overflow-y-auto pr-1">
             <ul className="space-y-2">
-              {visible.map((appt) => (
+              {appointments.map((appt) => (
                 <AppointmentItem
                   key={appt._id}
                   appt={appt}
@@ -196,23 +194,16 @@ function Column({ title, icon: Icon, gradient, appointments, emptyText, onNew, o
                 />
               ))}
             </ul>
-            {remaining > 0 && (
-              <button
-                onClick={onShowAll}
-                className="mt-2 w-full text-xs text-center text-indigo-500 hover:text-indigo-700 font-medium py-1.5 rounded-xl border border-dashed border-indigo-200 hover:border-indigo-300 transition-colors"
-              >
-                και {remaining} ακόμα →
-              </button>
-            )}
-          </>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-export default function TodayTimeline({ appointments = [], onShowAppointments, onNewAppointment, onEditAppointment, onDeleteAppointment, onJumpToDate }) {
+export default function TodayTimeline({ appointments = [], onNewAppointment, onEditAppointment, onDeleteAppointment, onJumpToDate }) {
   const [consultAppt, setConsultAppt] = useState(null);
+  const [agendaMode, setAgendaMode] = useState(null); // null | "week" | "month"
 
   const today = new Date().toISOString().split("T")[0];
   const todayLabel = dayjs().locale("el").format("dddd D MMMM");
@@ -232,11 +223,20 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
       onClose={() => setConsultAppt(null)}
       initialTab="consult"
     />
+    <WeekMonthAgendaModal
+      isOpen={!!agendaMode}
+      mode={agendaMode}
+      appointments={appointments}
+      onClose={() => setAgendaMode(null)}
+      onEditAppointment={onEditAppointment}
+      onDeleteAppointment={onDeleteAppointment}
+      onConsult={setConsultAppt}
+    />
     <div className="bg-white dark:bg-win-bg/30 border border-gray-200 dark:border-win-border rounded-2xl shadow-sm overflow-hidden">
 
       {/* Gradient Header */}
       <div className="bg-gradient-to-r from-sky-400 to-indigo-500 px-5 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
               <Calendar className="w-5 h-5 text-white" />
@@ -247,10 +247,29 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             </div>
           </div>
           {todaysAppointments.length > 0 && (
-            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
               {todaysAppointments.length} σήμερα
             </span>
           )}
+        </div>
+
+        {/* Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal */}
+        <div className="flex items-center gap-1 mt-3 bg-white/10 rounded-xl p-1 w-fit">
+          <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-600">Σήμερα</span>
+          <button
+            type="button"
+            onClick={() => setAgendaMode("week")}
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Εβδομάδα
+          </button>
+          <button
+            type="button"
+            onClick={() => setAgendaMode("month")}
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Μήνας
+          </button>
         </div>
       </div>
 
@@ -264,7 +283,6 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             appointments={clinicAppts}
             emptyText="Κανένα ραντεβού ιατρείου"
             onNew={() => onNewAppointment?.("Ιατρείο")}
-            onShowAll={() => onShowAppointments?.("Ιατρείο")}
             onEditAppointment={onEditAppointment}
             onDeleteAppointment={onDeleteAppointment}
             onConsult={setConsultAppt}
@@ -290,7 +308,6 @@ export default function TodayTimeline({ appointments = [], onShowAppointments, o
             appointments={groomingAppts}
             emptyText="Κανένα ραντεβού grooming"
             onNew={() => onNewAppointment?.("Grooming")}
-            onShowAll={() => onShowAppointments?.("Grooming")}
             onEditAppointment={onEditAppointment}
             onDeleteAppointment={onDeleteAppointment}
             onConsult={setConsultAppt}

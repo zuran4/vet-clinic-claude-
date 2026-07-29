@@ -1,5 +1,5 @@
 import React from "react";
-import { PlusCircle, Save, BookmarkPlus, FileText, Stethoscope, Scissors, X } from "lucide-react";
+import { Save, BookmarkPlus, FileText, Stethoscope, Scissors, X } from "lucide-react";
 import { VISIT_REASONS } from "../../constants/visitReasons.js";
 
 import PrescriptionModal from "../prescriptions/PrescriptionModal";
@@ -20,16 +20,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
     ownerId,
     setOwnerId,
     selectedPetId,
-    setSelectedPetId,
-    newPetSpecies,
-    setNewPetSpecies,
-    newPetGender,
-    setNewPetGender,
-    extraPets,
-    addExtraPet,
-    removeExtraPet,
-    handleExtraPetChange,
-    updateExtraPet,
+    selectedPetIds,
+    togglePetId,
     date,
     setDate,
     availableSlots,
@@ -156,57 +148,19 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           {/* Δεξιά στήλη: Κατοικίδιο */}
           <div className="bg-gray-50 dark:bg-win-elevated/30 rounded-2xl px-4 py-3">
             <p className={`${LABEL} mb-2`}>Κατοικίδιο</p>
-            <PetSelector
-              ownerId={ownerId}
-              selectedPetId={selectedPetId}
-              animalName={formData.animalName}
-              newPetSpecies={newPetSpecies}
-              newPetGender={newPetGender}
-              onChangePet={handlePetChange}
-              onChangeAnimalName={(name) =>
-                setFormData((prev) => ({ ...prev, animalName: name }))
-              }
-              onChangeSpecies={setNewPetSpecies}
-              onChangeGender={setNewPetGender}
-            />
-
-            {!existingData && extraPets.map((ep, idx) => (
-              <div key={ep.key} className="mt-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                    Κατοικίδιο #{idx + 2}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeExtraPet(ep.key)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <PetSelector
-                  ownerId={ownerId}
-                  selectedPetId={ep.selectedPetId}
-                  animalName={ep.animalName}
-                  newPetSpecies={ep.species}
-                  newPetGender={ep.gender}
-                  onChangePet={(petId) => handleExtraPetChange(ep.key, petId)}
-                  onChangeAnimalName={(name) => updateExtraPet(ep.key, { animalName: name })}
-                  onChangeSpecies={(v) => updateExtraPet(ep.key, { species: v })}
-                  onChangeGender={(v) => updateExtraPet(ep.key, { gender: v })}
-                />
-              </div>
-            ))}
-
-            {!existingData && (
-              <button
-                type="button"
-                onClick={addExtraPet}
-                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                Προσθήκη κι άλλου κατοικιδίου
-              </button>
+            {existingData ? (
+              <PetSelector
+                ownerId={ownerId}
+                selectedPetId={selectedPetId}
+                onChangePet={handlePetChange}
+              />
+            ) : (
+              <PetSelector
+                ownerId={ownerId}
+                multi
+                selectedPetIds={selectedPetIds}
+                onTogglePet={togglePetId}
+              />
             )}
           </div>
 
@@ -243,7 +197,11 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
             <Button
               type="submit"
               variant="success"
-              disabled={(existingData && !selectedTime) || formData.type.length === 0}
+              disabled={
+                (existingData && !selectedTime) ||
+                formData.type.length === 0 ||
+                (!existingData && selectedPetIds.length === 0)
+              }
               className="flex items-center gap-2"
             >
               {existingData

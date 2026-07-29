@@ -20,12 +20,16 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
     afm: "",
     notes: "",
     notifications: {
-      email: true,
-      sms: false,
+      email: false,
+      sms: true,
       reminders: true,
-      promotions: false,
+      promotions: true,
     },
   });
+
+  const [petName, setPetName] = useState("");
+  const [petSpecies, setPetSpecies] = useState("Σκύλος");
+  const [petGender, setPetGender] = useState("Αρσενικό");
 
   const [loading, setLoading] = useState(false);
 
@@ -58,15 +62,32 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
   // -------------------------------------
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+
+      // Η ειδοποίηση Email εξαρτάται από την ύπαρξη email: απενεργοποιείται
+      // αυτόματα όταν αδειάζει το πεδίο, ενεργοποιείται αυτόματα τη στιγμή
+      // που συμπληρώνεται (χωρίς να ξαναπειράζεται σε κάθε keystroke μετά).
+      if (name === "email") {
+        const hadEmail = prev.email.trim().length > 0;
+        const hasEmail = value.trim().length > 0;
+        if (!hasEmail) {
+          next.notifications = { ...prev.notifications, email: false };
+        } else if (!hadEmail) {
+          next.notifications = { ...prev.notifications, email: true };
+        }
+      }
+
+      return next;
+    });
   }, []);
 
   const handleNotificationChange = useCallback((e) => {
     const { name, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      notifications: { ...prev.notifications, [name]: checked },
-    }));
+    setFormData((prev) => {
+      if (name === "email" && !prev.email.trim()) return prev; // δεν ενεργοποιείται χωρίς email
+      return { ...prev, notifications: { ...prev.notifications, [name]: checked } };
+    });
   }, []);
 
   // -------------------------------------
@@ -76,15 +97,20 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
     async (e) => {
       e.preventDefault();
 
+      const isEdit = !!(initialData?._id);
+
       if (!formData.name.trim()) {
         toast.error("⚠️ Το όνομα είναι υποχρεωτικό.");
+        return;
+      }
+      if (!isEdit && !petName.trim()) {
+        toast.error("⚠️ Το όνομα κατοικιδίου είναι υποχρεωτικό.");
         return;
       }
 
       try {
         setLoading(true);
 
-        const isEdit = !!(initialData?._id);
         const url = isEdit
           ? `${API_URL}/customers/${initialData._id}`
           : `${API_URL}/customers`;
@@ -103,6 +129,26 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
 
         const customerData = saved.customer || saved;
 
+        // Ο πελάτης έχει ήδη δημιουργηθεί σε αυτό το σημείο· αν αποτύχει μόνο
+        // το κατοικίδιο (π.χ. δικτυακό σφάλμα), δεν τον ξαναχάνουμε — απλά
+        // ειδοποιούμε να προστεθεί χειροκίνητα.
+        if (!isEdit && petName.trim()) {
+          try {
+            await fetch(`${API_URL}/pets`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                owner: customerData._id,
+                name: petName.trim(),
+                species: petSpecies,
+                gender: petGender,
+              }),
+            });
+          } catch {
+            toast.error("Ο πελάτης δημιουργήθηκε, αλλά το κατοικίδιο απέτυχε. Πρόσθεσέ το χειροκίνητα.");
+          }
+        }
+
         toast.success(
           isEdit
             ? "✅ Οι αλλαγές αποθηκεύτηκαν!"
@@ -120,7 +166,7 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
         setLoading(false);
       }
     },
-    [formData, initialData, onSaved]
+    [formData, initialData, onSaved, petName, petSpecies, petGender]
   );
 
   // -------------------------------------
@@ -132,5 +178,11 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
     handleChange,
     handleNotificationChange,
     handleSubmit,
+    petName,
+    setPetName,
+    petSpecies,
+    setPetSpecies,
+    petGender,
+    setPetGender,
   };
 }

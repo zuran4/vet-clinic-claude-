@@ -4,13 +4,14 @@ import {
   Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
   ChevronRight, ArrowLeft, Download, FileText, Phone, MapPin,
-  Hash, Lock, Activity, UserCog,
+  Hash, Lock, Activity, UserCog, Tablet,
 } from "lucide-react";
 import LogoUpload from "../components/ui/LogoUpload";
 import WorkingHoursSection from "../components/settings/WorkingHoursSection";
 import DarkModeToggle from "../components/settings/DarkModeToggle";
 import StockThresholdsPanel from "../components/settings/StockThresholdsPanel";
 import KeyboardShortcutsSection from "../components/settings/KeyboardShortcutsSection";
+import TouchscreenSettings from "../components/settings/TouchscreenSettings";
 import UsersSettings from "../components/settings/UsersSettings";
 import { useSettingsPage } from "../hooks/useSettingsPage";
 import request from "../api/apiClient";
@@ -30,6 +31,7 @@ const NAV_GROUPS = [
       { id: "ui",            label: "Εμφάνιση",     icon: Monitor,   desc: "Θέμα και stock thresholds",           iconBg: "bg-orange-100 dark:bg-orange-900/40",   iconColor: "text-orange-500 dark:text-orange-400" },
       { id: "notifications", label: "Email",         icon: Mail,      desc: "SMTP και αυτόματες ειδοποιήσεις",    iconBg: "bg-teal-100 dark:bg-teal-900/40",       iconColor: "text-teal-500 dark:text-teal-400" },
       { id: "shortcuts",     label: "Συντομεύσεις", icon: Keyboard,  desc: "Πλήκτρα γρήγορης πρόσβασης",        iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-500 dark:text-emerald-400" },
+      { id: "touchscreen",   label: "Οθόνη Αφής",   icon: Tablet,    desc: "On-screen πληκτρολόγιο για kiosk",   iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/40", iconColor: "text-fuchsia-500 dark:text-fuchsia-400" },
     ],
   },
   {
@@ -594,6 +596,13 @@ const SettingsPage = ({ onClose, user }) => {
       <div className={activeSection !== "shortcuts" ? "hidden" : ""}>
         <Section title="Συντομεύσεις Πληκτρολογίου" description="Προσαρμογή πλήκτρων για γρήγορη πλοήγηση.">
           <KeyboardShortcutsSection />
+        </Section>
+      </div>
+
+      {/* ── Οθόνη Αφής ── */}
+      <div className={activeSection !== "touchscreen" ? "hidden" : ""}>
+        <Section title="Οθόνη Αφής" description="Ρύθμιση συσκευής — ισχύει μόνο σε αυτή τη συσκευή/browser, όχι σε όλη την κλινική.">
+          <TouchscreenSettings />
         </Section>
       </div>
 

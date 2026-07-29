@@ -15,10 +15,11 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     existingData?.owner?._id || existingData?.owner || null
   );
   const [pets, setPets] = useState([]);
-  const [selectedPetId, setSelectedPetId] = useState("new");
-  const [newPetSpecies, setNewPetSpecies] = useState("Σκύλος");
-  const [newPetGender, setNewPetGender] = useState("Αρσενικό");
-  const [extraPets, setExtraPets] = useState([]);
+  // Επεξεργασία υπάρχοντος ραντεβού: ένα κατοικίδιο (dropdown).
+  const [selectedPetId, setSelectedPetId] = useState(null);
+  // Νέο ραντεβού: 1 ή περισσότερα κατοικίδια του ίδιου πελάτη (checkboxes) —
+  // δημιουργείται ένα ξεχωριστό ραντεβού ανά επιλεγμένο κατοικίδιο.
+  const [selectedPetIds, setSelectedPetIds] = useState([]);
   const [date, setDate] = useState(() => {
     if (existingData) return new Date(existingData.date);
     // Χρησιμοποίησε την επιλεγμένη ημερομηνία από το calendar (αν υπάρχει)
@@ -66,6 +67,8 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
   useEffect(() => {
     if (!ownerId) {
       setPets([]);
+      setSelectedPetId(null);
+      setSelectedPetIds([]);
       return;
     }
 
@@ -73,19 +76,31 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       try {
         const data = await request(`/pets/by-owner/${ownerId}`);
         setPets(data);
-        // Auto-επιλογή πρώτου κατοικιδίου αν υπάρχουν
-        if (data.length > 0) {
+
+        if (data.length === 0) {
+          setSelectedPetId(null);
+          setSelectedPetIds([]);
+        } else if (existingData) {
+          // Επεξεργασία: διάλεξε το κατοικίδιο που ήδη έχει το ραντεβού
+          // (με βάση το όνομα-snapshot) — όχι πάντα το πρώτο της λίστας.
+          const match = data.find((p) => p.name === existingData.animalName);
+          setSelectedPetId((match || data[0])._id);
+        } else {
+          // Νέο ραντεβού: auto-επιλογή πρώτου κατοικιδίου αν υπάρχουν
           setSelectedPetId(data[0]._id);
+          setSelectedPetIds([data[0]._id]);
           setFormData((prev) => ({ ...prev, animalName: data[0].name }));
         }
       } catch (err) {
         console.error("❌ Σφάλμα κατοικιδίων:", err);
         setPets([]);
+        setSelectedPetId(null);
+        setSelectedPetIds([]);
       }
     };
 
     fetchPets();
-  }, [ownerId]);
+  }, [ownerId, existingData]);
 
   // 🔹 Slots
   useEffect(() => {
@@ -137,8 +152,8 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     if (!customer) {
       setFormData((prev) => ({ ...prev, clientName: "", phone: "", animalName: "" }));
       setOwnerId(null);
-      setSelectedPetId("new");
-      setExtraPets([]);
+      setSelectedPetId(null);
+      setSelectedPetIds([]);
       return;
     }
     setFormData((prev) => ({
@@ -147,67 +162,27 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       phone: customer.phone || "",
     }));
     if (customer.id) setOwnerId(customer.id);
-    setSelectedPetId("new");
-    setExtraPets([]);
   };
 
+  // Edit mode: dropdown με ένα κατοικίδιο
   const handlePetChange = (petId) => {
     setSelectedPetId(petId);
-    if (petId === "new") {
-      setFormData((prev) => ({ ...prev, animalName: "" }));
-    } else {
-      const selectedPet = pets.find((p) => p._id === petId);
-      if (selectedPet) {
-        setFormData((prev) => ({ ...prev, animalName: selectedPet.name }));
-      }
+    const selectedPet = pets.find((p) => p._id === petId);
+    if (selectedPet) {
+      setFormData((prev) => ({ ...prev, animalName: selectedPet.name }));
     }
   };
 
-  // 🔹 Πρόσθετα κατοικίδια (ο ίδιος πελάτης με παραπάνω από ένα ζώο στο ίδιο ραντεβού)
-  const addExtraPet = () => {
-    setExtraPets((prev) => [
-      ...prev,
-      { key: Date.now(), selectedPetId: "new", animalName: "", species: "Σκύλος", gender: "Αρσενικό" },
-    ]);
-  };
-
-  const removeExtraPet = (key) => {
-    setExtraPets((prev) => prev.filter((p) => p.key !== key));
-  };
-
-  const updateExtraPet = (key, patch) => {
-    setExtraPets((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
-  };
-
-  const handleExtraPetChange = (key, petId) => {
-    if (petId === "new") {
-      updateExtraPet(key, { selectedPetId: "new", animalName: "" });
-    } else {
-      const selectedPet = pets.find((p) => p._id === petId);
-      updateExtraPet(key, { selectedPetId: petId, animalName: selectedPet?.name || "" });
-    }
+  // Create mode: checkboxes, 1 ή περισσότερα κατοικίδια
+  const togglePetId = (petId) => {
+    setSelectedPetIds((prev) =>
+      prev.includes(petId) ? prev.filter((id) => id !== petId) : [...prev, petId]
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const finalDate = date.toISOString().split("T")[0];
-
-    // Αν είναι νέο κατοικίδιο, το δημιουργούμε πρώτα στη βάση
-    if (selectedPetId === "new" && ownerId && formData.animalName) {
-      try {
-        await request("/pets", {
-          method: "POST",
-          body: {
-            name: formData.animalName,
-            owner: ownerId,
-            species: newPetSpecies,
-            gender: newPetGender,
-          },
-        });
-      } catch (err) {
-        console.error("❌ Σφάλμα δημιουργίας κατοικιδίου:", err);
-      }
-    }
 
     const baseDetails = {
       ...formData,
@@ -217,25 +192,18 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       owner: ownerId || null,
     };
 
-    await onSave(baseDetails, existingData?._id || null);
-
-    // Πρόσθετα κατοικίδια → ξεχωριστό ραντεβού το καθένα, ίδια στοιχεία/ώρα
-    for (const ep of extraPets) {
-      if (!ep.animalName?.trim()) continue;
-      if (ep.selectedPetId === "new" && ownerId) {
-        try {
-          await request("/pets", {
-            method: "POST",
-            body: { name: ep.animalName, owner: ownerId, species: ep.species, gender: ep.gender },
-          });
-        } catch (err) {
-          console.error("❌ Σφάλμα δημιουργίας κατοικιδίου:", err);
-        }
-      }
-      await onSave({ ...baseDetails, animalName: ep.animalName }, null);
+    if (existingData) {
+      // Επεξεργασία: ένα ραντεβού, ένα κατοικίδιο.
+      await onSave(baseDetails, existingData._id);
+      return;
     }
 
-    setExtraPets([]);
+    // Νέο ραντεβού: ένα ξεχωριστό ραντεβού ανά επιλεγμένο κατοικίδιο.
+    for (const petId of selectedPetIds) {
+      const pet = pets.find((p) => p._id === petId);
+      if (!pet) continue;
+      await onSave({ ...baseDetails, animalName: pet.name }, null);
+    }
   };
 
   const handlePrescriptionSubmit = async (data) => {
@@ -271,16 +239,8 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     setOwnerId,
     pets,
     selectedPetId,
-    setSelectedPetId,
-    newPetSpecies,
-    setNewPetSpecies,
-    newPetGender,
-    setNewPetGender,
-    extraPets,
-    addExtraPet,
-    removeExtraPet,
-    updateExtraPet,
-    handleExtraPetChange,
+    selectedPetIds,
+    togglePetId,
     date,
     setDate,
     availableSlots,

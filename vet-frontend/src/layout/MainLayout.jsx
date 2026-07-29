@@ -293,10 +293,6 @@ function MainLayout({
               pets={Array(petsCount).fill(null)}
               customersCount={customersCount}
               products={productsWithExpDate}
-              onShowAppointments={(doctor) => {
-                setAppointmentsDoctorFilter(doctor || null);
-                openPanel("appointments");
-              }}
               onNewAppointment={(doctor) => {
                 cameFromDashboardRef.current = true;
                 setAppointmentsDoctorFilter(doctor);

@@ -362,3 +362,103 @@ code {
 .react-datepicker__day--keyboard-selected.day-occupancy-high {
   background-color: #6366f1 !important;
 }
+
+/* ===================================== */
+/* ⌨️ On-screen keyboard (Ρυθμίσεις → Οθόνη Αφής) — ταιριάζει με το Vetpro design  */
+/* system: rounded-xl πλήκτρα, indigo accent στο enter, ουδέτερο γκρι στα function */
+/* ===================================== */
+.simple-keyboard.kiosk-keyboard {
+  padding: 12px 10px 16px;
+  background: transparent;
+}
+.simple-keyboard.kiosk-keyboard .hg-row:not(:last-child) {
+  margin-bottom: 7px;
+}
+
+/* Χαρακτήρες — λευκό πλήκτρο, στρογγυλεμένο, ελαφριά σκιά (ίδια γλώσσα με τα inputs) */
+.simple-keyboard.kiosk-keyboard .hg-button {
+  height: 52px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  color: #1f2937; /* gray-800 */
+  transition: background-color .1s ease;
+}
+.simple-keyboard.kiosk-keyboard .hg-button.hg-activeButton {
+  background: #eef2ff; /* indigo-50 */
+  border-color: #c7d2fe; /* indigo-200 */
+}
+
+/* Function πλήκτρα (shift/caps/tab/globe/backspace) — ουδέτερο γκρι, μικρότερο label */
+.simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-fn {
+  background: #f9fafb; /* gray-50 */
+  color: #6b7280; /* gray-500 */
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-fn.hg-activeButton {
+  background: #f3f4f6; /* gray-100 */
+}
+
+/* Enter / OK — primary action, indigo γεμάτο (όπως τα κουμπιά υποβολής στην εφαρμογή) */
+.simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-primary {
+  background: #6366f1; /* indigo-500 */
+  border-color: #6366f1;
+  color: #ffffff;
+  font-weight: 700;
+}
+.simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-primary.hg-activeButton {
+  background: #4f46e5; /* indigo-600 */
+  border-color: #4f46e5;
+}
+
+/* ⌫ / ⏎ — μεγαλύτερο, λεπτότερο glyph αντί για το «φτηνό» default label */
+.simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-icon {
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+.simple-keyboard.kiosk-keyboard.kiosk-keyboard-numeric .hg-button.kiosk-key-icon {
+  font-size: 1.6rem;
+}
+
+.simple-keyboard.kiosk-keyboard .hg-button-space {
+  max-width: 320px;
+}
+.simple-keyboard.kiosk-keyboard .hg-button-globe {
+  max-width: 96px;
+}
+.simple-keyboard.kiosk-keyboard.kiosk-keyboard-numeric .hg-button {
+  height: 64px;
+  font-size: 1.4rem;
+}
+
+/* ── Dark mode — ίδια tokens με το win-* surface σύστημα της εφαρμογής ── */
+.dark .simple-keyboard.kiosk-keyboard .hg-button {
+  background: #383838; /* win-elevated */
+  border-color: #3f3f3f; /* win-border */
+  color: #f1f5f9;
+  box-shadow: none;
+}
+.dark .simple-keyboard.kiosk-keyboard .hg-button.hg-activeButton {
+  background: #454545; /* win-elevated2 */
+  border-color: #525252; /* win-border-light */
+}
+.dark .simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-fn {
+  background: #2c2c2c; /* win-surface */
+  color: #94a3b8;
+}
+.dark .simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-fn.hg-activeButton {
+  background: #383838; /* win-elevated */
+}
+.dark .simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-primary {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+}
+.dark .simple-keyboard.kiosk-keyboard .hg-button.kiosk-key-primary.hg-activeButton {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}

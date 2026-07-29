@@ -11,7 +11,6 @@ const Dashboard = ({
   pets = [],
   products = [],
   customersCount = 0,
-  onShowAppointments,
   onNewAppointment,
   onEditAppointment,
   onDeleteAppointment,
@@ -88,7 +87,6 @@ const Dashboard = ({
       {/* Today's Timeline */}
       <TodayTimeline
         appointments={appointments}
-        onShowAppointments={onShowAppointments}
         onNewAppointment={onNewAppointment}
         onEditAppointment={onEditAppointment}
         onDeleteAppointment={onDeleteAppointment}

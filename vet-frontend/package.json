@@ -21,6 +21,8 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-i18next": "^16.0.0",
+    "react-simple-keyboard": "^3.8.253",
+    "simple-keyboard-layouts": "^3.4.247",
     "socket.io-client": "^4.8.1"
   },
   "scripts": {
