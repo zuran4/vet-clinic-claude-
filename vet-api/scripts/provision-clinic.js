@@ -50,6 +50,7 @@ async function main() {
   console.log(`  clinicId : ${result.clinicId}`);
   console.log(`  PIN      : ${args.adminPin}`);
   console.log(`  DB       : ${result.dbName}`);
+  console.log(`  Registry worker port : ${result.registryWorkerPort}`);
   console.log("-------------------------\n");
 
   await closeAllTenantConnections();

@@ -1,12 +1,47 @@
 // vet-api/services/registryWorkerClient.js
+//
+// Κάθε κλινική έχει το δικό της registry-worker process σε δικό του port
+// (Tenant.registryWorkerPort) — εδώ γίνεται resolve του σωστού base URL ανά
+// clinicId πριν από κάθε κλήση προς τον worker.
 
 import logger from "../utils/logger.js";
 import ApiError from "../utils/apiError.js";
+import { getTenantModel } from "./adminConnection.js";
 
-// Base URL (env first, fallback localhost)
-const REGISTRY_WORKER_BASE_URL = String(
+// Legacy fallback (πριν το per-clinic port) — χρησιμοποιείται μόνο αν μια
+// κλινική δεν έχει ακόμα ανατεθειμένο port για οποιονδήποτε λόγο.
+const LEGACY_BASE_URL = String(
   process.env.REGISTRY_WORKER_URL || "http://localhost:5051"
 ).replace(/\/+$/, "");
+
+// Port cache ανά clinicId — αποφεύγει DB lookup σε κάθε request. Δεν αλλάζει
+// συχνά (μόνο στο provisioning), οπότε cache για όλη τη ζωή του process.
+const portCache = new Map(); // clinicId -> port
+
+async function resolveWorkerBaseUrl(clinicId) {
+  if (!clinicId) return LEGACY_BASE_URL;
+
+  if (portCache.has(clinicId)) {
+    return `http://localhost:${portCache.get(clinicId)}`;
+  }
+
+  try {
+    const Tenant = getTenantModel();
+    const tenant = await Tenant.findOne({ clinicId }, { registryWorkerPort: 1 }).lean();
+    if (tenant?.registryWorkerPort) {
+      portCache.set(clinicId, tenant.registryWorkerPort);
+      return `http://localhost:${tenant.registryWorkerPort}`;
+    }
+  } catch (err) {
+    logger.warn({
+      msg: "Could not resolve registryWorkerPort for clinic — using legacy fallback",
+      clinicId,
+      error: err?.message,
+    });
+  }
+
+  return LEGACY_BASE_URL;
+}
 
 // Timeouts (env-configurable)
 function toPositiveInt(value, fallback) {
@@ -24,8 +59,8 @@ const WORKER_LOOKUP_TIMEOUT_MS = toPositiveInt(
   120000
 );
 
-// Logging guard for repeated offline spam (session polling)
-let hasLoggedSessionOfflineError = false;
+// Logging guard for repeated offline spam (session polling) — ανά κλινική
+const loggedSessionOfflineByClinic = new Set();
 
 // Startup grace period: μη γράφεις WARN στα πρώτα N ms (ο worker ξεκινάει)
 const WORKER_STARTUP_GRACE_MS = toPositiveInt(
@@ -50,7 +85,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
     if (err?.name === "AbortError") {
       throw new ApiError(504, "Registry worker request timed out", {
         code: "WORKER_TIMEOUT",
-        details: { url, timeoutMs, baseUrl: REGISTRY_WORKER_BASE_URL },
+        details: { url, timeoutMs },
         expose: false,
       });
     }
@@ -63,9 +98,10 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
 // ------------------------------------------------------------
 // /session implementation (soft-fail: returns status OFFLINE/TIMEOUT/etc)
 // ------------------------------------------------------------
-async function getRegistrySessionImpl(options = {}) {
+async function getRegistrySessionImpl(clinicId, options = {}) {
   const requestId = options?.requestId;
-  const url = `${REGISTRY_WORKER_BASE_URL}/session`;
+  const baseUrl = await resolveWorkerBaseUrl(clinicId);
+  const url = `${baseUrl}/session`;
 
   try {
     const res = await fetchWithTimeout(
@@ -79,8 +115,8 @@ async function getRegistrySessionImpl(options = {}) {
 
       logger.warn("[RegistryWorkerClient] /session non-OK response", {
         requestId,
+        clinicId,
         url,
-        baseUrl: REGISTRY_WORKER_BASE_URL,
         status: res.status,
         bodyPreview: text.slice(0, 300),
       });
@@ -100,8 +136,8 @@ async function getRegistrySessionImpl(options = {}) {
     const json = await res.json().catch((err) => {
       logger.warn("[RegistryWorkerClient] Invalid JSON from worker (/session)", {
         requestId,
+        clinicId,
         url,
-        baseUrl: REGISTRY_WORKER_BASE_URL,
         error: err?.message,
       });
       return null;
@@ -116,7 +152,7 @@ async function getRegistrySessionImpl(options = {}) {
       };
     }
 
-    hasLoggedSessionOfflineError = false;
+    loggedSessionOfflineByClinic.delete(clinicId);
 
     return {
       ok: Boolean(json.ok),
@@ -125,59 +161,58 @@ async function getRegistrySessionImpl(options = {}) {
       raw: json,
     };
   } catch (err) {
-  const inStartupGrace = Date.now() - bootTs < WORKER_STARTUP_GRACE_MS;
+    const inStartupGrace = Date.now() - bootTs < WORKER_STARTUP_GRACE_MS;
 
-  // Στα πρώτα δευτερόλεπτα μη γράφεις WARN (ο worker μπορεί να μην έχει σηκωθεί ακόμη)
-  if (!inStartupGrace && !hasLoggedSessionOfflineError) {
-    logger.warn(
-      "[RegistryWorkerClient] /session unreachable (next identical errors suppressed)",
-      {
-        requestId,
-        url,
-        baseUrl: REGISTRY_WORKER_BASE_URL,
+    // Στα πρώτα δευτερόλεπτα μη γράφεις WARN (ο worker μπορεί να μην έχει σηκωθεί ακόμη)
+    if (!inStartupGrace && !loggedSessionOfflineByClinic.has(clinicId)) {
+      logger.warn(
+        "[RegistryWorkerClient] /session unreachable (next identical errors suppressed)",
+        {
+          requestId,
+          clinicId,
+          url,
+          name: err?.name,
+          message: err?.message,
+          code: err?.code,
+          statusCode: err?.statusCode,
+        }
+      );
+      loggedSessionOfflineByClinic.add(clinicId);
+    }
+
+    return {
+      ok: false,
+      status:
+        err instanceof ApiError && err.code === "WORKER_TIMEOUT"
+          ? "TIMEOUT"
+          : "OFFLINE",
+      url: null,
+      raw: {
+        error: "Cannot reach registry worker",
         name: err?.name,
         message: err?.message,
         code: err?.code,
-        statusCode: err?.statusCode,
-      }
-    );
-    hasLoggedSessionOfflineError = true;
+      },
+    };
   }
-
-  return {
-    ok: false,
-    status:
-      err instanceof ApiError && err.code === "WORKER_TIMEOUT"
-        ? "TIMEOUT"
-        : "OFFLINE",
-    url: null,
-    raw: {
-      error: "Cannot reach registry worker",
-      name: err?.name,
-      message: err?.message,
-      code: err?.code,
-    },
-  };
-}
-
 }
 
 /**
- * GET /session (worker)
- * ✅ Αυτό είναι το export που περιμένουν τα controllers:
+ * GET /session (worker) για μια συγκεκριμένη κλινική.
  * import { getRegistrySession } from "../../services/registryWorkerClient.js"
  */
-export async function getRegistrySession(options = {}) {
-  return getRegistrySessionImpl(options);
+export async function getRegistrySession(clinicId, options = {}) {
+  return getRegistrySessionImpl(clinicId, options);
 }
 
 /**
  * GET /medical-events?microchip=...
  * Hard-fail with ApiError on connectivity/HTTP issues.
  */
-export async function fetchMedicalEvents(microchip, options = {}) {
+export async function fetchMedicalEvents(clinicId, microchip, options = {}) {
   const requestId = options?.requestId;
-  const url = `${REGISTRY_WORKER_BASE_URL}/medical-events?microchip=${encodeURIComponent(microchip)}`;
+  const baseUrl = await resolveWorkerBaseUrl(clinicId);
+  const url = `${baseUrl}/medical-events?microchip=${encodeURIComponent(microchip)}`;
 
   try {
     const res = await fetchWithTimeout(
@@ -223,11 +258,10 @@ export async function fetchMedicalEvents(microchip, options = {}) {
  * GET /lookup?microchip=...
  * Hard-fail with ApiError on connectivity/HTTP issues.
  */
-export async function lookupMicrochip(microchip, options = {}) {
+export async function lookupMicrochip(clinicId, microchip, options = {}) {
   const requestId = options?.requestId;
-  const url = `${REGISTRY_WORKER_BASE_URL}/lookup?microchip=${encodeURIComponent(
-    microchip
-  )}`;
+  const baseUrl = await resolveWorkerBaseUrl(clinicId);
+  const url = `${baseUrl}/lookup?microchip=${encodeURIComponent(microchip)}`;
 
   try {
     const res = await fetchWithTimeout(
@@ -244,7 +278,6 @@ export async function lookupMicrochip(microchip, options = {}) {
         details: {
           status: res.status,
           url,
-          baseUrl: REGISTRY_WORKER_BASE_URL,
           bodyPreview: text.slice(0, 500),
         },
         expose: false,
@@ -256,7 +289,6 @@ export async function lookupMicrochip(microchip, options = {}) {
         code: "WORKER_INVALID_JSON",
         details: {
           url,
-          baseUrl: REGISTRY_WORKER_BASE_URL,
           message: err?.message,
         },
         expose: false,
@@ -281,7 +313,6 @@ export async function lookupMicrochip(microchip, options = {}) {
       code: "WORKER_OFFLINE",
       details: {
         url,
-        baseUrl: REGISTRY_WORKER_BASE_URL,
         name: err?.name,
         message: err?.message,
       },

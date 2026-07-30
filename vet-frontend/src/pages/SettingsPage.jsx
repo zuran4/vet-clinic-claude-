@@ -4,7 +4,8 @@ import {
   Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
   ChevronRight, ArrowLeft, Download, FileText, Phone, MapPin,
-  Hash, Lock, Activity, UserCog, Tablet,
+  Hash, Lock, Activity, UserCog, Tablet, Landmark, CheckCircle2,
+  AlertCircle, Loader2, User,
 } from "lucide-react";
 import LogoUpload from "../components/ui/LogoUpload";
 import WorkingHoursSection from "../components/settings/WorkingHoursSection";
@@ -23,6 +24,7 @@ const NAV_GROUPS = [
       { id: "clinic", label: "Στοιχεία",  icon: Building2, desc: "Όνομα, λογότυπο, επικοινωνία",          iconBg: "bg-indigo-100 dark:bg-indigo-900/40",    iconColor: "text-indigo-500 dark:text-indigo-400" },
       { id: "staff",  label: "Προσωπικό", icon: Users,     desc: "Μέλη ομάδας και ρόλοι",                iconBg: "bg-violet-100 dark:bg-violet-900/40",    iconColor: "text-violet-500 dark:text-violet-400" },
       { id: "hours",  label: "Ωράριο",    icon: Clock,     desc: "Ωράριο ιατρείου και grooming",         iconBg: "bg-sky-100 dark:bg-sky-900/40",          iconColor: "text-sky-500 dark:text-sky-400" },
+      { id: "gov",    label: "GOV",       icon: Landmark,  desc: "Σύνδεση με το εθνικό μητρώο (gov.gr)", iconBg: "bg-blue-100 dark:bg-blue-900/40",        iconColor: "text-blue-500 dark:text-blue-400" },
     ],
   },
   {
@@ -252,6 +254,11 @@ const SettingsPage = ({ onClose, user }) => {
           birthdayReminder:    false,
           ...(settings.notifications || {}),
         },
+        registryGov: {
+          username: "",
+          password: "",
+          ...(settings.registryGov || {}),
+        },
       });
     }
   }, [settings]);
@@ -267,6 +274,11 @@ const SettingsPage = ({ onClose, user }) => {
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [testEmailResult, setTestEmailResult]   = useState(null);
   const [showPassword, setShowPassword]         = useState(false);
+  const [showGovPassword, setShowGovPassword]   = useState(false);
+  const [govStatus, setGovStatus]               = useState(null); // { status, port } | null
+  const [govStatusLoading, setGovStatusLoading] = useState(false);
+  const [govConnecting, setGovConnecting]       = useState(false);
+  const [govError, setGovError]                 = useState(null);
   const [pinOld, setPinOld]           = useState("");
   const [pinNew, setPinNew]           = useState("");
   const [pinConfirm, setPinConfirm]   = useState("");
@@ -280,6 +292,7 @@ const SettingsPage = ({ onClose, user }) => {
   const patch      = (f, v) => { setForm(p => ({ ...p, [f]: v })); setSaved(false); setSaveError(null); };
   const patchEmail = (f, v) => { setForm(p => ({ ...p, emailConfig: { ...p.emailConfig, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchNotif = (f, v) => { setForm(p => ({ ...p, notifications: { ...p.notifications, [f]: v } })); setSaved(false); setSaveError(null); };
+  const patchGov   = (f, v) => { setForm(p => ({ ...p, registryGov: { ...p.registryGov, [f]: v } })); setSaved(false); setSaveError(null); };
 
   const handleSave = async () => {
     try {
@@ -374,6 +387,49 @@ const SettingsPage = ({ onClose, user }) => {
       setWorkerChanging(false);
     }
   };
+
+  const fetchGovStatus = useCallback(async () => {
+    setGovStatusLoading(true);
+    try {
+      const data = await request("/registry/session");
+      setGovStatus({ status: data.status, ok: data.ok });
+    } catch {
+      setGovStatus({ status: "OFFLINE", ok: false });
+    } finally {
+      setGovStatusLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSection !== "gov") return;
+    fetchGovStatus();
+    const interval = setInterval(fetchGovStatus, 5000);
+    return () => clearInterval(interval);
+  }, [activeSection, fetchGovStatus]);
+
+  const handleGovConnect = async () => {
+    if (govConnecting) return;
+    setGovConnecting(true); setGovError(null);
+    try {
+      // Αποθήκευσε πρώτα τυχόν νέα credentials, μετά ζήτα εκκίνηση/επανεκκίνηση.
+      const data = await updateSettings(form);
+      if (data) setSettings(data);
+      await request("/registry/worker/start", { method: "POST" });
+      await fetchGovStatus();
+    } catch (err) {
+      setGovError(err?.message || "Αποτυχία σύνδεσης.");
+    } finally {
+      setGovConnecting(false);
+    }
+  };
+
+  const GOV_STATUS_DISPLAY = {
+    LOGGED_IN:  { label: "Συνδεδεμένο",      icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40" },
+    NEEDS_LOGIN:{ label: "Χρειάζεται σύνδεση", icon: AlertCircle,  cls: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40" },
+    PRE_LOGIN:  { label: "Εκκίνηση...",        icon: Loader2,      cls: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40" },
+    OFFLINE:    { label: "Μη συνδεδεμένο",     icon: AlertCircle,  cls: "bg-gray-50 text-gray-500 border-gray-100 dark:bg-win-elevated/50 dark:text-gray-400 dark:border-win-border" },
+  };
+  const govStatusInfo = GOV_STATUS_DISPLAY[govStatus?.status] || GOV_STATUS_DISPLAY.OFFLINE;
 
   if (loading || !form) {
     return (
@@ -500,6 +556,86 @@ const SettingsPage = ({ onClose, user }) => {
           <WorkingHoursSection title="Ωράριο Ιατρείου"  workingHours={form.clinicWorkingHours}   updateDay={updateClinicDay} />
           <WorkingHoursSection title="Ωράριο Grooming"  workingHours={form.groomingWorkingHours} updateDay={updateGroomingDay} />
         </Section>
+      </div>
+
+      {/* ── GOV (gov.gr / εθνικό μητρώο) ── */}
+      <div className={activeSection !== "gov" ? "hidden" : ""}>
+        <Section
+          title="Σύνδεση GOV.GR"
+          description="Στοιχεία σύνδεσης Taxisnet για το εθνικό μητρώο ζώων συντροφιάς (pet.gov.gr). Κάθε κλινική τρέχει τον δικό της, ξεχωριστό worker — τα credentials δεν μοιράζονται με άλλες κλινικές."
+          {...saveProps}
+        >
+          <div className="flex gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-700/50">
+            <Landmark className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed">
+              Χρησιμοποίησε τα προσωπικά στοιχεία Taxisnet του κτηνιάτρου (όχι το ΑΦΜ της κλινικής). Το password αποθηκεύεται κρυπτογραφημένο.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Όνομα χρήστη (Taxisnet)</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
+                <input
+                  type="text"
+                  value={form.registryGov?.username || ""}
+                  onChange={(e) => patchGov("username", e.target.value)}
+                  placeholder="π.χ. vet_username"
+                  className={`${INPUT} pl-9`}
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+            <div>
+              <label className={LABEL}>Κωδικός (Taxisnet)</label>
+              <div className="relative">
+                <input
+                  type={showGovPassword ? "text" : "password"}
+                  value={form.registryGov?.password || ""}
+                  onChange={(e) => patchGov("password", e.target.value)}
+                  placeholder="••••••••••••••••"
+                  className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100"
+                  autoComplete="new-password"
+                />
+                <button type="button" onClick={() => setShowGovPassword(!showGovPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+                  {showGovPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <div className="mt-4">
+          <Section title="Κατάσταση Σύνδεσης">
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-win-elevated/50 rounded-2xl border border-gray-200 dark:border-win-border">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-win-elevated flex items-center justify-center flex-shrink-0">
+                  <Landmark className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Registry Worker</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Ο browser που συνδέεται στο pet.gov.gr για αναζητήσεις microchip.</p>
+                </div>
+              </div>
+              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border flex-shrink-0 ${govStatusInfo.cls}`}>
+                <govStatusInfo.icon className={`w-3.5 h-3.5 ${govStatusLoading ? "animate-spin" : ""}`} />
+                {govStatusInfo.label}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGovConnect}
+              disabled={govConnecting}
+              className="mt-3 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              {govConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Landmark className="w-4 h-4" />}
+              {govConnecting ? "Σύνδεση..." : "Αποθήκευση & Σύνδεση τώρα"}
+            </button>
+            {govError && <p className="text-xs text-red-500 mt-2">{govError}</p>}
+          </Section>
+        </div>
       </div>
 
       {/* ── Εμφάνιση ── */}

@@ -1,80 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { X, Calendar, Stethoscope, Scissors, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { X, Calendar, Stethoscope, Scissors } from "lucide-react";
 import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
+import { useAppointmentSlots } from "../../hooks/useAppointmentSlots.jsx";
+import CompactAppointmentCard from "../appointments/CompactAppointmentCard.jsx";
+import CompactSlotGrid from "../appointments/CompactSlotGrid.jsx";
 
-const TYPE_COLORS = {
-  "Εξέταση":       "bg-indigo-100 text-indigo-700",
-  "Εμβόλιο":       "bg-green-100 text-green-700",
-  "Αποπαρασίτωση": "bg-amber-100 text-amber-700",
-  "Χειρουργείο":   "bg-red-100 text-red-700",
-  "Στείρωση":      "bg-purple-100 text-purple-700",
-  "Μπάνιο":        "bg-sky-100 text-sky-700",
-  "Κούρεμα":       "bg-sky-100 text-sky-700",
-  "Καλλωπισμός":   "bg-sky-100 text-sky-700",
-  "Νύχια":         "bg-sky-100 text-sky-700",
-  "Αυτιά":         "bg-sky-100 text-sky-700",
-  "Αδένες":        "bg-sky-100 text-sky-700",
+// Προεπιλεγμένο ωράριο (fallback όταν δεν υπάρχει localStorage) — ίδιο με
+// αυτό του AppointmentSlots.jsx, ώστε η προβολή "Σήμερα" εδώ να δείχνει το
+// ίδιο πραγματικό ωράριο λειτουργίας.
+const DEFAULT_HOURS = {
+  monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
+  sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
 };
-
-function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
-function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-100 text-gray-600"; }
-
-// Πολύ συμπαγής, τετράγωνη κάρτα ραντεβού — μπαίνει μέσα σε στενή υπο-στήλη
-// (Ιατρείο ή Grooming) κάτω από κάθε μέρα, οπότε δεν χρειάζεται εικονίδιο
-// γιατρού (το δείχνει ήδη η στήλη) — μόνο ό,τι πληροφορία δεν χωράει αλλού.
-function AgendaCard({ appt, onEdit, onConsult, onDelete }) {
-  const isCompleted = appt.status === "completed";
-
-  return (
-    <li className={`rounded-md border p-1.5 transition-colors group ${
-      isCompleted
-        ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
-        : "bg-gray-50 dark:bg-win-surface/40 border-gray-100 dark:border-win-border/50"
-    }`}>
-      <div className="flex items-center justify-between gap-0.5">
-        <span className={`text-[11px] font-bold flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>
-          {appt.time}
-        </span>
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => onEdit?.(appt)}
-            title="Επεξεργασία"
-            className="w-4 h-4 rounded bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center transition-colors"
-          >
-            <Pencil className="w-2 h-2 text-gray-400 dark:text-gray-500" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Θέλεις σίγουρα να διαγράψεις το ραντεβού;")) onDelete?.(appt._id);
-            }}
-            title="Διαγραφή"
-            className="w-4 h-4 rounded bg-gray-100 dark:bg-win-border/40 hover:bg-red-100 dark:hover:bg-red-900/30 flex items-center justify-center transition-colors"
-          >
-            <Trash2 className="w-2 h-2 text-gray-400 dark:text-gray-500 hover:text-red-500" />
-          </button>
-        </div>
-      </div>
-      <button type="button" onClick={() => onConsult?.(appt)} className="block w-full text-left hover:opacity-80 transition-opacity">
-        <p className={`text-[11px] font-medium truncate leading-tight ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>
-          {appt.animalName}
-        </p>
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate leading-tight">{appt.clientName}</p>
-        {isCompleted ? (
-          <span className="inline-flex items-center gap-0.5 mt-0.5 text-[9px] font-medium px-1 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-            <CheckCircle2 className="w-2 h-2" /> OK
-          </span>
-        ) : (
-          <span className={`inline-block mt-0.5 text-[9px] font-medium px-1 py-0.5 rounded-full truncate max-w-full ${getTypeColor(appt.type)}`}>
-            {(Array.isArray(appt.type) ? appt.type[0] : appt.type)}
-          </span>
-        )}
-      </button>
-    </li>
-  );
-}
 
 function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
   return (
@@ -90,7 +33,7 @@ function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
           </div>
           <ul className="space-y-1">
             {g.clinic.map((appt) => (
-              <AgendaCard
+              <CompactAppointmentCard
                 key={appt._id}
                 appt={appt}
                 onEdit={onEditAppointment}
@@ -107,7 +50,7 @@ function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
           </div>
           <ul className="space-y-1">
             {g.grooming.map((appt) => (
-              <AgendaCard
+              <CompactAppointmentCard
                 key={appt._id}
                 appt={appt}
                 onEdit={onEditAppointment}
@@ -122,20 +65,150 @@ function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
   );
 }
 
-// mode: "week" (επόμενες 7 μέρες) | "month" (επόμενες 30 μέρες)
-const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEditAppointment, onDeleteAppointment, onConsult }) => {
+// Mobile-only: μέσα σε κάθε μέρα, Ιατρείο και Grooming είναι 2 ξεχωριστές
+// ενότητες η μία κάτω από την άλλη (όχι δίπλα-δίπλα σαν στο desktop), και τα
+// ραντεβού μέσα σε κάθε ενότητα μπαίνουν σε πλέγμα 4 ανά γραμμή — όσα δεν
+// χωράνε πάνε αυτόματα (wrap) σε επόμενη γραμμή.
+function MobileDaySection({ label, Icon, iconColor, appts, onEdit, onConsult, onDelete }) {
+  if (appts.length === 0) return null;
+  return (
+    <div>
+      <div className="flex items-center justify-center gap-1 mb-1">
+        <Icon className={`w-3 h-3 ${iconColor}`} />
+        <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500">{label}</span>
+      </div>
+      <ul className="grid grid-cols-4 gap-1">
+        {appts.map((appt) => (
+          <CompactAppointmentCard key={appt._id} appt={appt} onEdit={onEdit} onConsult={onConsult} onDelete={onDelete} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function MobileDayBlock({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
+  return (
+    <div className="border-b border-gray-100 dark:border-win-border/40 pb-3 last:border-b-0 last:pb-0">
+      <p className="text-sm font-extrabold text-gray-800 dark:text-gray-100 tracking-wide mb-2 capitalize text-center">
+        {dayjs(g.date).locale("el").format("dddd D MMM")}
+      </p>
+      <div className="flex flex-col gap-2">
+        <MobileDaySection
+          label="Ιατρείο"
+          Icon={Stethoscope}
+          iconColor="text-indigo-400"
+          appts={g.clinic}
+          onEdit={onEditAppointment}
+          onConsult={onConsult}
+          onDelete={onDeleteAppointment}
+        />
+        <MobileDaySection
+          label="Grooming"
+          Icon={Scissors}
+          iconColor="text-sky-400"
+          appts={g.grooming}
+          onEdit={onEditAppointment}
+          onConsult={onConsult}
+          onDelete={onDeleteAppointment}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Προβολή "Σήμερα": πλήρες ωράριο ημέρας — δείχνει και τα κλεισμένα ραντεβού
+// ΚΑΙ τις κενές, διαθέσιμες ώρες (κλικ → δημιουργία νέου ραντεβού), βάσει του
+// πραγματικού ωραρίου λειτουργίας (clinicIntervals/groomingIntervals).
+function TodaySlotsSection({ title, Icon, iconColor, slots, doctor, onSlotSelect, onEdit, onConsult, onDelete }) {
+  if (!slots.length) return null;
+  return (
+    <div className="w-full sm:flex-1 min-w-0">
+      <div className="flex items-center justify-center gap-1.5 mb-2">
+        <Icon className={`w-4 h-4 ${iconColor}`} />
+        <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{title}</span>
+      </div>
+      <CompactSlotGrid
+        slots={slots}
+        slotDuration={30}
+        doctor={doctor}
+        onSlotSelect={onSlotSelect}
+        onEdit={onEdit}
+        onConsult={onConsult}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
+// mode: "today" (μόνο σήμερα) | "week" (επόμενες 7 μέρες) | "month" (επόμενες 30 μέρες)
+const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEditAppointment, onDeleteAppointment, onConsult, onNewAppointment }) => {
   // Το κλείδωμα του body (position:fixed) παραμένει ενεργό όσο είναι ανοιχτό
   // το modal — το scroll-chaining fix του hook δεν εφαρμόζεται εδώ (η λίστα
   // κυλάει οριζόντια ανά μέρα, όχι σε ένα ενιαίο κάθετο container).
   useModalScrollLock(isOpen, true);
 
-  if (!isOpen) return null;
+  // Εσωτερικό view mode ώστε να αλλάζει Σήμερα/Εβδομάδα/Μήνας μέσα από το
+  // ίδιο το modal (κουμπιά στο header), χωρίς να χρειάζεται να κλείσει και να
+  // ξανανοίξει από το dashboard. Συγχρονίζεται με το mode prop κάθε φορά που
+  // ανοίγει το modal από έξω.
+  const [viewMode, setViewMode] = useState(mode);
+  useEffect(() => {
+    if (isOpen) setViewMode(mode);
+  }, [isOpen, mode]);
 
   const today = dayjs().startOf("day");
-  const rangeEnd = mode === "month" ? today.add(29, "day") : today.add(6, "day");
+  const todayStr = today.format("YYYY-MM-DD");
+  const todayDayKey = today.locale("en").format("dddd").toLowerCase();
 
-  const title = mode === "month" ? "Ραντεβού Μήνα" : "Ραντεβού Εβδομάδας";
-  const label = `${today.locale("el").format("D MMM")} – ${rangeEnd.locale("el").format("D MMM")}`;
+  // Πλήρες ωράριο ημέρας (Ιατρείο/Grooming) για την προβολή "Σήμερα" — δείχνει
+  // ΚΑΙ τις διαθέσιμες (κενές) ώρες, όχι μόνο τα ήδη κλεισμένα ραντεβού.
+  let clinicHours = DEFAULT_HOURS;
+  let groomingHours = {};
+  try {
+    const savedClinic = localStorage.getItem("clinicWorkingHours");
+    if (savedClinic) clinicHours = JSON.parse(savedClinic);
+  } catch {}
+  try {
+    const savedGrooming = localStorage.getItem("groomingWorkingHours");
+    if (savedGrooming) groomingHours = JSON.parse(savedGrooming);
+  } catch {}
+
+  const clinicSchedule = clinicHours?.[todayDayKey];
+  const groomingSchedule = groomingHours?.[todayDayKey];
+  const clinicIntervals = clinicSchedule?.intervals || [{ start: "09:00", end: "17:00" }];
+  const groomingIntervals = groomingSchedule?.intervals || [{ start: "09:00", end: "17:00" }];
+
+  const { slotsIatreio, slotsGrooming } = useAppointmentSlots({
+    date: todayStr,
+    clinicIntervals,
+    groomingIntervals,
+    slotDuration: 30,
+    appointments,
+  });
+
+  if (!isOpen) return null;
+
+  // Κλικ σε κενό slot → δημιουργία νέου ραντεβού. Δανειζόμαστε τον ίδιο
+  // μηχανισμό με το "+ Νέο" του dashboard: το modal κλείνει και ανοίγει η
+  // πλήρης σελίδα Ραντεβού με προσυμπληρωμένη ώρα/γιατρό (ίδια συμπεριφορά
+  // με το κουμπί "Επεξεργασία" εδώ, που κι αυτό κλείνει το modal).
+  const handleSlotSelect = (time, doctor) => {
+    onNewAppointment?.(doctor, time);
+    onClose?.();
+  };
+
+  const rangeEnd =
+    viewMode === "month" ? today.add(29, "day") :
+    viewMode === "today" ? today :
+    today.add(6, "day");
+
+  const title =
+    viewMode === "month" ? "Ραντεβού Μήνα" :
+    viewMode === "today" ? "Ραντεβού Ημέρας" :
+    "Ραντεβού Εβδομάδας";
+  const label = viewMode === "today"
+    ? today.locale("el").format("D MMM")
+    : `${today.locale("el").format("D MMM")} – ${rangeEnd.locale("el").format("D MMM")}`;
 
   const inRange = appointments
     .filter((a) => {
@@ -193,7 +266,27 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
             {label} · {inRange.length} ραντεβού
           </p>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3">
+            <div className="hidden sm:flex items-center gap-1 bg-white/10 rounded-xl p-1">
+              {[
+                { key: "today", label: "Σήμερα" },
+                { key: "week",  label: "Εβδομάδα" },
+                { key: "month", label: "Μήνας" },
+              ].map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => setViewMode(m.key)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    viewMode === m.key
+                      ? "bg-white text-indigo-600"
+                      : "text-white/80 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={onClose}
@@ -209,27 +302,71 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
             πλάγια μόνο αν δεν χωράνε). Το ύψος προσαρμόζεται στο περιεχόμενο
             μέχρι το max-h του modal. */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 no-scrollbar" style={{ touchAction: "auto" }}>
-          {groups.length === 0 ? (
+          {viewMode === "today" ? (
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+              <TodaySlotsSection
+                title="Ιατρείο"
+                Icon={Stethoscope}
+                iconColor="text-indigo-400"
+                slots={slotsIatreio}
+                doctor="Ιατρείο"
+                onSlotSelect={handleSlotSelect}
+                onEdit={onEditAppointment}
+                onConsult={onConsult}
+                onDelete={onDeleteAppointment}
+              />
+              <TodaySlotsSection
+                title="Grooming"
+                Icon={Scissors}
+                iconColor="text-sky-400"
+                slots={slotsGrooming}
+                doctor="Grooming"
+                onSlotSelect={handleSlotSelect}
+                onEdit={onEditAppointment}
+                onConsult={onConsult}
+                onDelete={onDeleteAppointment}
+              />
+            </div>
+          ) : groups.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
               <Calendar className="w-8 h-8 text-gray-200 dark:text-gray-700" />
               <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν ραντεβού σε αυτό το διάστημα.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              {weekRows.map((row) => (
-                <div key={row.weekIdx} className="flex gap-3 overflow-x-auto no-scrollbar">
-                  {row.days.map((g) => (
-                    <DayColumn
-                      key={g.date}
-                      g={g}
-                      onEditAppointment={onEditAppointment}
-                      onConsult={onConsult}
-                      onDeleteAppointment={onDeleteAppointment}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            <>
+              {/* Desktop / tablet: μέρες σε οριζόντιες σειρές ανά εβδομάδα,
+                  με Ιατρείο | Grooming δίπλα-δίπλα μέσα σε κάθε μέρα. */}
+              <div className="hidden sm:flex flex-col gap-4">
+                {weekRows.map((row) => (
+                  <div key={row.weekIdx} className="flex gap-3 overflow-x-auto no-scrollbar">
+                    {row.days.map((g) => (
+                      <DayColumn
+                        key={g.date}
+                        g={g}
+                        onEditAppointment={onEditAppointment}
+                        onConsult={onConsult}
+                        onDeleteAppointment={onDeleteAppointment}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile: μέρες η μία κάτω από την άλλη, μόνο κάθετο scroll —
+                  μέσα σε κάθε μέρα, Ιατρείο και Grooming είναι ξεχωριστές
+                  ενότητες με τα ραντεβού σε πλέγμα 4 ανά γραμμή. */}
+              <div className="flex sm:hidden flex-col gap-3">
+                {groups.map((g) => (
+                  <MobileDayBlock
+                    key={g.date}
+                    g={g}
+                    onEditAppointment={onEditAppointment}
+                    onConsult={onConsult}
+                    onDeleteAppointment={onDeleteAppointment}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

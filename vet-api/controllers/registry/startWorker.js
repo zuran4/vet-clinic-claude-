@@ -18,24 +18,28 @@ function getRequestId(req) {
  */
 export async function startWorker(req, res, next) {
   const requestId = getRequestId(req);
+  const clinicId = req.clinicId;
 
   try {
-    const result = await startRegistryWorkerProcess({ requestId });
+    const result = await startRegistryWorkerProcess({ clinicId, requestId });
 
     if (result.alreadyRunning) {
-      return res.status(200).json({ ok: true, alreadyRunning: true, pid: result.pid, requestId });
+      return res.status(200).json({ ok: true, alreadyRunning: true, pid: result.pid, clinicId, requestId });
     }
 
     return res.status(201).json({
       ok: true,
       started: true,
       pid: result.pid,
+      port: result.port,
       registryWorkerHeadless: result.registryWorkerHeadless,
+      clinicId,
       requestId,
     });
   } catch (err) {
     logger.error({
       msg: "Unexpected error while starting registry worker process",
+      clinicId,
       requestId,
       error: err?.message,
       stack: err?.stack,

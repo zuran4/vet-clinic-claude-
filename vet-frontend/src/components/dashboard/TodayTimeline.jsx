@@ -231,6 +231,7 @@ export default function TodayTimeline({ appointments = [], onNewAppointment, onE
       onEditAppointment={onEditAppointment}
       onDeleteAppointment={onDeleteAppointment}
       onConsult={setConsultAppt}
+      onNewAppointment={onNewAppointment}
     />
     <div className="bg-white dark:bg-win-bg/30 border border-gray-200 dark:border-win-border rounded-2xl shadow-sm overflow-hidden">
 
@@ -253,9 +254,17 @@ export default function TodayTimeline({ appointments = [], onNewAppointment, onE
           )}
         </div>
 
-        {/* Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal */}
+        {/* Σήμερα / Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal.
+            Το "Σήμερα" ανοίγει το ίδιο modal σε mode="today" (πλήρες ωράριο
+            ημέρας με διαθέσιμες + κλεισμένες ώρες) — όχι κάτι άλλο. */}
         <div className="flex items-center gap-1 mt-3 bg-white/10 rounded-xl p-1 w-fit">
-          <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-600">Σήμερα</span>
+          <button
+            type="button"
+            onClick={() => setAgendaMode("today")}
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Σήμερα
+          </button>
           <button
             type="button"
             onClick={() => setAgendaMode("week")}

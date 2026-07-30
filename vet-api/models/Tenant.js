@@ -12,6 +12,11 @@ const tenantSchema = new mongoose.Schema(
     plan:       { type: String, enum: ["trial", "basic", "pro"], default: "trial" },
     trialEndsAt: { type: Date, default: null },
 
+    // Κάθε κλινική τρέχει τον δικό της registry-worker process (Playwright,
+    // login στο gov.gr) σε ξεχωριστό port — πλήρης απομόνωση session/ταυτότητας
+    // μεταξύ κλινικών. Ανατίθεται αυτόματα στο provisioning.
+    registryWorkerPort: { type: Number, default: null, unique: true, sparse: true },
+
     // Επιχειρηματικά/τιμολόγησης στοιχεία
     companyName: { type: String, trim: true, default: "" },
     vatNumber:   { type: String, trim: true, default: "" },

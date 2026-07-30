@@ -1,5 +1,21 @@
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import request from "../api/apiClient.js"; // ✅ κεντρικός API client
+
+const DEFAULT_HOURS = {
+  monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  tuesday:   { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  wednesday: { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  thursday:  { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  friday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
+  saturday:  { enabled: true,  intervals: [{ start: "10:00", end: "14:00" }] },
+  sunday:    { enabled: false, intervals: [{ start: "09:00", end: "17:00" }] },
+};
+
+const toMinutes = (hhmm) => {
+  const [h, m] = String(hhmm || "").split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
 
 export function useAppointmentForm({ time, doctor, selectedDate, existingData, onSave }) {
   const [formData, setFormData] = useState({
@@ -108,26 +124,52 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
 
     const fetchSlots = async () => {
       const selectedDateStr = date.toISOString().split("T")[0];
+      const activeDoctor = existingData?.doctor || doctor;
+      const slotDuration = 30;
+
       try {
         const data = await request("/appointments");
 
         const dayAppointments = data.filter(
           (a) =>
             a.date === selectedDateStr &&
-            a.doctor === (existingData?.doctor || doctor) &&
+            a.doctor === activeDoctor &&
             a._id !== existingData?._id
         );
-        const usedTimes = new Set(dayAppointments.map((a) => a.time));
+
+        // Πραγματικό ωράριο λειτουργίας (Ιατρείο/Grooming) από τις ρυθμίσεις,
+        // ίδια πηγή με το κύριο ημερολόγιο (AppointmentSlots) — όχι σταθερό
+        // εύρος 09:00-17:00.
+        const storageKey = activeDoctor === "Grooming" ? "groomingWorkingHours" : "clinicWorkingHours";
+        let workingHours = DEFAULT_HOURS;
+        try {
+          const saved = localStorage.getItem(storageKey);
+          if (saved) workingHours = JSON.parse(saved);
+        } catch {}
+
+        const dayKey = dayjs(date).locale("en").format("dddd").toLowerCase();
+        const daySchedule = workingHours?.[dayKey];
+        const intervals = daySchedule?.intervals?.length
+          ? daySchedule.intervals
+          : [{ start: "09:00", end: "17:00" }];
 
         const slots = [];
-        for (let h = 9; h < 17; h++) {
-          for (let m = 0; m < 60; m += 30) {
-            const hourStr = `${h.toString().padStart(2, "0")}:${m
-              .toString()
-              .padStart(2, "0")}`;
-            slots.push({ time: hourStr, taken: usedTimes.has(hourStr) });
+        intervals.forEach(({ start, end }) => {
+          let current = toMinutes(start);
+          const endMin = toMinutes(end);
+
+          while (current < endMin) {
+            const hourStr = `${Math.floor(current / 60).toString().padStart(2, "0")}:${(current % 60).toString().padStart(2, "0")}`;
+            // "Κατειλημμένο" αν κάποιο ραντεβού πέφτει μέσα σε αυτό το slot —
+            // όχι μόνο ίδια ακριβή ώρα, ώστε να πιάνει και μη-στρογγυλές ώρες.
+            const taken = dayAppointments.some((a) => {
+              const apptMin = toMinutes(a.time);
+              return apptMin >= current && apptMin < current + slotDuration;
+            });
+            slots.push({ time: hourStr, taken });
+            current += slotDuration;
           }
-        }
+        });
 
         setAvailableSlots(slots);
       } catch (err) {

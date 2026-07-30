@@ -27,6 +27,7 @@ const EMPTY_CARD_DATA = {
   lastVacDate: null,
   vacBrand: null,
   vacType: null,
+  vaccinations: [],
 };
 
 function buildBaseCardData(microchip) {
@@ -85,6 +86,7 @@ function buildCardDataFromApi(data, fallbackMicrochip) {
     lastVacDate: vaccinationData?.lastVacDate ?? null,
     vacBrand:    vaccinationData?.vacBrand    ?? null,
     vacType:     vaccinationData?.vacType     ?? null,
+    vaccinations: vaccinationData?.vaccinations ?? [],
   };
 }
 

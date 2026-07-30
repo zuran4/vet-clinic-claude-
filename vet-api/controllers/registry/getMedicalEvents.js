@@ -15,6 +15,7 @@ export async function getMedicalEventsHandler(req, res, next) {
     (req.headers["x-request-id"] || "").toString().trim() ||
     randomUUID();
 
+  const clinicId = req.clinicId;
   const microchip = String(req.query.microchip || "").trim();
 
   if (!microchip) {
@@ -32,9 +33,9 @@ export async function getMedicalEventsHandler(req, res, next) {
   }
 
   try {
-    logger.info({ msg: "Registry medical-events started", microchip, requestId });
+    logger.info({ msg: "Registry medical-events started", microchip, clinicId, requestId });
 
-    const session = await getRegistrySession({ requestId });
+    const session = await getRegistrySession(clinicId, { requestId });
     if (!session || session.status !== "LOGGED_IN") {
       throw new ApiError(409, "Registry worker is not logged in", {
         code: "WORKER_NOT_LOGGED_IN",
@@ -42,7 +43,7 @@ export async function getMedicalEventsHandler(req, res, next) {
       });
     }
 
-    const result = await fetchMedicalEvents(microchip, { requestId });
+    const result = await fetchMedicalEvents(clinicId, microchip, { requestId });
 
     return res.status(200).json({
       requestId,

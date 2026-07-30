@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import dayjs from "dayjs";
 
+const toMinutes = (hhmm) => {
+  const [h, m] = String(hhmm || "").split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
 export function useAppointmentSlots({
   date,
   clinicIntervals = [],
@@ -17,12 +22,16 @@ export function useAppointmentSlots({
 
       while (current.isBefore(endTime)) {
         const time = current.format("HH:mm");
-        const found = appointments.find(
-          (a) =>
-            a.time === time &&
-            a.date === date &&
-            (a.doctor || "Ιατρείο") === doctor
-        );
+        const slotStartMin = toMinutes(time);
+        // Ταιριάζουμε ραντεβού που ΠΕΦΤΟΥΝ μέσα στο διάστημα του slot, όχι
+        // μόνο ακριβή ίδια ώρα — αλλιώς ένα ραντεβού σε μη-στρογγυλή ώρα
+        // (π.χ. 19:08) δεν ταιριάζει ποτέ με κανένα slot ("19:00"/"19:30")
+        // και εξαφανίζεται από το ημερολόγιο, ενώ υπάρχει κανονικά.
+        const found = appointments.find((a) => {
+          if (a.date !== date || (a.doctor || "Ιατρείο") !== doctor) return false;
+          const apptMin = toMinutes(a.time);
+          return apptMin >= slotStartMin && apptMin < slotStartMin + slotDuration;
+        });
 
         slots.push({
           time,

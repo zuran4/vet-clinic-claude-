@@ -281,6 +281,54 @@ export async function extractSterilizationData(page) {
 }
 
 /**
+ * Διαβάζει το γρήγορο status label "Στείρωση" απευθείας από τη σελίδα του
+ * booklet (χωρίς να χρειάζεται να ανοίξουμε το εσωτερικό panel στείρωσης).
+ * Ίδια λογική DOM fallback με το extractVaccinationFromBooklet (span.z-label),
+ * αγκυρωμένη στο σταθερό ελληνικό label "Στείρωση" — τα ids γύρω του (π.χ.
+ * uDGK770) είναι τυχαία, παράγονται από το ZK σε κάθε φόρτωση.
+ * Πιο αξιόπιστο από το παλιό derived isSterilized (surgeryDate + checkboxes),
+ * που σπάει όταν κάποιο εσωτερικό widget δεν διαβαστεί σωστά.
+ */
+export async function extractSterilizationQuickStatus(page) {
+  try {
+    const statusRaw = await page.evaluate(() => {
+      const readByLabel = (labelText) => {
+        const labels = Array.from(document.querySelectorAll("span.frm-label"));
+        const labelEl = labels.find((el) => (el.textContent || "").trim() === labelText);
+        if (!labelEl) return null;
+        const labelCell = labelEl.closest(".z-hlayout-inner");
+        const valueCell = labelCell ? labelCell.nextElementSibling : null;
+        const valueEl = valueCell ? valueCell.querySelector("span.z-label") : null;
+        const t = valueEl ? (valueEl.innerText || valueEl.textContent || "").trim() : "";
+        return t || null;
+      };
+
+      const direct = readByLabel("Στείρωση");
+      if (direct) return direct;
+
+      // DOM fallback: σάρωσε όλα τα z-label για γνωστές τιμές
+      for (const span of document.querySelectorAll("span.z-label")) {
+        const txt = (span.innerText || span.textContent || "").trim();
+        if (/στειρωμένο/i.test(txt)) return txt;
+      }
+      return null;
+    });
+
+    // Θετικό ΜΟΝΟ αν το κείμενο είναι ακριβώς "Στειρωμένο" — οτιδήποτε άλλο μη
+    // κενό (π.χ. "Μη στειρωμένο") είναι αρνητικό, χωρίς να χρειάζεται να
+    // ξέρουμε εκ των προτέρων την ακριβή διατύπωση του αρνητικού.
+    const isSterilized = statusRaw
+      ? /^στειρωμένο$/i.test(statusRaw)
+      : null;
+
+    return { isSterilized, sterilizationStatusRaw: statusRaw };
+  } catch (error) {
+    console.error("❌ Σφάλμα στο extractSterilizationQuickStatus:", error);
+    return { isSterilized: null, sterilizationStatusRaw: null };
+  }
+}
+
+/**
  * Διαβάζει τιμές από ZK widgets μέσα στη σελίδα ΙΔΙΟΚΤΗΤΗ.
  * (PURE read)
  */
@@ -402,50 +450,68 @@ export async function extractVaccinationFromBooklet(page) {
     let lastVacDate = null;
     let vacBrand = null;
     let vacType = null;
+    let vaccinations = [];
 
     try {
-      // Κλικ στο tab
+      // Κλικ στο tab "Γεγονότα Ιατρικού Φακέλου"
       const tabClicked = await _clickMedicalEventsTab(page);
       if (tabClicked) {
-        // Περιμένουμε να φορτώσει το content του tab
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(1200);
+
+        // Μέσα στο tab, κλικ στο sub-tab "Εμβολιασμοί" — δεν υποθέτουμε ότι
+        // είναι ήδη επιλεγμένο εξ ορισμού.
+        await _clickVaccinationsSubTab(page);
+        await page.waitForTimeout(1200);
 
         const details = await page.evaluate(() => {
           const getText = (el) => (el.innerText || el.textContent || "").trim();
-          let lastVacDate = null;
-          let vacBrand = null;
-          let vacType = null;
 
           // Χρησιμοποιούμε .z-listitem (όχι tr.) για συμβατότητα με li/tr/div
           const allRows = Array.from(document.querySelectorAll(".z-listitem"));
 
-          // STEP 1: Βρες summary vaccination rows → πιο πρόσφατη ημερομηνία
-          let bestTs = 0;
+          // Κάθε γραμμή του πίνακα Εμβολιασμών έχει σταθερή σειρά στηλών:
+          // [0]=#, [1]=Ημερομηνία, [2]=Εμβολιασμός (τύπος, π.χ. "Αντιλυσσικό"),
+          // [3]=Σκεύασμα (λατινικά), [4]=Καταχωρίσθηκε από (redacted "***").
+          // Διαβάζουμε με ΘΕΣΗ (όχι με αναζήτηση "οποιουδήποτε ελληνικού
+          // κειμένου"), γιατί το τελευταίο έπιανε λανθασμένα τον τίτλο της
+          // σελίδας ("Εμβολιασμοί Ζώου Συντροφιάς") αντί για το πραγματικό
+          // τύπο εμβολίου όταν κάποιο άσχετο στοιχείο ταίριαζε στο ".z-listitem".
+          // Μαζεύουμε ΟΛΕΣ τις γραμμές (όχι μόνο την πιο πρόσφατη) ώστε να
+          // έχουμε πλήρες ιστορικό εμβολιασμών, ταξινομημένο νεότερο→παλιότερο.
+          const rows = [];
           for (const row of allRows) {
-            const cells = Array.from(row.querySelectorAll("div.z-listcell-content")).map(getText).filter(Boolean);
-            if (!cells.some(c => /εμβολιασμ/i.test(c))) continue;
-            const dc = cells.find(c => /^\d{2}\/\d{2}\/\d{4}$/.test(c));
-            if (!dc) continue;
-            const [d, m, y] = dc.split("/").map(Number);
+            const cells = Array.from(row.querySelectorAll(".z-listcell-content")).map(getText).filter(Boolean);
+            if (cells.length < 4) continue; // όχι πλήρης γραμμή πίνακα εμβολιασμών
+
+            const dateCell = cells[1];
+            if (!dateCell || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateCell)) continue;
+
+            const [d, m, y] = dateCell.split("/").map(Number);
             const ts = new Date(y, m - 1, d).getTime();
-            if (ts > bestTs) { bestTs = ts; lastVacDate = dc; }
+
+            const typeCell = cells[2] || null;
+            const brandCell = cells[3] || null;
+
+            rows.push({ ts, date: dateCell, type: typeCell, brand: brandCell });
           }
 
-          // STEP 2: Βρες detail row που έχει ΚΑΙ Latin brand ΚΑΙ Greek type (πεζά)
-          for (const row of allRows) {
-            const cells = Array.from(row.querySelectorAll("div.z-listcell-content")).map(getText).filter(Boolean);
-            const lb = cells.find(c => /[A-Z]{2,}/.test(c) && !/[α-ωΑ-Ω]/.test(c) && !/\*/.test(c) && !/^\d/.test(c));
-            const gt = cells.find(c => /[α-ω]/.test(c) && !/\*/.test(c) && !/εμβολιασμ/i.test(c) && !/ζώου/i.test(c));
-            if (lb && gt) { vacBrand = lb; vacType = gt; break; }
-          }
+          rows.sort((a, b) => b.ts - a.ts);
+          const vaccinations = rows.map(({ date, type, brand }) => ({ date, type, brand }));
+          const best = rows[0] || null;
 
-          return { lastVacDate, vacBrand, vacType };
+          return {
+            lastVacDate: best?.date ?? null,
+            vacType: best?.type ?? null,
+            vacBrand: best?.brand ?? null,
+            vaccinations,
+          };
         });
 
         console.log("🔬 [VAC] details:", details);
         lastVacDate = details.lastVacDate;
         vacBrand = details.vacBrand;
         vacType = details.vacType;
+        vaccinations = details.vaccinations;
 
         // Επιστροφή στο πρώτο tab (summary/booklet)
         await _returnToBookletSummaryTab(page);
@@ -454,10 +520,10 @@ export async function extractVaccinationFromBooklet(page) {
       console.warn("⚠️ [extractVaccinationFromBooklet] Αποτυχία εξαγωγής details:", detailErr?.message);
     }
 
-    return { isVaccinated, vaccinationRaw: statusRaw, lastVacDate, vacBrand, vacType };
+    return { isVaccinated, vaccinationRaw: statusRaw, lastVacDate, vacBrand, vacType, vaccinations };
   } catch (err) {
     console.error("❌ Σφάλμα στο extractVaccinationFromBooklet:", err);
-    return { isVaccinated: null };
+    return { isVaccinated: null, vaccinations: [] };
   }
 }
 
@@ -521,6 +587,44 @@ async function _clickMedicalEventsTab(page) {
   }
 
   console.warn("⚠️ [_clickMedicalEventsTab] Δεν βρέθηκε το 'Γεγονότα Ιατρικού Φακέλου' tab.");
+  return false;
+}
+
+/**
+ * Μέσα στο "Γεγονότα Ιατρικού Φακέλου" tab υπάρχουν sub-tabs
+ * ("Εμβολιασμοί" | "Διαγνωστικές εξετάσεις"). Κάνει κλικ στο "Εμβολιασμοί"
+ * ώστε να είμαστε σίγουροι ότι ο πίνακας που θα διαβάσουμε είναι όντως ο
+ * πίνακας εμβολιασμών (δεν υποθέτουμε ότι είναι ήδη το προεπιλεγμένο sub-tab).
+ */
+async function _clickVaccinationsSubTab(page) {
+  try {
+    const tabSpan = page.locator("span.z-tab-text").filter({ hasText: /^Εμβολιασμοί$/i }).first();
+    if (await tabSpan.isVisible().catch(() => false)) {
+      await tabSpan.click({ timeout: 5000 });
+      console.log("✅ [_clickVaccinationsSubTab] Click via span.z-tab-text Εμβολιασμοί.");
+      return true;
+    }
+  } catch {}
+
+  try {
+    const tab = page.locator(".z-tab").filter({ hasText: /Εμβολιασμοί/i }).first();
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click({ timeout: 5000 });
+      console.log("✅ [_clickVaccinationsSubTab] Click via .z-tab Εμβολιασμοί.");
+      return true;
+    }
+  } catch {}
+
+  try {
+    const el = page.getByText(/Εμβολιασμοί/i, { exact: false }).first();
+    if (await el.isVisible().catch(() => false)) {
+      await el.click({ timeout: 5000 });
+      console.log("✅ [_clickVaccinationsSubTab] Click via getByText.");
+      return true;
+    }
+  } catch {}
+
+  console.warn("⚠️ [_clickVaccinationsSubTab] Δεν βρέθηκε sub-tab 'Εμβολιασμοί'.");
   return false;
 }
 

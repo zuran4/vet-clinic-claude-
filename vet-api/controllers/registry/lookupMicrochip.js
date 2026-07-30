@@ -36,7 +36,11 @@ function toBoolQuery(v) {
  */
 export async function lookupMicrochipHandler(req, res, next) {
   const requestId = getRequestId(req);
+  const clinicId = req.clinicId;
   const microchip = String(req.query.microchip || "").trim();
+  // Κλειδί dedupe ανά (κλινική, microchip) — δύο κλινικές που ψάχνουν το ίδιο
+  // microchip ταυτόχρονα δεν πρέπει να μοιράζονται in-flight αποτέλεσμα.
+  const dedupeKey = `${clinicId}:${microchip}`;
 
   const includeSnippets = toBoolQuery(req.query.includeSnippets);
   const includeBooklet = toBoolQuery(req.query.includeBooklet);
@@ -53,7 +57,7 @@ export async function lookupMicrochipHandler(req, res, next) {
   }
 
   try {
-    const existing = inflightLookups.get(microchip);
+    const existing = inflightLookups.get(dedupeKey);
     if (
       existing &&
       Date.now() - existing.startedAt < INFLIGHT_TTL_MS &&
@@ -62,6 +66,7 @@ export async function lookupMicrochipHandler(req, res, next) {
       logger.info({
         msg: "Registry lookup deduped (in-flight)",
         microchip,
+        clinicId,
         requestId,
       });
 
@@ -73,10 +78,11 @@ export async function lookupMicrochipHandler(req, res, next) {
       logger.info({
         msg: "Registry lookup started",
         microchip,
+        clinicId,
         requestId,
       });
 
-      const session = await getRegistrySession({ requestId });
+      const session = await getRegistrySession(clinicId, { requestId });
 
       if (!session || session.status !== "LOGGED_IN") {
         throw new ApiError(409, "Registry worker is not logged in", {
@@ -85,7 +91,7 @@ export async function lookupMicrochipHandler(req, res, next) {
         });
       }
 
-      const lookupResult = await lookupMicrochip(microchip, { requestId });
+      const lookupResult = await lookupMicrochip(clinicId, microchip, { requestId });
 
       // rawSlim: αφαιρούμε βαριά πεδία (και δεν το στέλνουμε αν δεν ζητηθεί)
       let rawSlim = lookupResult.raw ?? null;
@@ -135,13 +141,13 @@ export async function lookupMicrochipHandler(req, res, next) {
 
       return body;
     })().finally(() => {
-      const current = inflightLookups.get(microchip);
+      const current = inflightLookups.get(dedupeKey);
       if (current && current.promise === promise) {
-        inflightLookups.delete(microchip);
+        inflightLookups.delete(dedupeKey);
       }
     });
 
-    inflightLookups.set(microchip, { startedAt: Date.now(), promise });
+    inflightLookups.set(dedupeKey, { startedAt: Date.now(), promise });
 
     const result = await promise;
     return res.status(200).json({ requestId, ...result });
@@ -149,6 +155,7 @@ export async function lookupMicrochipHandler(req, res, next) {
     logger.error({
       msg: "Failed to perform registry lookup",
       microchip,
+      clinicId,
       requestId,
       error: err?.message,
       stack: err?.stack,

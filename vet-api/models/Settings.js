@@ -67,6 +67,15 @@ const settingsSchema = new mongoose.Schema({
   // 🔹 Registry worker (headless / visible)
   registryWorkerHeadless: { type: Boolean, default: true },
 
+  // 🔹 Στοιχεία σύνδεσης gov.gr (Taxisnet) του κτηνιάτρου — χρησιμοποιούνται
+  // από τον registry-worker της κλινικής για login στο pet.gov.gr.
+  // Το password αποθηκεύεται κρυπτογραφημένο (utils/crypto.js), ίδιο μοτίβο
+  // με το emailConfig.password.
+  registryGov: {
+    username: { type: String, default: "" },
+    password: { type: String, default: "" },
+  },
+
   // 🔹 Ωράριο Ιατρείου
   clinicWorkingHours: {
     monday: { type: workingHoursSchema, default: () => defaultDay(true, "09:00", "17:00") },

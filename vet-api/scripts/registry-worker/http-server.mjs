@@ -1,5 +1,14 @@
 // vet-api/scripts/registry-worker/http-server.mjs
 
+import { attemptSessionRecovery } from "./recovery.mjs";
+
+// Πόσο συχνά επιτρέπουμε αυτόματη προσπάθεια reconnect μέσα από το /session
+// polling. Χωρίς αυτό το cooldown, το UI (poll κάθε 5s) θα χτυπούσε το GSIS
+// login κάθε 5 δευτερόλεπτα επ' άπειρον αν κάτι είναι πραγματικά χαλασμένο
+// (π.χ. λάθος credentials) — ρίσκο rate-limit/lockout στο κυβερνητικό site.
+const SESSION_RECOVERY_COOLDOWN_MS = 25000;
+const RECOVERABLE_STATUSES = new Set(["PRE_LOGIN", "SESSION_EXPIRED", "NEEDS_LOGIN"]);
+
 /**
  * Μικρός HTTP server που “τυλίγει” το Playwright page.
  */
@@ -33,6 +42,7 @@ export function startHttpServer({
 
   // Concurrency guard: ένα lookup τη φορά (sharedPage είναι single-session)
   let lookupInFlight = false;
+  let lastSessionRecoveryAttemptAt = 0;
 
   const server = http.createServer(async (req, res) => {
     const requestId = Math.random().toString(16).slice(2);
@@ -94,6 +104,18 @@ export function startHttpServer({
       let s;
       try {
         s = await computeSessionStatus(sharedPage);
+
+        const cooledDown = Date.now() - lastSessionRecoveryAttemptAt > SESSION_RECOVERY_COOLDOWN_MS;
+
+        if (RECOVERABLE_STATUSES.has(s.status) && cooledDown && !lookupInFlight) {
+          lookupInFlight = true;
+          lastSessionRecoveryAttemptAt = Date.now();
+          try {
+            s = await attemptSessionRecovery(sharedPage, { autoLoginIfNeeded });
+          } finally {
+            lookupInFlight = false;
+          }
+        }
       } catch (e) {
         return sendJson(500, {
           ok: false,
@@ -143,8 +165,7 @@ if (req.method === "GET" && path === "/lookup") {
     // 0) Βεβαιώσου ότι η session είναι ok
     let s = await computeSessionStatus(sharedPage);
     if (s.status !== "LOGGED_IN") {
-      await autoLoginIfNeeded(sharedPage);
-      s = await computeSessionStatus(sharedPage);
+      s = await attemptSessionRecovery(sharedPage, { autoLoginIfNeeded });
     }
 
     // 1) Reset πριν από κάθε lookup
@@ -236,8 +257,7 @@ if (req.method === "GET" && path === "/lookup") {
       try {
         let s = await computeSessionStatus(sharedPage);
         if (s.status !== "LOGGED_IN") {
-          await autoLoginIfNeeded(sharedPage);
-          s = await computeSessionStatus(sharedPage);
+          s = await attemptSessionRecovery(sharedPage, { autoLoginIfNeeded });
         }
 
         await sharedPage.goto(PET_BOOKLET_BASE_URL, { waitUntil: "domcontentloaded" });

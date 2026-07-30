@@ -5,6 +5,7 @@ import {
   extractBookletData,
   extractOwnerData,
   extractSterilizationData,
+  extractSterilizationQuickStatus,
   extractVaccinationFromBooklet,
   waitSterilizationWidgets,
 } from "./zk-helpers.mjs";
@@ -74,6 +75,25 @@ export async function runMicrochipLookupFlow(page, microchip) {
     const vaccination = await extractVaccinationFromBooklet(page);
     console.log("ℹ️ [runMicrochipLookupFlow] vaccination:", vaccination);
 
+    // Γρήγορο, αξιόπιστο status στείρωσης απευθείας από τη σελίδα του booklet
+    // (ίδια στιγμή με τον εμβολιασμό) — δεν χρειάζεται να ανοίξουμε το
+    // εσωτερικό panel στείρωσης (btnNeuter) για να μάθουμε το true/false.
+    const sterilizationQuick = await extractSterilizationQuickStatus(page);
+    console.log("ℹ️ [runMicrochipLookupFlow] sterilizationQuick:", sterilizationQuick);
+
+    // Συνδυάζει το γρήγορο (ground-truth label) status με τα αναλυτικά πεδία
+    // του εσωτερικού panel (ημερομηνία, τεχνική κ.λπ.), όταν/αν υπάρχουν.
+    const buildSterilization = (detailed) => {
+      const base = detailed || {};
+      const isSterilized =
+        sterilizationQuick.isSterilized ?? base.isSterilized ?? null;
+      return {
+        ...base,
+        isSterilized,
+        sterilizationStatusRaw: sterilizationQuick.sterilizationStatusRaw ?? null,
+      };
+    };
+
     // Αν δεν έχουμε managedBy, σταματάμε εδώ (booklet άνοιξε, απλώς δεν έχουμε owner flow)
     if (!pet?.managedBy) {
       console.log("⚠️ Δεν υπάρχει managedBy. Παρακάμπτω owner/στείρωση.");
@@ -85,7 +105,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
         reason: "BOOKLET_OPENED_NO_MANAGEDBY",
         pet,
         owner: null,
-        sterilization: null,
+        sterilization: buildSterilization(null),
         vaccination,
       });
     }
@@ -122,7 +142,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
           reason: "OWNER_OK_STERILIZATION_SKIPPED_REOPEN_FAILED",
           pet,
           owner,
-          sterilization: null,
+          sterilization: buildSterilization(null),
         });
       }
     }
@@ -141,7 +161,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
         reason: "OWNER_OK_STERILIZATION_OPEN_FAILED",
         pet,
         owner,
-        sterilization: null,
+        sterilization: buildSterilization(null),
       });
     }
 
@@ -151,7 +171,7 @@ export async function runMicrochipLookupFlow(page, microchip) {
       // Προσπαθούμε extract όπως και να έχει
     }
 
-    sterilization = await extractSterilizationData(page);
+    sterilization = buildSterilization(await extractSterilizationData(page));
     console.log("ℹ️ [runMicrochipLookupFlow] sterilization keys:", keys(sterilization));
 
     // 7) Back to search page

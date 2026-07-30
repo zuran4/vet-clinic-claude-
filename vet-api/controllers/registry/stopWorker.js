@@ -28,33 +28,36 @@ function sleep(ms) {
  */
 export async function stopWorker(req, res, next) {
   const requestId = getRequestId(req);
+  const clinicId = req.clinicId;
 
   try {
-    if (!isRegistryWorkerRunning()) {
+    if (!isRegistryWorkerRunning(clinicId)) {
       // Ensure state is clean
-      clearRegistryWorkerProcess();
-      setRegistryWorkerLastError(null);
+      clearRegistryWorkerProcess(clinicId);
+      setRegistryWorkerLastError(clinicId, null);
 
       return res.status(200).json({
         ok: true,
         stopped: false,
         alreadyStopped: true,
         message: "Registry worker is not running",
+        clinicId,
         requestId,
       });
     }
 
-    const proc = getRegistryWorkerProcess();
+    const proc = getRegistryWorkerProcess(clinicId);
     const previousPid = proc?.pid ?? null;
 
     logger.info({
       msg: "Stopping registry worker process on request",
+      clinicId,
       requestId,
       pid: previousPid,
     });
 
     // Clear last error on explicit stop
-    setRegistryWorkerLastError(null);
+    setRegistryWorkerLastError(clinicId, null);
 
     // Graceful first
     try {
@@ -73,8 +76,8 @@ export async function stopWorker(req, res, next) {
 
     // Force kill if still running
     try {
-      if (isRegistryWorkerRunning()) {
-        const p2 = getRegistryWorkerProcess();
+      if (isRegistryWorkerRunning(clinicId)) {
+        const p2 = getRegistryWorkerProcess(clinicId);
         p2?.kill("SIGKILL");
       }
     } catch (killError) {
@@ -89,7 +92,7 @@ export async function stopWorker(req, res, next) {
     // Wait again to see if it actually died
     await sleep(500);
 
-    if (isRegistryWorkerRunning()) {
+    if (isRegistryWorkerRunning(clinicId)) {
       // Still alive: do not lie to caller
       return next(
         new ApiError(500, "Registry worker did not stop", {
@@ -101,8 +104,8 @@ export async function stopWorker(req, res, next) {
     }
 
     // Mark state as exited (best-effort)
-    markRegistryWorkerExited(null, "STOPPED_BY_API");
-    clearRegistryWorkerProcess();
+    markRegistryWorkerExited(clinicId, null, "STOPPED_BY_API");
+    clearRegistryWorkerProcess(clinicId);
 
     return res.status(200).json({
       ok: true,

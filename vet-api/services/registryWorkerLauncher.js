@@ -1,11 +1,16 @@
 // vet-api/services/registryWorkerLauncher.js
-// Κοινή λογική εκκίνησης του registry worker process — χρησιμοποιείται τόσο
-// από το POST /api/registry/worker/start όσο και αυτόματα στο boot του server.
+// Κοινή λογική εκκίνησης του registry worker process — ανά κλινική. Κάθε
+// κλινική τρέχει το δικό της process, σε δικό της port, με δικό του browser
+// profile (playwright-registry-worker-<clinicId>) και δικά του credentials
+// gov.gr — πλήρης απομόνωση, καμία κλινική δεν βλέπει session άλλης.
 
 import { spawn } from "node:child_process";
 
-import config from "../config/index.js";
 import logger from "../utils/logger.js";
+import { decrypt } from "../utils/crypto.js";
+import { getTenantModel } from "./adminConnection.js";
+import { getTenantModels } from "./tenantConnectionManager.js";
+import { nextRegistryWorkerPort } from "./tenants/provisionTenant.js";
 import {
   getRegistryWorkerProcess,
   setRegistryWorkerProcess,
@@ -15,65 +20,72 @@ import {
   markRegistryWorkerExited,
 } from "./registryWorkerProcess.js";
 
-async function fetchJsonWithTimeout(url, timeoutMs = 2500, headers = {}) {
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), timeoutMs);
+// Εξασφαλίζει ότι η κλινική έχει ανατεθειμένο port — self-heal για tenants
+// που δημιουργήθηκαν πριν προστεθεί το πεδίο registryWorkerPort.
+async function ensureWorkerPort(clinicId) {
+  const Tenant = getTenantModel();
+  let tenant = await Tenant.findOne({ clinicId });
+  if (!tenant) throw new Error(`Άγνωστη κλινική: ${clinicId}`);
 
-  try {
-    const res = await fetch(url, { headers, signal: controller.signal });
-    const json = await res.json().catch(() => null);
-    return { ok: res.ok, status: res.status, json };
-  } catch (err) {
-    if (err?.name === "AbortError") {
-      return { ok: false, status: 504, json: null, timeout: true };
-    }
-    return { ok: false, status: 500, json: null, error: err?.message };
-  } finally {
-    clearTimeout(t);
+  if (!tenant.registryWorkerPort) {
+    tenant.registryWorkerPort = await nextRegistryWorkerPort(Tenant);
+    await tenant.save();
+    logger.info({
+      msg: "Ανατέθηκε νέο registryWorkerPort (self-heal)",
+      clinicId,
+      registryWorkerPort: tenant.registryWorkerPort,
+    });
   }
+
+  return tenant.registryWorkerPort;
 }
 
-export async function startRegistryWorkerProcess({ requestId = null } = {}) {
-  if (isRegistryWorkerRunning()) {
-    return { ok: true, alreadyRunning: true, pid: getRegistryWorkerProcess()?.pid };
+export async function startRegistryWorkerProcess({ clinicId, requestId = null } = {}) {
+  if (!clinicId) throw new Error("startRegistryWorkerProcess: clinicId is required");
+
+  if (isRegistryWorkerRunning(clinicId)) {
+    return { ok: true, alreadyRunning: true, pid: getRegistryWorkerProcess(clinicId)?.pid, clinicId };
   }
 
-  // Default headless = true
-  let headlessFromSettings = true;
+  const port = await ensureWorkerPort(clinicId);
 
-  const apiBaseUrl = String(
-    process.env.API_BASE_URL || `http://localhost:${config.port}`
-  ).replace(/\/+$/, "");
-
-  const settingsUrl = `${apiBaseUrl}/api/settings`;
-  const settingsRes = await fetchJsonWithTimeout(settingsUrl, 2500, {
-    ...(requestId ? { "x-request-id": String(requestId) } : {}),
-  });
-
-  if (settingsRes.ok && settingsRes.json) {
-    const raw = settingsRes.json.registryWorkerHeadless;
-    if (typeof raw === "boolean") headlessFromSettings = raw;
-
-    logger.info({
-      msg: "Loaded registryWorkerHeadless from settings",
-      requestId,
-      registryWorkerHeadless: headlessFromSettings,
-      rawType: typeof raw,
-      rawValue: raw,
-    });
-  } else {
+  // Ρυθμίσεις + credentials gov.gr της συγκεκριμένης κλινικής — απευθείας
+  // από τη βάση της (όχι HTTP loopback στο ίδιο API, πιο απλό & αξιόπιστο).
+  let headless = true;
+  let govUsername = "";
+  let govPassword = "";
+  try {
+    const { Settings } = getTenantModels(clinicId);
+    const settings = await Settings.findOne().lean();
+    if (settings) {
+      if (typeof settings.registryWorkerHeadless === "boolean") {
+        headless = settings.registryWorkerHeadless;
+      }
+      govUsername = settings.registryGov?.username || "";
+      govPassword = settings.registryGov?.password ? decrypt(settings.registryGov.password) : "";
+    }
+  } catch (err) {
     logger.warn({
-      msg: "Could not load settings before starting registry worker (using default headless=true)",
+      msg: "Could not load clinic settings before starting registry worker (using defaults)",
+      clinicId,
       requestId,
-      status: settingsRes.status,
-      timeout: Boolean(settingsRes.timeout),
-      error: settingsRes.error,
+      error: err?.message,
     });
   }
 
   const childEnv = {
     ...process.env,
-    REGISTRY_WORKER_HEADLESS: headlessFromSettings ? "true" : "false",
+    CLINIC_ID: clinicId,
+    REGISTRY_WORKER_PORT: String(port),
+    REGISTRY_WORKER_USER_DATA_DIR: `playwright-registry-worker-${clinicId}`,
+    REGISTRY_WORKER_HEADLESS: headless ? "true" : "false",
+    // ΡΗΤΗ αντικατάσταση (όχι μόνο conditional override) — το ...process.env
+    // παραπάνω κληρονομεί το global PET_USERNAME/PET_PASSWORD του .env, που
+    // ανήκουν σε ΑΛΛΗ κλινική. Καμία κλινική δεν πρέπει ποτέ να "δανείζεται"
+    // σιωπηλά την ταυτότητα άλλης — αν δεν έχει δικά της credentials, μένει
+    // χωρίς αυτόματο login (ασφαλές no-op, βλ. login-helpers.mjs).
+    PET_USERNAME: govUsername || "",
+    PET_PASSWORD: govPassword || "",
   };
 
   const child = spawn("node", ["scripts/registry-worker.mjs"], {
@@ -82,14 +94,15 @@ export async function startRegistryWorkerProcess({ requestId = null } = {}) {
     env: childEnv,
   });
 
-  setRegistryWorkerProcess(child);
+  setRegistryWorkerProcess(clinicId, child);
 
   child.on("exit", (code, signal) => {
-    markRegistryWorkerExited(code, signal);
-    clearRegistryWorkerProcess();
+    markRegistryWorkerExited(clinicId, code, signal);
+    clearRegistryWorkerProcess(clinicId);
 
     logger.warn({
       msg: "Registry worker process exited",
+      clinicId,
       requestId,
       pid: child.pid,
       code,
@@ -98,10 +111,11 @@ export async function startRegistryWorkerProcess({ requestId = null } = {}) {
   });
 
   child.on("error", (err) => {
-    setRegistryWorkerLastError(err?.message);
+    setRegistryWorkerLastError(clinicId, err?.message);
 
     logger.error({
       msg: "Registry worker process error event",
+      clinicId,
       requestId,
       pid: child.pid,
       error: err?.message,
@@ -109,5 +123,5 @@ export async function startRegistryWorkerProcess({ requestId = null } = {}) {
     });
   });
 
-  return { ok: true, started: true, pid: child.pid, registryWorkerHeadless: headlessFromSettings };
+  return { ok: true, started: true, pid: child.pid, port, clinicId, registryWorkerHeadless: headless };
 }

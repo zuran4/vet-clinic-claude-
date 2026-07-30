@@ -9,7 +9,7 @@ import { getRegistryWorkerState } from "../../services/registryWorkerProcess.js"
 export function getWorkerState(req, res) {
   const requestId = req.requestId || req.headers["x-request-id"] || null;
 
-  const state = getRegistryWorkerState();
+  const state = getRegistryWorkerState(req.clinicId);
 
   // Safe-only fields (no process object)
   const safe = {

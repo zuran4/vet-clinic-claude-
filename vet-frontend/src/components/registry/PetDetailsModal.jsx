@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Cpu, Phone, Mail, MapPin, User, Calendar,
-  Heart, Shield, Scissors, FileText, X,
-  PawPrint, Home, Stethoscope, ClipboardList,
-  UserPlus, FolderOpen, BadgeCheck, AlertCircle, HeartPulse,
+  FileText, X, Shield,
+  PawPrint, Home, Stethoscope,
+  UserPlus, FolderOpen, BadgeCheck, AlertCircle,
 } from "lucide-react";
-import MedicalEventsTab from "../pets/MedicalEventsTab";
 import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
 
 const SPECIES_EMOJI = {
@@ -22,7 +21,6 @@ function speciesEmoji(s) {
 }
 
 export default function PetDetailsModal({ open, onClose, data, onAction }) {
-  const [tab, setTab] = useState("summary");
   const scrollRef = useModalScrollLock(open);
 
   useEffect(() => {
@@ -32,16 +30,20 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
-  useEffect(() => { if (open) setTab("summary"); }, [open]);
-
   const {
-    microchip, markingDate, passportNumber,
+    microchip, markingDate,
     petName, sex, age, breed, species, isSmallPet, color,
     managedBy, ownerName, ownerPhone, ownerEmail,
     ownerAddress, ownerCity, ownerAfm,
     isSterilized, isVaccinated, sterilizationData,
-    lastVacDate, vacBrand, vacType,
+    lastVacDate, vacBrand, vacType, vaccinations,
   } = data || {};
+
+  const vaccinationRows = vaccinations?.length
+    ? vaccinations
+    : lastVacDate || vacBrand || vacType
+    ? [{ date: lastVacDate, type: vacType, brand: vacBrand }]
+    : [];
 
   const s = sterilizationData || null;
   const sterilizedActive = Boolean(s?.isSterilized ?? isSterilized);
@@ -63,31 +65,22 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
   };
   const displayDateTime = (v) => {
     if (!v) return "—";
-    let d = new Date(v);
-    if (Number.isNaN(d.getTime())) {
-      // Χειρισμός DD/MM/YY ή DD/MM/YYYY (μορφή gov site)
-      const m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{2,4})/);
-      if (m) {
-        const year = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
-        d = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
-      }
+    // Προτεραιότητα στη μορφή DD/MM/YY(YY) του gov site — το native Date()
+    // παρακάτω τη διαβάζει ως MM/DD (αμερικάνικο locale) και αντιστρέφει
+    // μέρα/μήνα (π.χ. "12/11/2025" γίνεται λάθος 11 Δεκεμβρίου αντί για
+    // 12 Νοεμβρίου), γι' αυτό ελέγχουμε πρώτα ρητά αυτό το pattern.
+    let d;
+    const m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{2,4})/);
+    if (m) {
+      const year = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
+      d = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+    } else {
+      d = new Date(v);
     }
     if (Number.isNaN(d.getTime())) return "—";
     return new Intl.DateTimeFormat("el-GR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
   };
-  const displayBool = (v) => v === true ? "Ναι" : v === false ? "Όχι" : "—";
-
-  const tabs = useMemo(() => [
-    { key: "summary",  label: "Σύνοψη",          icon: ClipboardList,  enabled: true },
-    { key: "pet",      label: "Ζώο",              icon: PawPrint,       enabled: true },
-    { key: "owner",    label: "Ιδιοκτήτης",       icon: User,           enabled: hasOwner },
-    { key: "health",   label: "Υγεία",            icon: Heart,          enabled: true },
-    { key: "admin",    label: "Διαχείριση",       icon: Stethoscope,    enabled: true },
-    { key: "medical",  label: "Ιατρικός Φάκελος", icon: HeartPulse,     enabled: !!microchip },
-  ], [hasOwner, microchip]);
-
   const dialogId = "pet-details-modal-title";
-  const descId   = "pet-details-modal-desc";
 
   if (!open) return null;
 
@@ -101,11 +94,10 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={dialogId}
-        aria-describedby={descId}
         className="relative z-50 flex w-full max-h-[88vh] max-w-2xl flex-col overflow-hidden rounded-3xl bg-white dark:bg-win-surface shadow-2xl"
       >
         {/* ── HEADER (gradient) ── */}
-        <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 pt-6 pb-4">
+        <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-5">
           {/* Close button */}
           <button
             type="button"
@@ -121,57 +113,36 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
             Κάρτα Κατοικιδίου
           </div>
 
-          {/* Avatar + Name */}
+          {/* Avatar + Name + pills */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/25 flex items-center justify-center text-3xl flex-shrink-0 shadow-inner">
+            <div className="w-24 h-24 rounded-2xl bg-white/25 flex items-center justify-center text-6xl flex-shrink-0 shadow-inner">
               {emoji}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2 id={dialogId} className="text-2xl font-bold text-white tracking-tight leading-tight truncate">
                 {display(petName)}
               </h2>
-              <p id={descId} className="text-indigo-200 text-sm mt-0.5 truncate">
-                {[display(species), display(breed)].filter(v => v !== "—").join(" • ") || "—"}
-              </p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <StatusPill active={sterilizedActive} activeLabel="Στειρωμένο" inactiveLabel="Μη στειρωμένο" danger={!sterilizedActive} />
+                <StatusPill active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Ανεμβολίαστο" danger={!vaccinatedActive} />
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1 text-xs text-white/90 font-mono">
+                  <Cpu className="w-3 h-3 text-indigo-200 flex-shrink-0" />
+                  {display(microchip)}
+                </div>
+                <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1 text-xs text-white/90">
+                  <Calendar className="w-3 h-3 text-indigo-200 flex-shrink-0" />
+                  {displayDateTime(markingDate)}
+                </div>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1 text-xs text-white/90">
+                  <Stethoscope className="w-3 h-3 text-indigo-200 flex-shrink-0" />
+                  {display(managedBy)}
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* Status pills + microchip */}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1 text-xs text-white/90 font-mono">
-              <Cpu className="w-3 h-3 text-indigo-200 flex-shrink-0" />
-              {display(microchip)}
-            </div>
-            <StatusPill active={sterilizedActive} activeLabel="Στειρωμένο" inactiveLabel="Στείρωση: —" />
-            <StatusPill active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Ανεμβολίαστο" danger={!vaccinatedActive} />
-          </div>
-
-          {/* Tabs */}
-          <div className="mt-4 flex gap-1 overflow-x-auto pb-1">
-            {tabs.map((t) => {
-              const Icon = t.icon;
-              const isActive = tab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  disabled={!t.enabled}
-                  onClick={() => t.enabled && setTab(t.key)}
-                  className={[
-                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex-shrink-0",
-                    !t.enabled
-                      ? "opacity-40 cursor-not-allowed text-white/60"
-                      : isActive
-                      ? "bg-white text-indigo-700 shadow"
-                      : "text-white/80 hover:bg-white/20",
-                  ].join(" ")}
-                  title={!t.enabled ? "Δεν υπάρχουν δεδομένα" : ""}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {t.label}
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -183,77 +154,59 @@ export default function PetDetailsModal({ open, onClose, data, onAction }) {
         >
           {!data ? (
             <EmptyState text="Δεν υπάρχουν δεδομένα για εμφάνιση." />
-          ) : tab === "summary" ? (
+          ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {/* Ζώο */}
                 <Card title="Ζώο" icon={PawPrint}>
-                  <IconField icon={PawPrint}    label="Είδος"  value={display(species)} />
-                  <IconField icon={FileText}     label="Φυλή"   value={display(breed)} />
-                  <IconField icon={User}         label="Φύλο"   value={display(sex)} />
-                  <IconField icon={Home}         label="Χρώμα"  value={display(color)} />
+                  <IconField icon={PawPrint}    label="Είδος"             value={display(species)} />
+                  <IconField icon={FileText}     label="Φυλή"              value={display(breed)} />
+                  <IconField icon={User}         label="Φύλο"              value={display(sex)} />
+                  <IconField icon={Calendar}     label="Ηλικία"            value={display(age)} />
+                  <IconField icon={Home}         label="Χρώμα"             value={display(color)} />
+                  <IconField icon={FileText}     label="Μικρό ζώο (<10kg)" value={displaySmallPet(isSmallPet)} />
                 </Card>
-                {/* Μητρώο */}
-                <Card title="Μητρώο" icon={Cpu}>
-                  <IconField icon={Cpu}          label="Microchip"       value={display(microchip)} mono />
-                  <IconField icon={Calendar}     label="Ημ. σήμανσης"    value={displayDateTime(markingDate)} />
-                  <IconField icon={FileText}     label="Διαβατήριο"      value={display(passportNumber)} />
-                  <IconField icon={Scissors}     label="Στείρωση"        value={sterilizedActive ? "Στειρωμένο" : "—"} highlight={sterilizedActive} />
-                  <IconField icon={Shield}       label="Εμβολιασμός"     value={vaccinatedActive ? "Εμβολιασμένο" : "Ανεμβολίαστο"} highlight={vaccinatedActive} danger={!vaccinatedActive} />
-                </Card>
+                {/* Ιδιοκτήτης */}
+                {hasOwner ? (
+                  <OwnerCard
+                    ownerName={ownerName} ownerPhone={ownerPhone}
+                    ownerEmail={ownerEmail} ownerAddress={ownerAddress}
+                    ownerCity={ownerCity} ownerAfm={ownerAfm}
+                    display={display}
+                  />
+                ) : (
+                  <EmptyState text="Δεν υπάρχουν στοιχεία ιδιοκτήτη." />
+                )}
               </div>
-              {/* Ιδιοκτήτης (full-width) */}
-              {hasOwner ? (
-                <OwnerCard
-                  ownerName={ownerName} ownerPhone={ownerPhone}
-                  ownerEmail={ownerEmail} ownerAddress={ownerAddress}
-                  ownerCity={ownerCity} ownerAfm={ownerAfm}
-                  display={display}
-                />
-              ) : (
-                <EmptyState text="Δεν υπάρχουν στοιχεία ιδιοκτήτη." />
-              )}
-            </div>
-          ) : tab === "pet" ? (
-            <Card title="Στοιχεία Ζώου" icon={PawPrint}>
-              <IconField icon={PawPrint}  label="Είδος"             value={display(species)} />
-              <IconField icon={FileText}  label="Φυλή"              value={display(breed)} />
-              <IconField icon={User}      label="Φύλο"              value={display(sex)} />
-              <IconField icon={Calendar}  label="Ηλικία"            value={display(age)} />
-              <IconField icon={Home}      label="Χρώμα"             value={display(color)} />
-              <IconField icon={FileText}  label="Μικρό ζώο (<10kg)" value={displaySmallPet(isSmallPet)} />
-            </Card>
-          ) : tab === "owner" ? (
-            hasOwner
-              ? <OwnerCard ownerName={ownerName} ownerPhone={ownerPhone} ownerEmail={ownerEmail} ownerAddress={ownerAddress} ownerCity={ownerCity} ownerAfm={ownerAfm} display={display} />
-              : <EmptyState text="Δεν υπάρχουν στοιχεία ιδιοκτήτη." />
-          ) : tab === "health" ? (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <HealthCard title="Στείρωση" active={sterilizedActive} activeLabel="Στειρωμένο" inactiveLabel="Μη καταχωρημένη" icon={Scissors}>
-                  <IconField icon={Scissors}  label="Κατάσταση"            value={s?.isSterilized === true ? "Στειρωμένο" : s?.isSterilized === false ? "Μη στειρωμένο" : "—"} highlight={sterilizedActive} />
-                  <IconField icon={Calendar}  label="Ημερομηνία"           value={displayDateTime(s?.sterilizationDate)} />
-                  <IconField icon={User}      label="Δήλωση ιδιοκτήτη"    value={displayBool(s?.sterilizationOwnerSubmission)} />
-                  <IconField icon={FileText}  label="Διαγν. τεχνική"       value={display(s?.sterilizationDiagnosticTechnique)} />
-                </HealthCard>
-                <HealthCard title="Εμβολιασμός" active={vaccinatedActive} activeLabel="Εμβολιασμένο" inactiveLabel="Μη καταχωρημένος" icon={Shield}>
-                  <IconField icon={Calendar}  label="Τελευταίος"              value={displayDateTime(lastVacDate)} />
-                  <IconField icon={FileText}  label="Σκεύασμα / Τύπος"       value={[vacBrand, vacType].filter(Boolean).join(" / ") || "—"} />
-                </HealthCard>
-              </div>
-              <Card title="Σήμανση Microchip" icon={Cpu}>
-                <IconField icon={Cpu}       label="Microchip"       value={display(microchip)} mono />
-                <IconField icon={Calendar}  label="Ημ. σήμανσης"   value={displayDateTime(markingDate)} />
-                <IconField icon={FileText}  label="Διαβατήριο"     value={display(passportNumber)} />
+              {/* Εμβολιασμός (οριζόντιο, πλήρους πλάτους) */}
+              <Card title="Εμβολιασμός" icon={Shield}>
+                {vaccinationRows.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                          <th className="text-left font-semibold pb-1.5 pr-3">Ημερομηνία</th>
+                          <th className="text-left font-semibold pb-1.5 pr-3">Τύπος</th>
+                          <th className="text-left font-semibold pb-1.5">Σκεύασμα</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vaccinationRows.map((v, i) => (
+                          <tr key={i} className="border-t border-gray-100 dark:border-win-border/50">
+                            <td className="py-1.5 pr-3 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">{displayDateTime(v.date)}</td>
+                            <td className="py-1.5 pr-3 text-gray-700 dark:text-gray-200">{display(v.type)}</td>
+                            <td className="py-1.5 text-gray-500 dark:text-gray-400">{display(v.brand)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχει καταχωρημένο ιστορικό εμβολιασμών.</p>
+                )}
               </Card>
             </div>
-          ) : tab === "admin" ? (
-            <Card title="Διαχείριση / Κτηνίατρος" icon={Stethoscope}>
-              <IconField icon={Stethoscope} label="Διαχείριση από" value={display(managedBy)} />
-            </Card>
-          ) : tab === "medical" ? (
-            <MedicalEventsTab microchip={microchip} />
-          ) : null}
+          )}
         </div>
 
         {/* ── FOOTER ── */}
@@ -305,24 +258,6 @@ function Card({ title, icon: Icon, children }) {
   );
 }
 
-function HealthCard({ title, active, activeLabel, inactiveLabel, icon: Icon, children }) {
-  return (
-    <div className="rounded-2xl bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 dark:border-win-border bg-gray-50/80 dark:bg-win-elevated/50">
-        <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
-          <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">{title}</span>
-        </div>
-        {active
-          ? <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><BadgeCheck className="w-3 h-3" />{activeLabel}</span>
-          : <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-300 rounded-full px-2.5 py-0.5 text-[11px] font-bold"><AlertCircle className="w-3 h-3" />{inactiveLabel}</span>
-        }
-      </div>
-      <div className="px-4 py-3 space-y-2.5">{children}</div>
-    </div>
-  );
-}
-
 function IconField({ icon: Icon, label, value, mono = false, highlight = false, danger = false }) {
   const isEmpty = !value || value === "—";
   return (
@@ -351,17 +286,8 @@ function OwnerCard({ ownerName, ownerPhone, ownerEmail, ownerAddress, ownerCity,
         <User className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
         <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ιδιοκτήτης</span>
       </div>
-      {/* Owner name + avatar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-win-border">
-        <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
-          {display(ownerName) !== "—" ? display(ownerName).charAt(0).toUpperCase() : "?"}
-        </div>
-        <div>
-          <p className="font-bold text-gray-900 dark:text-gray-100">{display(ownerName)}</p>
-          {ownerCity && <p className="text-xs text-gray-400 dark:text-gray-500">{display(ownerCity)}</p>}
-        </div>
-      </div>
-      <div className="px-4 py-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">
+      <div className="px-4 py-3 space-y-2.5">
+        <IconField icon={User}    label="Ονοματεπώνυμο" value={display(ownerName)} />
         <IconField icon={Phone}    label="Τηλέφωνο"    value={display(ownerPhone)} />
         <IconField icon={Mail}     label="Email"        value={display(ownerEmail)} />
         <IconField icon={MapPin}   label="Διεύθυνση"   value={display(ownerAddress)} />

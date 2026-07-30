@@ -293,12 +293,16 @@ function MainLayout({
               pets={Array(petsCount).fill(null)}
               customersCount={customersCount}
               products={productsWithExpDate}
-              onNewAppointment={(doctor) => {
+              onNewAppointment={(doctor, time) => {
                 cameFromDashboardRef.current = true;
                 setAppointmentsDoctorFilter(doctor);
                 setSelectedDoctor(doctor);
                 setSelectedDate(dayjs().format("YYYY-MM-DD"));
                 setEditingAppointment(null);
+                // Αν ήρθαμε από συγκεκριμένο κενό slot (π.χ. modal "Σήμερα"),
+                // ανοίγουμε τη φόρμα κατευθείαν σε αυτή την ώρα — αλλιώς απλά
+                // πάμε στη μέρα και διαλέγει ο χρήστης ώρα από το grid.
+                setSelectedTime(time || null);
                 openPanel("appointments");
               }}
               onEditAppointment={(appt) => {

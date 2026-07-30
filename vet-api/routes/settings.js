@@ -9,10 +9,11 @@ import logger from "../utils/logger.js";
 
 const router = express.Router();
 
-// 🔒 Δεν επιστρέφουμε ποτέ το SMTP password στον client (αποφυγή credential leak)
+// 🔒 Δεν επιστρέφουμε ποτέ SMTP/GOV passwords στον client (αποφυγή credential leak)
 function sanitizeSettings(settings) {
   const obj = settings.toObject();
   if (obj.emailConfig) obj.emailConfig = { ...obj.emailConfig, password: "" };
+  if (obj.registryGov) obj.registryGov = { ...obj.registryGov, password: "" };
   return obj;
 }
 
@@ -55,6 +56,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       darkMode,
       emailConfig,
       notifications,
+      registryGov,
     } = req.body;
 
     let settings = await Settings.findOne();
@@ -77,6 +79,9 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
           ? { ...emailConfig, password: emailConfig.password ? encrypt(emailConfig.password) : "" }
           : {},
         notifications: notifications || {},
+        registryGov:   registryGov
+          ? { ...registryGov, password: registryGov.password ? encrypt(registryGov.password) : "" }
+          : {},
       });
     } else {
       if (clinicName   !== undefined) settings.clinicName = clinicName;
@@ -101,6 +106,16 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
           ? encrypt(incomingPassword)   // νέο password → κρυπτογράφηση
           : existingPassword;           // κενό → κρατάμε το υπάρχον (ήδη κρυπτογραφημένο)
         settings.emailConfig = { ...emailConfig, password: newPassword };
+      }
+      if (registryGov !== undefined) {
+        // Ίδιο μοτίβο με το emailConfig.password: το GET δεν επιστρέφει ποτέ
+        // το πραγματικό password, οπότε κενό εδώ σημαίνει "δεν το άλλαξε".
+        const existingGovPassword = settings.registryGov?.password || "";
+        const incomingGovPassword = registryGov.password;
+        const newGovPassword = incomingGovPassword
+          ? encrypt(incomingGovPassword)
+          : existingGovPassword;
+        settings.registryGov = { ...registryGov, password: newGovPassword };
       }
     }
 
