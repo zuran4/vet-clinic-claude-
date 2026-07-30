@@ -11,7 +11,36 @@ const DAYS = [
   { key: "sunday",    label: "Κυριακή"   },
 ];
 
-const TIME_INPUT = "border border-gray-200 dark:border-win-border-light rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 tabular-nums w-[90px]";
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "15", "30", "45"];
+
+// Native <input type="time"> εμφανίζει 12ωρο (AM/PM) ή 24ωρο ανάλογα με τις
+// ρυθμίσεις γλώσσας/περιοχής των Windows/Chrome, όχι με βάση τη σελίδα —
+// δύο select (ώρα/λεπτά) εγγυώνται πάντα 24ωρη μορφή, ανεξάρτητα συσκευής.
+function TimeInput24({ value, onChange }) {
+  const [h, m] = (value || "00:00").split(":");
+  const minuteOptions = MINUTES.includes(m) ? MINUTES : [...MINUTES, m].sort();
+
+  return (
+    <div className="flex items-center gap-0.5 border border-gray-200 dark:border-win-border-light rounded-lg pl-2.5 pr-1.5 py-1.5 bg-white dark:bg-win-elevated focus-within:ring-2 focus-within:ring-indigo-300">
+      <select
+        value={h}
+        onChange={(e) => onChange(`${e.target.value}:${m}`)}
+        className="text-sm bg-transparent focus:outline-none tabular-nums text-gray-900 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
+      >
+        {HOURS.map((hh) => <option key={hh} value={hh}>{hh}</option>)}
+      </select>
+      <span className="text-gray-400 dark:text-gray-500 text-sm">:</span>
+      <select
+        value={m}
+        onChange={(e) => onChange(`${h}:${e.target.value}`)}
+        className="text-sm bg-transparent focus:outline-none tabular-nums text-gray-900 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
+      >
+        {minuteOptions.map((mm) => <option key={mm} value={mm}>{mm}</option>)}
+      </select>
+    </div>
+  );
+}
 
 const WorkingHoursSection = ({ title = "Ωράριο Λειτουργίας", workingHours, updateDay }) => {
   const [open, setOpen] = useState(false);
@@ -73,28 +102,22 @@ const WorkingHoursSection = ({ title = "Ωράριο Λειτουργίας", wo
                     <div className="flex-1 space-y-1.5">
                       {day.intervals?.map((interval, idx) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <input
-                            type="time"
-                            step="900"
+                          <TimeInput24
                             value={interval.start}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const updated = [...day.intervals];
-                              updated[idx] = { ...updated[idx], start: e.target.value };
+                              updated[idx] = { ...updated[idx], start: v };
                               updateDay(key, { intervals: updated });
                             }}
-                            className={TIME_INPUT}
                           />
                           <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
-                          <input
-                            type="time"
-                            step="900"
+                          <TimeInput24
                             value={interval.end}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const updated = [...day.intervals];
-                              updated[idx] = { ...updated[idx], end: e.target.value };
+                              updated[idx] = { ...updated[idx], end: v };
                               updateDay(key, { intervals: updated });
                             }}
-                            className={TIME_INPUT}
                           />
                           {day.intervals.length > 1 && (
                             <button
