@@ -28,19 +28,8 @@ module.exports = {
         NODE_ENV: "production",
       },
     },
-    {
-      name: "registry-worker",
-      script: "scripts/registry-worker.mjs",
-      watch: false,
-      autorestart: true,
-      // Μεγαλύτερο delay γιατί ο browser χρειάζεται χρόνο να σηκωθεί
-      restart_delay: 8000,
-      exp_backoff_restart_delay: 100,
-      max_restarts: 5,
-      min_uptime: "15s",
-      env: {
-        NODE_ENV: "production",
-      },
-    },
+    // Το "registry-worker" ΔΕΝ είναι πια στατικό PM2 app — κάθε κλινική τρέχει
+    // τον δικό της, ξεκινάει δυναμικά μέσω services/registryWorkerLauncher.js
+    // (αυτόματα on-demand, ή χειροκίνητα από Ρυθμίσεις → GOV).
   ],
 };

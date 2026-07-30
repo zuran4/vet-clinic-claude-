@@ -57,7 +57,9 @@ vet-api/backups/
 # =========================
 # Playwright persistent profiles / caches / auth
 # =========================
+# Ανά-κλινική browser profiles (cookies/session του gov.gr login) — ποτέ σε git.
 vet-api/playwright-registry-worker/
+vet-api/playwright-registry-worker-*/
 vet-api/playwright-profile/
 **/playwright-profile/
 vet-api/playwright-auth-state.json
