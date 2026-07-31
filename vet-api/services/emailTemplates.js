@@ -208,6 +208,36 @@ export function purchaseReminderHtml({
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// 👋 Καλωσόρισμα νέου πελάτη
+// ────────────────────────────────────────────────────────────────────────────
+export function welcomeEmailHtml({
+  clinicName = "Κτηνιατρείο",
+  clientName = "",
+} = {}) {
+  return `
+  <body style="${BASE_STYLE}">
+    <div style="${CARD_STYLE}">
+      <div style="${HEADER_STYLE("#4f46e5")}">
+        <h1 style="margin:0; color:#ffffff; font-size:22px;">🐾 ${clinicName}</h1>
+        <p style="margin:6px 0 0; color:#c7d2fe; font-size:14px;">Καλωσήρθατε!</p>
+      </div>
+      <div style="${BODY_STYLE}">
+        <p style="font-size:16px; color:#1e293b;">
+          Αγαπητέ/ή <strong>${clientName}</strong>,
+        </p>
+        <p style="color:#475569; line-height:1.6;">
+          Σας ευχαριστούμε που μας εμπιστευθήκατε! Θα είμαστε πάντα δίπλα
+          στα κατοικίδιά σας.
+        </p>
+      </div>
+      <div style="${FOOTER_STYLE}">
+        ${clinicName} • Αυτόματο μήνυμα — παρακαλώ μην απαντάτε
+      </div>
+    </div>
+  </body>`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // 🎂 Χρόνια Πολλά κατοικιδίου
 // ────────────────────────────────────────────────────────────────────────────
 export function birthdayHtml({

@@ -31,7 +31,7 @@ const NAV_GROUPS = [
     group: "ΣΥΣΤΗΜΑ",
     items: [
       { id: "ui",            label: "Εμφάνιση",     icon: Monitor,   desc: "Θέμα και stock thresholds",           iconBg: "bg-orange-100 dark:bg-orange-900/40",   iconColor: "text-orange-500 dark:text-orange-400" },
-      { id: "notifications", label: "Email",         icon: Mail,      desc: "SMTP και αυτόματες ειδοποιήσεις",    iconBg: "bg-teal-100 dark:bg-teal-900/40",       iconColor: "text-teal-500 dark:text-teal-400" },
+      { id: "notifications", label: "Ειδοποιήσεις",  icon: Mail,      desc: "SMTP, SMS και αυτόματες ειδοποιήσεις", iconBg: "bg-teal-100 dark:bg-teal-900/40",       iconColor: "text-teal-500 dark:text-teal-400" },
       { id: "shortcuts",     label: "Συντομεύσεις", icon: Keyboard,  desc: "Πλήκτρα γρήγορης πρόσβασης",        iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-500 dark:text-emerald-400" },
       { id: "touchscreen",   label: "Οθόνη Αφής",   icon: Tablet,    desc: "On-screen πληκτρολόγιο για kiosk",   iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/40", iconColor: "text-fuchsia-500 dark:text-fuchsia-400" },
     ],
@@ -47,6 +47,8 @@ const NAV_GROUPS = [
     ],
   },
 ];
+
+const SLOT_DURATION_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120];
 
 const ROLES = ["Κτηνίατρος", "Βοηθός Κτηνιάτρου", "Groomer"];
 const ROLE_STYLE = {
@@ -237,6 +239,8 @@ const SettingsPage = ({ onClose, user }) => {
         staff:      [],
         clinicWorkingHours:   defaultWorkingHours(),
         groomingWorkingHours: defaultWorkingHours(),
+        clinicSlotDuration:   30,
+        groomingSlotDuration: 60,
         registryWorkerHeadless: true,
         ...settings,
         emailConfig: {
@@ -248,10 +252,18 @@ const SettingsPage = ({ onClose, user }) => {
           fromEmail: "",
           ...(settings.emailConfig || {}),
         },
+        smsConfig: {
+          accountSid: "",
+          authToken:  "",
+          fromNumber: "",
+          ...(settings.smsConfig || {}),
+        },
         notifications: {
           appointmentReminder: true,
           vaccineReminder:     true,
           birthdayReminder:    false,
+          purchaseReminder:    true,
+          smsEnabled:          false,
           ...(settings.notifications || {}),
         },
         registryGov: {
@@ -273,7 +285,11 @@ const SettingsPage = ({ onClose, user }) => {
   const [testEmailTo, setTestEmailTo]           = useState("");
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [testEmailResult, setTestEmailResult]   = useState(null);
+  const [testSmsTo, setTestSmsTo]               = useState("");
+  const [testSmsSending, setTestSmsSending]     = useState(false);
+  const [testSmsResult, setTestSmsResult]       = useState(null);
   const [showPassword, setShowPassword]         = useState(false);
+  const [showSmsToken, setShowSmsToken]         = useState(false);
   const [showGovPassword, setShowGovPassword]   = useState(false);
   const [govStatus, setGovStatus]               = useState(null); // { status, port } | null
   const [govStatusLoading, setGovStatusLoading] = useState(false);
@@ -291,6 +307,7 @@ const SettingsPage = ({ onClose, user }) => {
 
   const patch      = (f, v) => { setForm(p => ({ ...p, [f]: v })); setSaved(false); setSaveError(null); };
   const patchEmail = (f, v) => { setForm(p => ({ ...p, emailConfig: { ...p.emailConfig, [f]: v } })); setSaved(false); setSaveError(null); };
+  const patchSms   = (f, v) => { setForm(p => ({ ...p, smsConfig: { ...p.smsConfig, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchNotif = (f, v) => { setForm(p => ({ ...p, notifications: { ...p.notifications, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchGov   = (f, v) => { setForm(p => ({ ...p, registryGov: { ...p.registryGov, [f]: v } })); setSaved(false); setSaveError(null); };
 
@@ -302,8 +319,15 @@ const SettingsPage = ({ onClose, user }) => {
         setSettings(data);
         localStorage.setItem("clinicWorkingHours",   JSON.stringify(data.clinicWorkingHours   || defaultWorkingHours()));
         localStorage.setItem("groomingWorkingHours", JSON.stringify(data.groomingWorkingHours || defaultWorkingHours()));
+        localStorage.setItem("clinicSlotDuration",   String(data.clinicSlotDuration   || 30));
+        localStorage.setItem("groomingSlotDuration", String(data.groomingSlotDuration || 60));
         window.dispatchEvent(new CustomEvent("settings:workingHoursChanged", {
-          detail: { clinicWorkingHours: data.clinicWorkingHours, groomingWorkingHours: data.groomingWorkingHours },
+          detail: {
+            clinicWorkingHours: data.clinicWorkingHours,
+            groomingWorkingHours: data.groomingWorkingHours,
+            clinicSlotDuration: data.clinicSlotDuration,
+            groomingSlotDuration: data.groomingSlotDuration,
+          },
         }));
       }
       setSaved(true);
@@ -325,6 +349,19 @@ const SettingsPage = ({ onClose, user }) => {
       setTestEmailResult({ ok: false, msg: `❌ ${err.message}` });
     } finally {
       setTestEmailSending(false);
+    }
+  };
+
+  const handleTestSms = async () => {
+    if (!testSmsTo) return;
+    setTestSmsSending(true); setTestSmsResult(null);
+    try {
+      await request("/settings/test-sms", { method: "POST", body: { to: testSmsTo } });
+      setTestSmsResult({ ok: true, msg: "✅ Το δοκιμαστικό SMS στάλθηκε επιτυχώς!" });
+    } catch (err) {
+      setTestSmsResult({ ok: false, msg: `❌ ${err.message}` });
+    } finally {
+      setTestSmsSending(false);
     }
   };
 
@@ -553,6 +590,33 @@ const SettingsPage = ({ onClose, user }) => {
       {/* ── Ωράριο ── */}
       <div className={activeSection !== "hours" ? "hidden" : ""}>
         <Section title="Ωράριο Λειτουργίας" description="Ρύθμιση ωρών για ιατρείο και grooming." {...saveProps}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Διάρκεια slot ραντεβού — Ιατρείο</label>
+              <select
+                value={form.clinicSlotDuration || 30}
+                onChange={(e) => patch("clinicSlotDuration", Number(e.target.value))}
+                className={INPUT}
+              >
+                {SLOT_DURATION_OPTIONS.map((m) => (
+                  <option key={m} value={m}>{m} λεπτά</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={LABEL}>Διάρκεια slot ραντεβού — Grooming</label>
+              <select
+                value={form.groomingSlotDuration || 60}
+                onChange={(e) => patch("groomingSlotDuration", Number(e.target.value))}
+                className={INPUT}
+              >
+                {SLOT_DURATION_OPTIONS.map((m) => (
+                  <option key={m} value={m}>{m} λεπτά</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <WorkingHoursSection title="Ωράριο Ιατρείου"  workingHours={form.clinicWorkingHours}   updateDay={updateClinicDay} />
           <WorkingHoursSection title="Ωράριο Grooming"  workingHours={form.groomingWorkingHours} updateDay={updateGroomingDay} />
         </Section>
@@ -718,11 +782,64 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
+          <Section title="Ρυθμίσεις SMS (Twilio)" description="Στοιχεία Twilio για αυτόματη αποστολή SMS." {...saveProps}>
+            <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
+              <Phone className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
+                Χρειάζεσαι λογαριασμό στο <strong>twilio.com</strong> με Account SID, Auth Token και έναν αγορασμένο αριθμό αποστολής.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={LABEL}>Account SID</label>
+                <input type="text" value={form.smsConfig?.accountSid || ""} onChange={(e) => patchSms("accountSid", e.target.value)} placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" className={INPUT} />
+              </div>
+              <div>
+                <label className={LABEL}>Auth Token</label>
+                <div className="relative">
+                  <input type={showSmsToken ? "text" : "password"} value={form.smsConfig?.authToken || ""} onChange={(e) => patchSms("authToken", e.target.value)} placeholder="••••••••••••••••" className="w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100" />
+                  <button type="button" onClick={() => setShowSmsToken(!showSmsToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+                    {showSmsToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className={LABEL}>Αριθμός αποστολέα</label>
+              <input type="text" value={form.smsConfig?.fromNumber || ""} onChange={(e) => patchSms("fromNumber", e.target.value)} placeholder="+306912345678" className={INPUT} />
+            </div>
+          </Section>
+        </div>
+
+        <div className="mt-4">
+          <Section title="Δοκιμαστικό SMS">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <label className={LABEL}>Αποστολή σε</label>
+                <input type="tel" value={testSmsTo} onChange={(e) => { setTestSmsTo(e.target.value); setTestSmsResult(null); }} placeholder="+306912345678" className={INPUT} onKeyDown={(e) => e.key === "Enter" && handleTestSms()} />
+              </div>
+              <button type="button" onClick={handleTestSms} disabled={!testSmsTo || testSmsSending} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex-shrink-0">
+                <Send className="w-3.5 h-3.5" /> {testSmsSending ? "Αποστολή..." : "Αποστολή"}
+              </button>
+            </div>
+            {testSmsResult && (
+              <div className={`mt-2 px-4 py-2.5 rounded-xl text-sm font-medium ${testSmsResult.ok ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
+                {testSmsResult.msg}
+              </div>
+            )}
+          </Section>
+        </div>
+
+        <div className="mt-4">
           <Section title="Αυτόματες Ειδοποιήσεις" description="Ενεργοποίησε/απενεργοποίησε αυτόματες αποστολές." {...saveProps}>
             <div className="space-y-2">
               <NotifToggle icon="📅" label="Υπενθύμιση ραντεβού"  desc="1 μέρα πριν — 08:00"  value={form.notifications?.appointmentReminder ?? true}  onChange={(v) => patchNotif("appointmentReminder", v)} />
               <NotifToggle icon="💉" label="Υπενθύμιση εμβολίου"  desc="7 και 1 μέρα πριν — 09:00" value={form.notifications?.vaccineReminder ?? true}   onChange={(v) => patchNotif("vaccineReminder", v)} />
               <NotifToggle icon="🎂" label="Γενέθλια κατοικιδίου" desc="Ημέρα γενεθλίων — 10:00"   value={form.notifications?.birthdayReminder ?? false}  onChange={(v) => patchNotif("birthdayReminder", v)} />
+              <NotifToggle icon="🛒" label="Υπενθύμιση αγοράς"     desc="Προγραμματισμένη ημερομηνία — 10:00" value={form.notifications?.purchaseReminder ?? true}  onChange={(v) => patchNotif("purchaseReminder", v)} />
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-win-border-light">
+              <NotifToggle icon="📱" label="Αποστολή και μέσω SMS" desc="Επιπλέον στα παραπάνω, για πελάτες με ενεργές ειδοποιήσεις SMS" value={form.notifications?.smsEnabled ?? false} onChange={(v) => patchNotif("smsEnabled", v)} />
             </div>
           </Section>
         </div>

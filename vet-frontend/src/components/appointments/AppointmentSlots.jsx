@@ -7,7 +7,6 @@ import { useAppointmentSlots } from "../../hooks/useAppointmentSlots";
 
 const AppointmentSlots = ({
   date,
-  slotDuration = 30,
   appointments = [],
   onSlotSelect,
   onDelete,
@@ -16,6 +15,14 @@ const AppointmentSlots = ({
   doctorFilter = null,
 }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  // 🔹 Διάρκεια slot ανά τμήμα — από Ρυθμίσεις → Ωράριο (fallback 30'/60').
+  const [clinicSlotDuration, setClinicSlotDuration] = useState(
+    () => Number(localStorage.getItem("clinicSlotDuration")) || 30
+  );
+  const [groomingSlotDuration, setGroomingSlotDuration] = useState(
+    () => Number(localStorage.getItem("groomingSlotDuration")) || 60
+  );
 
   // Προεπιλεγμένο ωράριο (fallback όταν δεν υπάρχει localStorage)
   const defaultHours = {
@@ -43,6 +50,8 @@ const AppointmentSlots = ({
     const handleUpdate = (e) => {
       setClinicHours(e.detail.clinicWorkingHours || {});
       setGroomingHours(e.detail.groomingWorkingHours || {});
+      if (e.detail.clinicSlotDuration) setClinicSlotDuration(e.detail.clinicSlotDuration);
+      if (e.detail.groomingSlotDuration) setGroomingSlotDuration(e.detail.groomingSlotDuration);
     };
     window.addEventListener("settings:workingHoursChanged", handleUpdate);
     return () =>
@@ -65,7 +74,8 @@ const AppointmentSlots = ({
     date,
     clinicIntervals,
     groomingIntervals,
-    slotDuration,
+    slotDuration: clinicSlotDuration,
+    groomingSlotDuration,
     appointments,
   });
 
@@ -101,7 +111,7 @@ const AppointmentSlots = ({
 
         <CompactSlotGrid
           slots={slots}
-          slotDuration={slotDuration}
+          slotDuration={isGroomingSection ? groomingSlotDuration : clinicSlotDuration}
           doctor={doctorLabel}
           onSlotSelect={onSlotSelect}
           onEdit={onEdit}

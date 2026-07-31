@@ -7,48 +7,23 @@ import { el } from "date-fns/locale";
 import AppointmentPreviewModal from "../appointments/AppointmentPreviewModal.jsx";
 import WeekMonthAgendaModal from "./WeekMonthAgendaModal.jsx";
 import { getClinicOccupancyClass, getGroomingOccupancyClass } from "../../utils/workingHours.js";
+import { getTypeColor, getTypeDot } from "../../utils/appointmentTypeColors.js";
 
 registerLocale("el", el);
 
-const TYPE_COLORS = {
-  "Εξέταση":       "bg-indigo-100 text-indigo-700",
-  "Εμβόλιο":       "bg-green-100 text-green-700",
-  "Αποπαρασίτωση": "bg-amber-100 text-amber-700",
-  "Χειρουργείο":   "bg-red-100 text-red-700",
-  "Στείρωση":      "bg-purple-100 text-purple-700",
-  "Μπάνιο":        "bg-sky-100 text-sky-700",
-  "Κούρεμα":       "bg-sky-100 text-sky-700",
-  "Καλλωπισμός":   "bg-sky-100 text-sky-700",
-  "Νύχια":         "bg-sky-100 text-sky-700",
-  "Αυτιά":         "bg-sky-100 text-sky-700",
-  "Αδένες":        "bg-sky-100 text-sky-700",
-};
-
-const TYPE_DOT = {
-  "Εξέταση":       "bg-indigo-400",
-  "Εμβόλιο":       "bg-green-400",
-  "Αποπαρασίτωση": "bg-amber-400",
-  "Χειρουργείο":   "bg-red-400",
-  "Στείρωση":      "bg-purple-400",
-  "Μπάνιο":        "bg-sky-400",
-  "Κούρεμα":       "bg-sky-400",
-  "Καλλωπισμός":   "bg-sky-400",
-  "Νύχια":         "bg-sky-400",
-  "Αυτιά":         "bg-sky-400",
-  "Αδένες":        "bg-sky-400",
-};
-
-function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
-function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-100 text-gray-600"; }
-function getTypeDot(type)   { return TYPE_DOT[firstType(type)]    || "bg-gray-400"; }
-
 function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
   const isCompleted = appt.status === "completed";
+  // Φόντο κάρτας = χρώμα τμήματος (στηθοσκόπιο/violet για Ιατρείο, ψαλίδι/sky
+  // για Grooming) — ίδιο με το CompactAppointmentCard, ώστε dashboard και
+  // πλήρες ημερολόγιο να δείχνουν με τον ίδιο τρόπο.
+  const isGrooming = appt.doctor === "Grooming";
   return (
     <li className={`flex items-center gap-3 p-3 rounded-xl border transition-colors group ${
       isCompleted
         ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
-        : "bg-gray-50 dark:bg-win-surface/40 border-gray-100 dark:border-win-border/50"
+        : isGrooming
+        ? "bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800/30"
+        : "bg-violet-50 dark:bg-violet-900/10 border-violet-100 dark:border-violet-800/30"
     }`}>
       {isCompleted ? (
         <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />

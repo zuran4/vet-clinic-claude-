@@ -3,17 +3,7 @@ import { Search, Calendar, Stethoscope, Scissors, ChevronLeft, ChevronRight, Clo
 import dayjs from "dayjs";
 import { useAppointmentSearch } from "../../hooks/useAppointmentSearch.js";
 import AppointmentPreviewModal from "./AppointmentPreviewModal.jsx";
-
-const TYPE_COLORS = {
-  "Εξέταση":       "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
-  "Εμβόλιο":       "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
-  "Αποπαρασίτωση": "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300",
-  "Χειρουργείο":   "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
-  "Στείρωση":      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
-  "Μπάνιο":        "bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300",
-  "Κούρεμα":       "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300",
-  "Καλλωπισμός":   "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300",
-};
+import { getTypeColor } from "../../utils/appointmentTypeColors.js";
 
 const DOCTORS = ["", "Ιατρείο", "Grooming"];
 
@@ -107,7 +97,7 @@ export default function AppointmentHistoryPanel() {
         ) : (
           results.map((appt) => {
             const typeList = Array.isArray(appt.type) ? appt.type : (appt.type ? [appt.type] : []);
-            const typeClass = TYPE_COLORS[typeList[0]] || "bg-gray-100 dark:bg-win-elevated text-gray-600 dark:text-gray-300";
+            const typeClass = getTypeColor(typeList[0]);
             const isGrooming = appt.doctor === "Grooming";
             return (
               <button

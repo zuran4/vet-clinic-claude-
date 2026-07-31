@@ -1,72 +1,131 @@
 import cron from "node-cron";
 import dayjs from "dayjs";
 
-import Reminder from "../models/Reminder.js";
+import { getTenantModel } from "../services/adminConnection.js";
+import { getTenantModels } from "../services/tenantConnectionManager.js";
 import { sendEmail } from "../services/emailService.js";
 import { purchaseReminderHtml } from "../services/emailTemplates.js";
-import Settings from "../models/Settings.js";
+import { sendSMS } from "../services/smsService.js";
+import { purchaseReminderSms } from "../services/smsTemplates.js";
 import logger from "../utils/logger.js";
 
 /**
+ * Επεξεργάζεται τις υπενθυμίσεις αγορών για μία συγκεκριμένη κλινική.
+ */
+async function processTenant(clinicId, clinicNameFallback) {
+  const { Settings, Reminder } = getTenantModels(clinicId);
+
+  const settings = await Settings.findOne();
+
+  if (settings?.notifications?.purchaseReminder === false) {
+    return { skippedByToggle: true };
+  }
+
+  const clinicName = settings?.clinicName || clinicNameFallback || "Κτηνιατρείο";
+  const smsEnabled  = settings?.notifications?.smsEnabled === true;
+
+  // Βρίσκει reminders για σήμερα (αρχή ημέρας – τέλος ημέρας) που δεν έχουν σταλεί
+  const startOfDay = dayjs().startOf("day").toDate();
+  const endOfDay   = dayjs().endOf("day").toDate();
+
+  const reminders = await Reminder.find({
+    sent:         false,
+    reminderDate: { $gte: startOfDay, $lte: endOfDay },
+  }).populate("customer", "name email phone notifications");
+
+  let emailSent = 0, emailSkipped = 0;
+  let smsSent = 0;
+
+  for (const reminder of reminders) {
+    const customer      = reminder.customer;
+    const customerEmail = customer?.email;
+    const customerPhone = customer?.phone;
+    const customerName  = customer?.name || "";
+
+    let delivered = false;
+
+    if (customerEmail) {
+      try {
+        await sendEmail({
+          settings,
+          to:      customerEmail,
+          subject: `Υπενθύμιση από ${clinicName}`,
+          html:    purchaseReminderHtml({
+            clinicName,
+            clientName:   customerName,
+            productNames: reminder.productNames || [],
+            note:         reminder.note         || "",
+            reminderDate: dayjs(reminder.reminderDate).format("DD/MM/YYYY"),
+          }),
+        });
+
+        emailSent++;
+        delivered = true;
+        logger.info(`📧 Reminder email → ${customerName} (${customerEmail})`);
+      } catch (emailErr) {
+        logger.warn(`⚠️ Αποτυχία αποστολής email σε ${customerEmail}: ${emailErr.message}`);
+      }
+    } else {
+      emailSkipped++;
+      logger.warn(`⚠️ Reminder ${reminder._id}: ο πελάτης δεν έχει email`);
+    }
+
+    if (smsEnabled && customerPhone && customer?.notifications?.sms === true) {
+      try {
+        await sendSMS({
+          settings,
+          to: customerPhone,
+          message: purchaseReminderSms({
+            clinicName,
+            productNames: reminder.productNames || [],
+          }),
+        });
+
+        smsSent++;
+        delivered = true;
+        logger.info(`📱 Reminder SMS → ${customerName} (${customerPhone})`);
+      } catch (smsErr) {
+        logger.warn(`⚠️ Αποτυχία αποστολής SMS σε ${customerPhone}: ${smsErr.message}`);
+      }
+    }
+
+    if (delivered) {
+      reminder.sent   = true;
+      reminder.sentAt = new Date();
+      await reminder.save();
+    }
+  }
+
+  return { emailSent, emailSkipped, smsSent };
+}
+
+/**
  * Τρέχει κάθε μέρα στις 10:00.
- * Βρίσκει reminders που είναι για σήμερα και δεν έχουν σταλεί ακόμα.
+ * Για κάθε ενεργή κλινική, βρίσκει reminders που είναι για σήμερα και
+ * δεν έχουν σταλεί ακόμα.
  */
 export function startPurchaseReminderJob() {
   cron.schedule("0 10 * * *", async () => {
     logger.info("🛒 Έλεγχος για υπενθυμίσεις αγορών...");
 
     try {
-      const settings  = await Settings.findOne();
-      const clinicName = settings?.clinicName || "Κτηνιατρείο";
+      const Tenant = getTenantModel();
+      const tenants = await Tenant.find({ isActive: true });
 
-      // Βρίσκει reminders για σήμερα (αρχή ημέρας – τέλος ημέρας) που δεν έχουν σταλεί
-      const startOfDay = dayjs().startOf("day").toDate();
-      const endOfDay   = dayjs().endOf("day").toDate();
-
-      const reminders = await Reminder.find({
-        sent:         false,
-        reminderDate: { $gte: startOfDay, $lte: endOfDay },
-      }).populate("customer", "name email");
-
-      let sent = 0;
-      let skipped = 0;
-
-      for (const reminder of reminders) {
-        const customerEmail = reminder.customer?.email;
-        const customerName  = reminder.customer?.name || "";
-
-        if (!customerEmail) {
-          skipped++;
-          logger.warn(`⚠️ Reminder ${reminder._id}: ο πελάτης δεν έχει email`);
-          continue;
-        }
-
+      for (const tenant of tenants) {
         try {
-          await sendEmail({
-            to:      customerEmail,
-            subject: `Υπενθύμιση από ${clinicName}`,
-            html:    purchaseReminderHtml({
-              clinicName,
-              clientName:   customerName,
-              productNames: reminder.productNames || [],
-              note:         reminder.note         || "",
-              reminderDate: dayjs(reminder.reminderDate).format("DD/MM/YYYY"),
-            }),
-          });
+          const result = await processTenant(tenant.clinicId, tenant.clinicName);
 
-          // Σήμανση ως σταλμένο
-          reminder.sent   = true;
-          reminder.sentAt = new Date();
-          await reminder.save();
+          if (result.skippedByToggle) {
+            logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις αγορών απενεργοποιημένες — παράλειψη.`);
+            continue;
+          }
 
-          sent++;
-          logger.info(`📧 Reminder email → ${customerName} (${customerEmail})`);
-        } catch (emailErr) {
-          logger.warn(`⚠️ Αποτυχία αποστολής σε ${customerEmail}: ${emailErr.message}`);
+          logger.info(`✅ [${tenant.clinicId}] Purchase reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
+        } catch (tenantErr) {
+          logger.error(`❌ [${tenant.clinicId}] Σφάλμα purchaseReminderJob:`, tenantErr.message);
         }
       }
-
-      logger.info(`✅ Purchase reminders: ${sent} στάλθηκαν, ${skipped} χωρίς email`);
     } catch (err) {
       logger.error("❌ Σφάλμα purchaseReminderJob:", err.message);
     }

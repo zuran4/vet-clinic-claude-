@@ -124,18 +124,6 @@ const petBookletBaseUrl = optionalEnv(
 const petUsername = optionalEnv("PET_USERNAME", "");
 const petPassword = optionalEnv("PET_PASSWORD", "");
 
-// SMTP (optional)
-const smtpHost = optionalEnv("SMTP_HOST", "smtp.gmail.com");
-const smtpPort = toInt(process.env.SMTP_PORT, 587);
-const smtpSecure = toBool(process.env.SMTP_SECURE, false);
-const smtpUser = optionalEnv("SMTP_USER", "");
-const smtpPass = optionalEnv("SMTP_PASS", "");
-
-// Twilio (optional)
-const twilioAccountSid = optionalEnv("TWILIO_ACCOUNT_SID", "");
-const twilioAuthToken = optionalEnv("TWILIO_AUTH_TOKEN", "");
-const twilioPhoneFrom = optionalEnv("TWILIO_PHONE_FROM", "");
-
 // -----------------------------------------------
 // Export unified config (do not expose secrets in debug)
 // -----------------------------------------------
@@ -166,20 +154,6 @@ const config = Object.freeze({
     baseUrl: petBookletBaseUrl,
     username: petUsername,
     password: petPassword,
-  },
-
-  smtp: {
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpSecure,
-    user: smtpUser,
-    pass: smtpPass,
-  },
-
-  twilio: {
-    accountSid: twilioAccountSid,
-    authToken: twilioAuthToken,
-    phoneFrom: twilioPhoneFrom,
   },
 
   debug: {

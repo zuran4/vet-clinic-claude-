@@ -41,6 +41,7 @@ import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";
 import { startPurchaseReminderJob } from "./jobs/purchaseReminderJob.js";
+import { startPetBirthdayJob } from "./jobs/petBirthdayJob.js";
 
 // ==============================
 // 📁 Path Setup for ES Modules
@@ -279,6 +280,7 @@ connectAdmin(config.mongoUri)
     startPetVaccinationJob();
     startProductExpirationJob();
     startPurchaseReminderJob();
+    startPetBirthdayJob();
     logger.info("✅ Cron jobs ξεκίνησαν.");
   })
   .catch((err) => {

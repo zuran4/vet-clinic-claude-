@@ -75,13 +75,13 @@ export default function CompactSlotGrid({
           <li
             key={slot.time}
             style={{ width }}
-            className="group flex-shrink-0 rounded-md border border-dashed border-gray-200 dark:border-win-border/40 p-1.5 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors"
+            className="group flex-shrink-0 rounded-md border border-dashed border-gray-300 dark:border-win-border/40 p-1.5 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors"
             onClick={() => onSlotSelect?.(slot.time, doctor)}
           >
-            <span className="text-[11px] font-semibold text-gray-300 dark:text-gray-600 group-hover:text-indigo-400">
+            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 group-hover:text-indigo-400">
               {slot.time}–{endTime}
             </span>
-            <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 group-hover:text-indigo-400 transition-colors">
+            <p className="text-[10px] text-gray-600 dark:text-gray-300 mt-0.5 group-hover:text-indigo-400 transition-colors">
               + Νέο
             </p>
           </li>

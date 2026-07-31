@@ -119,7 +119,7 @@ function MobileDayBlock({ g, onEditAppointment, onConsult, onDeleteAppointment }
 // Προβολή "Σήμερα": πλήρες ωράριο ημέρας — δείχνει και τα κλεισμένα ραντεβού
 // ΚΑΙ τις κενές, διαθέσιμες ώρες (κλικ → δημιουργία νέου ραντεβού), βάσει του
 // πραγματικού ωραρίου λειτουργίας (clinicIntervals/groomingIntervals).
-function TodaySlotsSection({ title, Icon, iconColor, slots, doctor, onSlotSelect, onEdit, onConsult, onDelete }) {
+function TodaySlotsSection({ title, Icon, iconColor, slots, slotDuration, doctor, onSlotSelect, onEdit, onConsult, onDelete }) {
   if (!slots.length) return null;
   return (
     <div className="w-full sm:flex-1 min-w-0">
@@ -129,7 +129,7 @@ function TodaySlotsSection({ title, Icon, iconColor, slots, doctor, onSlotSelect
       </div>
       <CompactSlotGrid
         slots={slots}
-        slotDuration={30}
+        slotDuration={slotDuration}
         doctor={doctor}
         onSlotSelect={onSlotSelect}
         onEdit={onEdit}
@@ -178,11 +178,16 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
   const clinicIntervals = clinicSchedule?.intervals || [{ start: "09:00", end: "17:00" }];
   const groomingIntervals = groomingSchedule?.intervals || [{ start: "09:00", end: "17:00" }];
 
+  // Διάρκεια slot ανά τμήμα — από Ρυθμίσεις → Ωράριο (fallback 30'/60').
+  const clinicSlotDuration = Number(localStorage.getItem("clinicSlotDuration")) || 30;
+  const groomingSlotDuration = Number(localStorage.getItem("groomingSlotDuration")) || 60;
+
   const { slotsIatreio, slotsGrooming } = useAppointmentSlots({
     date: todayStr,
     clinicIntervals,
     groomingIntervals,
-    slotDuration: 30,
+    slotDuration: clinicSlotDuration,
+    groomingSlotDuration,
     appointments,
   });
 
@@ -217,6 +222,17 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
     })
     .sort((a, b) => (a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)));
 
+  // Σύνολο ραντεβού ανά διάστημα (Σήμερα/Εβδομάδα/Μήνας) — υπολογίζονται ΚΑΙ
+  // τα 3 πάντα, ανεξάρτητα από το ενεργό viewMode, ώστε να φαίνονται δίπλα
+  // στο αντίστοιχο κουμπί εναλλαγής.
+  const countInRange = (end) => appointments.filter((a) => {
+    const d = dayjs(a.date, "YYYY-MM-DD");
+    return !d.isBefore(today, "day") && !d.isAfter(end, "day");
+  }).length;
+  const todayCount = countInRange(today);
+  const weekCount = countInRange(today.add(6, "day"));
+  const monthCount = countInRange(today.add(29, "day"));
+
   // Ομαδοποίηση ανά μέρα — μόνο μέρες που έχουν πράγματι ραντεβού, και μέσα
   // σε κάθε μέρα 2 υπο-στήλες: Ιατρείο | Grooming.
   const groups = [];
@@ -250,7 +266,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
       onClick={onClose}
     >
       <div
-        className="relative bg-white dark:bg-win-surface rounded-2xl shadow-2xl w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-[95vw] xl:max-w-[1400px] overflow-hidden flex flex-col"
+        className="relative bg-white dark:bg-win-surface rounded-2xl shadow-2xl w-full h-[75vh] sm:h-auto sm:max-h-[92vh] sm:max-w-[95vw] xl:max-w-[1400px] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -269,9 +285,9 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
           <div className="flex items-center justify-end gap-3">
             <div className="hidden sm:flex items-center gap-1 bg-white/10 rounded-xl p-1">
               {[
-                { key: "today", label: "Σήμερα" },
-                { key: "week",  label: "Εβδομάδα" },
-                { key: "month", label: "Μήνας" },
+                { key: "today", label: "Σήμερα", count: todayCount },
+                { key: "week",  label: "Εβδομάδα", count: weekCount },
+                { key: "month", label: "Μήνας", count: monthCount },
               ].map((m) => (
                 <button
                   key={m.key}
@@ -284,6 +300,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                   }`}
                 >
                   {m.label}
+                  <span className={viewMode === m.key ? "text-indigo-400" : "text-white/60"}> ({m.count})</span>
                 </button>
               ))}
             </div>
@@ -309,6 +326,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                 Icon={Stethoscope}
                 iconColor="text-indigo-400"
                 slots={slotsIatreio}
+                slotDuration={clinicSlotDuration}
                 doctor="Ιατρείο"
                 onSlotSelect={handleSlotSelect}
                 onEdit={onEditAppointment}
@@ -320,6 +338,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                 Icon={Scissors}
                 iconColor="text-sky-400"
                 slots={slotsGrooming}
+                slotDuration={groomingSlotDuration}
                 doctor="Grooming"
                 onSlotSelect={handleSlotSelect}
                 onEdit={onEditAppointment}

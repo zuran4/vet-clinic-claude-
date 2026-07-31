@@ -117,9 +117,6 @@ function AppointmentsPage({
       {/* Slots */}
       <AppointmentSlots
         date={selectedDate}
-        startHour="09:00"
-        endHour="17:00"
-        slotDuration={30}
         appointments={filteredAppointments()}
         doctorFilter={doctorFilter}
         onSlotSelect={(time, doctor) => {

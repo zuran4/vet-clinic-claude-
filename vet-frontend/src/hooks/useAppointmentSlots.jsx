@@ -11,9 +11,10 @@ export function useAppointmentSlots({
   clinicIntervals = [],
   groomingIntervals = [],
   slotDuration,
+  groomingSlotDuration = slotDuration,
   appointments,
 }) {
-  const generateTimeSlots = (intervals = [], doctor) => {
+  const generateTimeSlots = (intervals = [], doctor, duration) => {
     const slots = [];
 
     (intervals || []).forEach(({ start, end }) => {
@@ -30,21 +31,21 @@ export function useAppointmentSlots({
         const found = appointments.find((a) => {
           if (a.date !== date || (a.doctor || "Ιατρείο") !== doctor) return false;
           const apptMin = toMinutes(a.time);
-          return apptMin >= slotStartMin && apptMin < slotStartMin + slotDuration;
+          return apptMin >= slotStartMin && apptMin < slotStartMin + duration;
         });
 
         slots.push({
           time,
           bookedBy: found?.clientName || null,
           type: found?.type || null,
-          duration: found?.duration || slotDuration,
+          duration: found?.duration || duration,
           id: found?._id || null,
           appointment: found || null,
           isMerged: false,
           doctor,
         });
 
-        current = current.add(slotDuration, "minute");
+        current = current.add(duration, "minute");
       }
     });
 
@@ -53,14 +54,14 @@ export function useAppointmentSlots({
 
   // Ιατρείο
   const slotsIatreio = useMemo(
-    () => generateTimeSlots(clinicIntervals, "Ιατρείο"),
+    () => generateTimeSlots(clinicIntervals, "Ιατρείο", slotDuration),
     [appointments, date, clinicIntervals, slotDuration]
   );
 
-  // Grooming
+  // Grooming — ξεχωριστή διάρκεια slot (π.χ. 60 λεπτά αντί για 30)
   const slotsGrooming = useMemo(
-    () => generateTimeSlots(groomingIntervals, "Grooming"),
-    [appointments, date, groomingIntervals, slotDuration]
+    () => generateTimeSlots(groomingIntervals, "Grooming", groomingSlotDuration),
+    [appointments, date, groomingIntervals, groomingSlotDuration]
   );
 
   return { slotsIatreio, slotsGrooming };

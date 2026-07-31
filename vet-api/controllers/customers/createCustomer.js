@@ -5,8 +5,9 @@
 
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
-import { sendWelcomeEmail } from "../../utils/emailService.js";
-import { sendSMS } from "../../utils/smsService.js";
+import { sendWelcomeEmail } from "../../services/emailService.js";
+import { sendSMS } from "../../services/smsService.js";
+import { welcomeSms } from "../../services/smsTemplates.js";
 import { emitChange } from "../../utils/realtime.js";
 
 // ===============================
@@ -14,7 +15,7 @@ import { emitChange } from "../../utils/realtime.js";
 // ===============================
 export const createCustomer = async (req, res, next) => {
   try {
-    const { Customer } = req.models;
+    const { Customer, Settings } = req.models;
     const { name, phone } = req.body;
 
     // 🔹 Έλεγχος διπλότυπου: ίδιο όνομα ΚΑΙ τηλέφωνο
@@ -36,29 +37,30 @@ export const createCustomer = async (req, res, next) => {
     emitChange("customers");
 
     // --------------------------------------------
-    // 🔹 EMAIL ειδοποίηση (αν είναι ενεργή)
+    // 🔹 EMAIL / SMS ειδοποίηση (αν είναι ενεργές)
     // --------------------------------------------
-    if (saved.notifications?.email) {
-      sendWelcomeEmail(saved).catch((err) =>
-        logger.error(`❌ Αποτυχία αποστολής email: ${err.message}`)
-      );
-    } else {
-      logger.info(
-        `🚫 Δεν στάλθηκε email — ο πελάτης ${saved.name} έχει απενεργοποιήσει τις ειδοποιήσεις email.`
-      );
-    }
+    if (saved.notifications?.email || saved.notifications?.sms) {
+      Settings.findOne().then((settings) => {
+        if (saved.notifications?.email) {
+          sendWelcomeEmail({ settings, customer: saved }).catch((err) =>
+            logger.error(`❌ Αποτυχία αποστολής email: ${err.message}`)
+          );
+        }
 
-    // --------------------------------------------
-    // 🔹 SMS ειδοποίηση (αν είναι ενεργή)
-    // --------------------------------------------
-    if (saved.notifications?.sms) {
-      const smsMessage = `Αγαπητέ/ή ${saved.name}, σας καλωσορίζουμε στην κλινική μας!`;
-      sendSMS(saved.phone, smsMessage).catch((err) =>
-        logger.error(`❌ Αποτυχία αποστολής SMS: ${err.message}`)
-      );
+        if (saved.notifications?.sms) {
+          sendSMS({
+            settings,
+            to: saved.phone,
+            message: welcomeSms({
+              clinicName: settings?.clinicName || "Κτηνιατρείο",
+              clientName: saved.name,
+            }),
+          }).catch((err) => logger.error(`❌ Αποτυχία αποστολής SMS: ${err.message}`));
+        }
+      }).catch((err) => logger.error(`❌ Αποτυχία φόρτωσης ρυθμίσεων για ειδοποιήσεις: ${err.message}`));
     } else {
       logger.info(
-        `🚫 Δεν στάλθηκε SMS — ο πελάτης ${saved.name} έχει απενεργοποιήσει τις ειδοποιήσεις SMS.`
+        `🚫 Δεν στάλθηκαν ειδοποιήσεις — ο πελάτης ${saved.name} έχει απενεργοποιήσει email και SMS.`
       );
     }
 

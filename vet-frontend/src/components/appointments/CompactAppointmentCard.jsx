@@ -1,28 +1,15 @@
 import React from "react";
 import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
-
-const TYPE_COLORS = {
-  "Εξέταση":       "bg-indigo-100 text-indigo-700",
-  "Εμβόλιο":       "bg-green-100 text-green-700",
-  "Αποπαρασίτωση": "bg-amber-100 text-amber-700",
-  "Χειρουργείο":   "bg-red-100 text-red-700",
-  "Στείρωση":      "bg-purple-100 text-purple-700",
-  "Μπάνιο":        "bg-sky-100 text-sky-700",
-  "Κούρεμα":       "bg-sky-100 text-sky-700",
-  "Καλλωπισμός":   "bg-sky-100 text-sky-700",
-  "Νύχια":         "bg-sky-100 text-sky-700",
-  "Αυτιά":         "bg-sky-100 text-sky-700",
-  "Αδένες":        "bg-sky-100 text-sky-700",
-};
-
-function firstType(type)    { return Array.isArray(type) ? type[0] : type; }
-function getTypeColor(type) { return TYPE_COLORS[firstType(type)] || "bg-gray-100 text-gray-600"; }
+import { getTypeColor } from "../../utils/appointmentTypeColors.js";
 
 // Πολύ συμπαγής, τετράγωνη κάρτα ραντεβού — κοινό component για το dashboard
 // agenda (WeekMonthAgendaModal) ΚΑΙ για το ημερολόγιο ραντεβού (AppointmentSlots),
 // ώστε να έχουν το ίδιο look χωρίς διπλό κώδικα.
 export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDelete, canEdit = true, className = "", style }) {
   const isCompleted = appt.status === "completed";
+  // Φόντο κάρτας = χρώμα τμήματος (στηθοσκόπιο/violet για Ιατρείο, ψαλίδι/sky
+  // για Grooming) — ίδιο χρώμα με το εικονίδιο του section header.
+  const isGrooming = appt.doctor === "Grooming";
 
   return (
     <li
@@ -30,7 +17,9 @@ export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDele
       className={`rounded-md border p-1 sm:p-1.5 transition-colors group ${
         isCompleted
           ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
-          : "bg-gray-50 dark:bg-win-surface/40 border-gray-100 dark:border-win-border/50"
+          : isGrooming
+          ? "bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800/30"
+          : "bg-violet-50 dark:bg-violet-900/10 border-violet-100 dark:border-violet-800/30"
       } ${className}`}
     >
       <div className="flex items-center justify-between gap-px">

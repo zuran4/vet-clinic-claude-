@@ -41,6 +41,14 @@ const settingsSchema = new mongoose.Schema({
     fromEmail: { type: String, default: "" },
   },
 
+  // 🔹 SMS config (Twilio) — το authToken αποθηκεύεται κρυπτογραφημένο,
+  // ίδιο μοτίβο με το emailConfig.password.
+  smsConfig: {
+    accountSid: { type: String, default: "" },
+    authToken:  { type: String, default: "" },
+    fromNumber: { type: String, default: "" },
+  },
+
   // 🔹 Προσωπικό κλινικής
   staff: {
     type: [
@@ -62,10 +70,19 @@ const settingsSchema = new mongoose.Schema({
     appointmentReminder: { type: Boolean, default: true },
     vaccineReminder:     { type: Boolean, default: true },
     birthdayReminder:    { type: Boolean, default: false },
+    purchaseReminder:    { type: Boolean, default: true },
+    // 🔹 Master διακόπτης: αν ενεργό, οι παραπάνω ειδοποιήσεις στέλνονται ΚΑΙ
+    // μέσω SMS (πέρα από email) σε πελάτες που έχουν notifications.sms=true.
+    smsEnabled:          { type: Boolean, default: false },
   },
 
   // 🔹 Registry worker (headless / visible)
   registryWorkerHeadless: { type: Boolean, default: true },
+
+  // 🔹 Διάρκεια slot ραντεβού (λεπτά) — ξεχωριστά ανά τμήμα, κάθε κλινική
+  // προσαρμόζει στις ανάγκες της (π.χ. Ιατρείο 30', Grooming 60').
+  clinicSlotDuration:   { type: Number, default: 30 },
+  groomingSlotDuration: { type: Number, default: 60 },
 
   // 🔹 Στοιχεία σύνδεσης gov.gr (Taxisnet) του κτηνιάτρου — χρησιμοποιούνται
   // από τον registry-worker της κλινικής για login στο pet.gov.gr.
