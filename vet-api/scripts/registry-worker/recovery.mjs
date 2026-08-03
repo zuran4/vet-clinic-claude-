@@ -5,7 +5,7 @@
 // (κουμπί reconnect "Σύνδεση") και NEEDS_LOGIN (autoLoginIfNeeded).
 //
 // Χρησιμοποιείται από GET /session (παθητικό self-heal στο polling του UI)
-// καθώς και από /lookup, /medical-events πριν από κάθε πράξη.
+// καθώς και από /lookup πριν από κάθε πράξη.
 
 import { computeSessionStatus } from "./session-status.mjs";
 

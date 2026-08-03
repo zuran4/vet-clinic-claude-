@@ -9,6 +9,7 @@ import TimeSelector from "../ui/TimeSelector";
 import MultiSelectDropdown from "../ui/MultiSelectDropdown";
 import { Button } from "../ui/button";
 import { useAppointmentForm } from "../../hooks/useAppointmentForm";
+import { getSlotDuration, formatDuration } from "../../utils/slotDuration.js";
 
 const LABEL = "text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide";
 const CONTROL = "w-full border border-gray-200 dark:border-win-border-light p-2 rounded-2xl text-sm shadow-sm bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300";
@@ -43,6 +44,15 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
   };
 
   const isGrooming = doctor === "Grooming";
+
+  // Η ελάχιστη διάρκεια είναι το slot που έχει οριστεί στις Ρυθμίσεις για το
+  // συγκεκριμένο τμήμα (Ιατρείο/Grooming) — από εκεί και πάνω οι επιλογές
+  // αυξάνονται ανά μισή ώρα (π.χ. slot 60' → 1 ώρα, 1:30, 2:00, ...).
+  const slotDuration = getSlotDuration(doctor);
+  const durationOptions = [];
+  for (let d = slotDuration; d <= Math.max(slotDuration, 240); d += 30) {
+    durationOptions.push(d);
+  }
 
   const headerBg = isGrooming
     ? "bg-gradient-to-r from-blue-500 to-cyan-400"
@@ -137,10 +147,9 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
                 onChange={handleChange}
                 className={CONTROL}
               >
-                <option value={30}>30 λεπτά</option>
-                <option value={60}>1 ώρα</option>
-                <option value={90}>1 ώρα & 30 λεπτά</option>
-                <option value={120}>2 ώρες</option>
+                {durationOptions.map((d) => (
+                  <option key={d} value={d}>{formatDuration(d)}</option>
+                ))}
               </select>
             </div>
           </div>

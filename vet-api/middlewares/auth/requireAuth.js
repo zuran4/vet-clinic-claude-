@@ -13,7 +13,7 @@ export default function requireAuth(req, res, next) {
     // payload: { userId, name, role, clinicId }
     req.user = payload;
 
-    Sentry.setUser({ id: payload?.userId, username: payload?.name, role: payload?.role });
+    Sentry.getCurrentScope().setUser({ id: payload?.userId, username: payload?.name, role: payload?.role });
 
     next();
   } catch {

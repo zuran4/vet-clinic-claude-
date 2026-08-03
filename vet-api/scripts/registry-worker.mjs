@@ -5,7 +5,6 @@ import http from "http";
 import { BOOKLET_WIDGET_IDS, extractBookletData } from "./zk-helpers.mjs";
 import { autoLoginIfNeeded } from "./login-helpers.mjs";
 import { runMicrochipLookupFlow } from "./microchip-flow-helpers.mjs";
-import { runMedicalEventsFlow } from "./medical-events-flow-helpers.mjs";
 import {
   logSessionOncePerChange,
   logStatusOncePerChange,
@@ -68,7 +67,6 @@ async function main() {
     PET_BOOKLET_BASE_URL,
     autoLoginIfNeeded,
     runMicrochipLookupFlow,
-    runMedicalEventsFlow,
     BOOKLET_WIDGET_IDS,
     extractBookletData,
   });

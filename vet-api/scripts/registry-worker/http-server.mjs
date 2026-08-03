@@ -21,7 +21,6 @@ export function startHttpServer({
   PET_BOOKLET_BASE_URL,
   autoLoginIfNeeded,
   runMicrochipLookupFlow,
-  runMedicalEventsFlow,
   BOOKLET_WIDGET_IDS,
   extractBookletData,
 }) {
@@ -168,9 +167,20 @@ if (req.method === "GET" && path === "/lookup") {
       s = await attemptSessionRecovery(sharedPage, { autoLoginIfNeeded });
     }
 
-    // 1) Reset πριν από κάθε lookup
-    await sharedPage.goto(PET_BOOKLET_BASE_URL, { waitUntil: "domcontentloaded" });
-    await sharedPage.waitForTimeout(600);
+    // 1) Reset πριν από κάθε lookup — ΜΟΝΟ αν χρειάζεται. Το flow ήδη
+    // επιστρέφει στη σελίδα αναζήτησης στο τέλος του (goToAnimalSearchPage),
+    // οπότε σε διαδοχικά lookups είμαστε συνήθως ήδη εκεί· ένα πλήρες goto()
+    // + settle wait θα ήταν ~4s δουλειά για το τίποτα.
+    const alreadyOnSearchPage = await sharedPage
+      .locator('input[placeholder*="Αναζητήστε με microchip"]')
+      .first()
+      .isVisible()
+      .catch(() => false);
+
+    if (!alreadyOnSearchPage) {
+      await sharedPage.goto(PET_BOOKLET_BASE_URL, { waitUntil: "domcontentloaded" });
+      await sharedPage.waitForTimeout(600);
+    }
 
     // 2) Run flow (new commercial contract)
     const flowResult = await runMicrochipLookupFlow(sharedPage, microchip);
@@ -240,49 +250,6 @@ if (req.method === "GET" && path === "/lookup") {
   }
 }
 
-
-    // GET /medical-events?microchip=...
-    if (req.method === "GET" && path === "/medical-events") {
-      const sharedPage = getSharedPage();
-
-      if (!sharedPage) return sendError(503, "Worker not ready (no active page)");
-      if (lookupInFlight) return sendError(429, "Worker busy (lookup already in progress)");
-
-      const microchip = (urlObj.searchParams.get("microchip") || "").trim();
-      if (!microchip) return sendError(400, "Missing query param ?microchip=...");
-      if (!/^\d+$/.test(microchip)) return sendError(400, "Invalid microchip: must be digits only");
-      if (microchip.length !== 15) return sendError(400, "Invalid microchip: must be 15 digits");
-
-      lookupInFlight = true;
-      try {
-        let s = await computeSessionStatus(sharedPage);
-        if (s.status !== "LOGGED_IN") {
-          s = await attemptSessionRecovery(sharedPage, { autoLoginIfNeeded });
-        }
-
-        await sharedPage.goto(PET_BOOKLET_BASE_URL, { waitUntil: "domcontentloaded" });
-        await sharedPage.waitForTimeout(600);
-
-        const flowResult = await runMedicalEventsFlow(sharedPage, microchip);
-
-        return sendJson(200, {
-          ok: flowResult?.ok === true,
-          found: flowResult?.found === true,
-          reason: flowResult?.reason || "UNKNOWN",
-          microchip,
-          data: flowResult?.data ?? {},
-        });
-      } catch (error) {
-        console.error("❌ Worker /medical-events error:", error);
-        return sendJson(500, {
-          ok: false,
-          error: "Failed to fetch medical events",
-          details: DEBUG ? error?.message : undefined,
-        });
-      } finally {
-        lookupInFlight = false;
-      }
-    }
 
     // GET /debug/html
     if (req.method === "GET" && path === "/debug/html") {

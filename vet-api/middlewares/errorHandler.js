@@ -1,5 +1,6 @@
 // vet-api/middlewares/errorHandler.js
 import logger from "../utils/logger.js";
+import { reportEvent } from "../services/controlPlaneReporter.js";
 
 function normalizeError(err, req) {
   const requestId = req?.requestId || null;
@@ -72,6 +73,15 @@ export default function errorHandler(err, req, res, next) {
     message,
     stack: err?.stack,
     details,
+  });
+
+  reportEvent({
+    clinicId: req?.clinicId,
+    type: code,
+    severity: "critical",
+    message,
+    source: "backend",
+    meta: { requestId, httpStatus, path: req?.originalUrl, method: req?.method, stack: err?.stack },
   });
 
   return res.status(httpStatus).json({

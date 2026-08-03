@@ -16,6 +16,9 @@ import {
   setRegistryWorkerProcess,
   clearRegistryWorkerProcess,
   isRegistryWorkerRunning,
+  isRegistryWorkerStarting,
+  markRegistryWorkerStarting,
+  clearRegistryWorkerStarting,
   setRegistryWorkerLastError,
   markRegistryWorkerExited,
 } from "./registryWorkerProcess.js";
@@ -47,6 +50,23 @@ export async function startRegistryWorkerProcess({ clinicId, requestId = null } 
     return { ok: true, alreadyRunning: true, pid: getRegistryWorkerProcess(clinicId)?.pid, clinicId };
   }
 
+  // Guard κατά race condition: αν υπάρχει ήδη σε εξέλιξη ένα ξεκίνημα για αυτή
+  // την κλινική (π.χ. δύο σχεδόν-ταυτόχρονα /session polls έπιασαν και τα δύο
+  // isRegistryWorkerRunning=false), μην ξεκινήσεις δεύτερη διεργασία — θα
+  // συγκρουστεί με την πρώτη στην ίδια θύρα (EADDRINUSE).
+  if (isRegistryWorkerStarting(clinicId)) {
+    return { ok: true, alreadyStarting: true, clinicId };
+  }
+  markRegistryWorkerStarting(clinicId);
+
+  try {
+    return await startRegistryWorkerProcessInner({ clinicId, requestId });
+  } finally {
+    clearRegistryWorkerStarting(clinicId);
+  }
+}
+
+async function startRegistryWorkerProcessInner({ clinicId, requestId }) {
   const port = await ensureWorkerPort(clinicId);
 
   // Ρυθμίσεις + credentials gov.gr της συγκεκριμένης κλινικής — απευθείας

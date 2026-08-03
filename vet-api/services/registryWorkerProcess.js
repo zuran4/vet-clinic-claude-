@@ -6,6 +6,25 @@
 
 const workers = new Map(); // clinicId -> { proc, state }
 
+// Clinics για τις οποίες βρίσκεται ήδη σε εξέλιξη ένα startRegistryWorkerProcess
+// (spawn σε εξέλιξη, πριν προλάβει να καταγραφεί ως "running"). Χωρίς αυτό, δύο
+// σχεδόν-ταυτόχρονα αιτήματα (π.χ. πολλαπλά /session polls όσο ο worker είναι
+// κάτω) μπορούν να δουν και τα δύο "δεν τρέχει" και να ξεκινήσουν 2 δικές τους
+// διεργασίες στην ίδια θύρα — η δεύτερη κάνει crash με EADDRINUSE.
+const startingClinicIds = new Set();
+
+export function isRegistryWorkerStarting(clinicId) {
+  return startingClinicIds.has(clinicId);
+}
+
+export function markRegistryWorkerStarting(clinicId) {
+  startingClinicIds.add(clinicId);
+}
+
+export function clearRegistryWorkerStarting(clinicId) {
+  startingClinicIds.delete(clinicId);
+}
+
 function emptyState() {
   return {
     pid: null,

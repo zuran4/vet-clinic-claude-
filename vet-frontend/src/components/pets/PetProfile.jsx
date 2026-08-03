@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, HeartPulse, ClipboardList, AlertTriangle } from "lucide-react";
+import { PawPrint, User, Info, Clock, RefreshCcw, Cpu, Calendar, StickyNote, Phone, ClipboardList, AlertTriangle } from "lucide-react";
 import PetHistory from "./PetHistory";
-import MedicalEventsTab from "./MedicalEventsTab";
 import ChangeOwnerModal from "./ChangeOwnerModal";
 import PetDetailsModal from "../registry/PetDetailsModal.jsx";
 import request from "../../api/apiClient.js";
@@ -120,7 +119,6 @@ const PetProfile = ({ petId, initialTab }) => {
         {[
           { key: "details", label: "Στοιχεία", icon: Info },
           { key: "history", label: "Ιστορικό", icon: Clock },
-          { key: "medical", label: "Ιατρικός Φάκελος", icon: HeartPulse },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -195,13 +193,6 @@ const PetProfile = ({ petId, initialTab }) => {
       {activeTab === "history" && (
         <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm overflow-hidden">
           <PetHistory petId={pet._id} />
-        </div>
-      )}
-
-      {/* Ιατρικός Φάκελος Tab */}
-      {activeTab === "medical" && (
-        <div className="bg-white dark:bg-win-elevated/50 rounded-2xl border border-gray-100 dark:border-win-border-light shadow-sm overflow-hidden">
-          <MedicalEventsTab microchip={pet.microchip} petId={pet._id} />
         </div>
       )}
 

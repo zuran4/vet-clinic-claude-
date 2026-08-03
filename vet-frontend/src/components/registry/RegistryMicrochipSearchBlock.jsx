@@ -182,7 +182,7 @@ export default function RegistryMicrochipSearchBlock() {
             setShowPetModal(false);
             setPetInitialData(null);
             setPetOwner(null);
-            // Άνοιγμα ιατρικού φακέλου αμέσως μετά την αποθήκευση
+            // Άνοιγμα προφίλ αμέσως μετά την αποθήκευση
             if (saved?._id) setSavedPetId(saved._id);
           }}
           onCancel={() => {
@@ -196,7 +196,6 @@ export default function RegistryMicrochipSearchBlock() {
       {savedPetId && (
         <PetProfileModal
           petId={savedPetId}
-          initialTab="medical"
           onClose={() => setSavedPetId(null)}
         />
       )}

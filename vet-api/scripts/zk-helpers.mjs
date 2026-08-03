@@ -402,6 +402,51 @@ export async function extractOwnerData(page) {
 }
 
 /**
+ * Περιμένει να εμφανιστεί ορατά το sub-tab "Εμβολιασμοί" (span.z-tab-text)
+ * μέσα στο tab "Γεγονότα Ιατρικού Φακέλου" — πραγματικό σήμα readiness αντί
+ * για τυφλό waitForTimeout πριν προσπαθήσουμε να το πατήσουμε.
+ */
+async function waitForVaccinationsSubTabVisible(page, timeout = 1500) {
+  return await page
+    .waitForFunction(
+      () => {
+        const spans = Array.from(document.querySelectorAll("span.z-tab-text"));
+        return spans.some((el) => /Εμβολιασμοί/i.test(el.textContent || ""));
+      },
+      undefined,
+      { timeout }
+    )
+    .then(() => true)
+    .catch(() => false);
+}
+
+/**
+ * Περιμένει να εμφανιστεί έστω μία γραμμή πίνακα εμβολιασμού (date-shaped
+ * row — ίδιο σχήμα με αυτό που διαβάζει το evaluate() παρακάτω). Αν το ζώο
+ * απλά δεν έχει κανέναν καταγεγραμμένο εμβολιασμό, δεν βρίσκει ποτέ τέτοια
+ * γραμμή και κάνει timeout — η εξαγωγή μετά επιστρέφει άδειο πίνακα κανονικά.
+ */
+async function waitForVaccinationRows(page, timeout = 1500) {
+  return await page
+    .waitForFunction(
+      () => {
+        const rows = document.querySelectorAll(".z-listitem");
+        for (const row of rows) {
+          const cells = Array.from(row.querySelectorAll(".z-listcell-content")).map(
+            (c) => (c.innerText || c.textContent || "").trim()
+          );
+          if (cells.length >= 4 && /^\d{2}\/\d{2}\/\d{4}$/.test(cells[1])) return true;
+        }
+        return false;
+      },
+      undefined,
+      { timeout }
+    )
+    .then(() => true)
+    .catch(() => false);
+}
+
+/**
  * Εξάγει την κατάσταση εμβολιασμού από τη σελίδα βιβλιαρίου.
  * Δοκιμάζει πιθανά ZK widget IDs και κάνει fallback σε DOM text search.
  * Καλείται ενώ η σελίδα βιβλιαρίου είναι ανοιχτή (χωρίς πλοήγηση).
@@ -456,12 +501,19 @@ export async function extractVaccinationFromBooklet(page) {
       // Κλικ στο tab "Γεγονότα Ιατρικού Φακέλου"
       const tabClicked = await _clickMedicalEventsTab(page);
       if (tabClicked) {
-        await page.waitForTimeout(1200);
+        // Περιμένουμε να εμφανιστεί το ίδιο το sub-tab "Εμβολιασμοί" αντί για
+        // τυφλό sleep — αυτό είναι το πραγματικό σήμα ότι το tab content
+        // πρόλαβε να αποδοθεί και μπορούμε να κάνουμε κλικ στο sub-tab.
+        await waitForVaccinationsSubTabVisible(page, 1500);
 
         // Μέσα στο tab, κλικ στο sub-tab "Εμβολιασμοί" — δεν υποθέτουμε ότι
         // είναι ήδη επιλεγμένο εξ ορισμού.
         await _clickVaccinationsSubTab(page);
-        await page.waitForTimeout(1200);
+
+        // Περιμένουμε τις πραγματικές γραμμές του πίνακα εμβολιασμών αντί για
+        // τυφλό sleep. Αν το ζώο δεν έχει κανέναν εμβολιασμό, ο πίνακας μένει
+        // άδειος και προχωράμε μετά το timeout χωρίς πρόβλημα.
+        await waitForVaccinationRows(page, 1500);
 
         const details = await page.evaluate(() => {
           const getText = (el) => (el.innerText || el.textContent || "").trim();

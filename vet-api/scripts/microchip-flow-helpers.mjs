@@ -150,28 +150,43 @@ export async function runMicrochipLookupFlow(page, microchip) {
     // 6) Sterilization
     let sterilization = null;
 
-    const sterilizationOpened = await openSterilizationFromBooklet(page);
-    if (!sterilizationOpened) {
-      console.log("⚠️ [runMicrochipLookupFlow] Δεν άνοιξε η στείρωση. Επιστρέφω.");
-      await goToAnimalSearchPage(page);
+    if (sterilizationQuick.isSterilized === false) {
+      // Το quick status (από το summary label στο booklet, βλ. πάνω) λέει ήδη
+      // με βεβαιότητα "μη στειρωμένο". Το εσωτερικό panel (btnNeuter) έχει
+      // widgets μόνο για ημερομηνία/τεχνική χειρουργείου — απλά δεν υπάρχουν
+      // όταν δεν έγινε ποτέ στείρωση, οπότε ανοίγοντάς το περιμένουμε πάντα
+      // ένα waitSterilizationWidgets timeout (8s) εν γνώσει μας ότι θα αποτύχει.
+      // Το παρακάμπτουμε — δεν χάνουμε καμία πληροφορία, το isSterilized:false
+      // είναι ήδη το ground truth.
+      console.log(
+        "ℹ️ [runMicrochipLookupFlow] sterilizationQuick=false, παρακάμπτω το εσωτερικό panel στείρωσης."
+      );
+      sterilization = buildSterilization(null);
+    } else {
+      const sterilizationOpened = await openSterilizationFromBooklet(page);
+      if (!sterilizationOpened) {
+        console.log("⚠️ [runMicrochipLookupFlow] Δεν άνοιξε η στείρωση. Επιστρέφω.");
+        await goToAnimalSearchPage(page);
 
-      return result({
-        ok: true,
-        found: true,
-        reason: "OWNER_OK_STERILIZATION_OPEN_FAILED",
-        pet,
-        owner,
-        sterilization: buildSterilization(null),
-      });
+        return result({
+          ok: true,
+          found: true,
+          reason: "OWNER_OK_STERILIZATION_OPEN_FAILED",
+          pet,
+          owner,
+          sterilization: buildSterilization(null),
+        });
+      }
+
+      const sterReady = await waitSterilizationWidgets(page, 8000);
+      if (!sterReady) {
+        console.log("⚠️ [runMicrochipLookupFlow] Δεν επιβεβαίωσα ZK widgets στείρωσης εγκαίρως.");
+        // Προσπαθούμε extract όπως και να έχει
+      }
+
+      sterilization = buildSterilization(await extractSterilizationData(page));
     }
 
-    const sterReady = await waitSterilizationWidgets(page, 8000);
-    if (!sterReady) {
-      console.log("⚠️ [runMicrochipLookupFlow] Δεν επιβεβαίωσα ZK widgets στείρωσης εγκαίρως.");
-      // Προσπαθούμε extract όπως και να έχει
-    }
-
-    sterilization = buildSterilization(await extractSterilizationData(page));
     console.log("ℹ️ [runMicrochipLookupFlow] sterilization keys:", keys(sterilization));
 
     // 7) Back to search page
@@ -227,6 +242,12 @@ async function goToAnimalSearchPage(page) {
   }
 
   // πήγαινε “home”
+  //
+  // Δοκιμάστηκε (2026-08-03) να μπει πρώτα ένα "ελαφρύ" in-app menu
+  // link/button click πριν από αυτό το goto, στην ελπίδα να αποφύγουμε το
+  // ~4s reload. Μετρημένο αποτέλεσμα: κανένα από τα candidates δεν είναι
+  // ποτέ ορατό μέσα από το booklet view (πάντα καταλήγει σε αυτό το goto
+  // ούτως ή άλλως) — το reorder δεν έδωσε καμία βελτίωση, οπότε επανήλθε.
   try {
     await page.goto("https://pet.gov.gr/emzs-backoffice/", {
       waitUntil: "domcontentloaded",

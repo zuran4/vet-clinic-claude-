@@ -126,63 +126,6 @@ export async function lookupMicrochip(
 }
 
 /**
- * GET /api/registry/medical-events?microchip=...
- * Returns { ok, found, microchip, data: { vaccinations, diagnostics, ... } }
- */
-export async function fetchMedicalEvents(microchip) {
-  const trimmed = String(microchip || "").trim();
-  if (!trimmed) {
-    throw makeApiError("Λείπει ο αριθμός microchip", { code: "VALIDATION_ERROR" });
-  }
-
-  const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-  let res, text, json;
-  try {
-    res = await fetch(`/api/registry/medical-events?microchip=${encodeURIComponent(trimmed)}`, { headers });
-    text = await res.text().catch(() => "");
-    json = safeJsonParse(text);
-  } catch (e) {
-    throw makeApiError(e?.message || "Αποτυχία σύνδεσης με το backend", {
-      code: "NETWORK_ERROR",
-      details: e,
-    });
-  }
-
-  const requestId = pickRequestId(res, json);
-
-  if (!res.ok) {
-    if (json?.error?.message) {
-      throw makeApiError(json.error.message, {
-        code: json.error.code || "BACKEND_ERROR",
-        requestId: json.error.requestId || requestId || null,
-        httpStatus: res.status,
-        payload: json,
-      });
-    }
-    throw makeApiError(`Αποτυχία κλήσης μητρώου (status ${res.status})`, {
-      code: "HTTP_ERROR",
-      requestId,
-      httpStatus: res.status,
-      details: text,
-      payload: json || null,
-    });
-  }
-
-  if (!json) {
-    throw makeApiError("Μη έγκυρο JSON από το backend μητρώου", {
-      code: "INVALID_JSON",
-      requestId,
-      httpStatus: res.status,
-      details: text,
-    });
-  }
-
-  return json;
-}
-
-/**
  * GET /api/registry/history
  * Returns { ok, history: [{ microchip, petName, species, lastSearchedAt }] }
  */

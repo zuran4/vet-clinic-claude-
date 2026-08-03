@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import request from "../api/apiClient.js"; // ✅ κεντρικός API client
+import { getSlotDuration } from "../utils/slotDuration.js";
 
 const DEFAULT_HOURS = {
   monday:    { enabled: true,  intervals: [{ start: "09:00", end: "17:00" }] },
@@ -18,14 +19,14 @@ const toMinutes = (hhmm) => {
 };
 
 export function useAppointmentForm({ time, doctor, selectedDate, existingData, onSave }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     clientName: "",
     phone: "",
     animalName: "",
     type: [],
-    duration: 30,
+    duration: getSlotDuration(doctor),
     notes: "",
-  });
+  }));
 
   const [ownerId, setOwnerId] = useState(
     existingData?.owner?._id || existingData?.owner || null
@@ -64,6 +65,7 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
       setFormData((prev) => ({
         ...prev,
         type: doctor === "Grooming" ? ["Μπάνιο"] : ["Τακτικός έλεγχος"],
+        duration: getSlotDuration(doctor),
       }));
     }
 

@@ -112,6 +112,10 @@ const internalApiKey = optionalEnv("INTERNAL_API_KEY", "");
 
 const redisUrl = optionalEnv("REDIS_URL", "");
 
+// MASTER ADMIN APP (control-plane) event reporting — κενό = σιωπηλά off.
+const controlPlaneApiUrl = optionalEnv("CONTROL_PLANE_API_URL", "");
+const controlPlaneEventsKey = optionalEnv("CONTROL_PLANE_EVENTS_KEY", "");
+
 // Registry worker
 const registryWorkerUrl = optionalEnv("REGISTRY_WORKER_URL", "http://localhost:5051");
 const registryWorkerHeadless = toBool(process.env.REGISTRY_WORKER_HEADLESS, true);
@@ -142,6 +146,11 @@ const config = Object.freeze({
   internalApiKey,
 
   redisUrl,
+
+  controlPlane: {
+    apiUrl: controlPlaneApiUrl,
+    eventsKey: controlPlaneEventsKey,
+  },
 
   corsOrigins,
 

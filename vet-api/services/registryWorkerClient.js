@@ -206,55 +206,6 @@ export async function getRegistrySession(clinicId, options = {}) {
 }
 
 /**
- * GET /medical-events?microchip=...
- * Hard-fail with ApiError on connectivity/HTTP issues.
- */
-export async function fetchMedicalEvents(clinicId, microchip, options = {}) {
-  const requestId = options?.requestId;
-  const baseUrl = await resolveWorkerBaseUrl(clinicId);
-  const url = `${baseUrl}/medical-events?microchip=${encodeURIComponent(microchip)}`;
-
-  try {
-    const res = await fetchWithTimeout(
-      url,
-      { headers: buildHeaders(requestId) },
-      WORKER_LOOKUP_TIMEOUT_MS
-    );
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new ApiError(502, "Registry worker medical-events returned non-OK status", {
-        code: "WORKER_HTTP_ERROR",
-        details: { status: res.status, url, bodyPreview: text.slice(0, 500) },
-        expose: false,
-      });
-    }
-
-    const json = await res.json().catch((err) => {
-      throw new ApiError(502, "Invalid JSON from registry worker (medical-events)", {
-        code: "WORKER_INVALID_JSON",
-        details: { url, message: err?.message },
-        expose: false,
-      });
-    });
-
-    return {
-      ok: Boolean(json.ok),
-      found: Boolean(json.found),
-      microchip: json.microchip || microchip,
-      data: json.data || {},
-    };
-  } catch (err) {
-    if (err instanceof ApiError) throw err;
-    throw new ApiError(502, "Cannot reach registry worker (medical-events)", {
-      code: "WORKER_OFFLINE",
-      details: { url, name: err?.name, message: err?.message },
-      expose: false,
-    });
-  }
-}
-
-/**
  * GET /lookup?microchip=...
  * Hard-fail with ApiError on connectivity/HTTP issues.
  */

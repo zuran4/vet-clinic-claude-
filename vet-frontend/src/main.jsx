@@ -4,6 +4,24 @@ import ReactDOM from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App";
 import OnScreenKeyboard from "./components/ui/OnScreenKeyboard";
+import reportClientEvent from "./utils/reportClientEvent.js";
+
+// 🛰️ Πιάνει JS errors/unhandled promise rejections εκτός React tree (π.χ. σε
+// event handlers, timers) και τα προωθεί στο MASTER ADMIN APP.
+window.addEventListener("error", (event) => {
+  reportClientEvent({
+    message: event.message,
+    stack: event.error?.stack,
+    type: "window_error",
+  });
+});
+window.addEventListener("unhandledrejection", (event) => {
+  reportClientEvent({
+    message: event.reason?.message || String(event.reason),
+    stack: event.reason?.stack,
+    type: "unhandled_rejection",
+  });
+});
 
 // 🛰️ Sentry — error tracking για το frontend (κενό DSN = απενεργοποιημένο)
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
@@ -67,6 +85,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {/* 🛰️ Πιάνει render crashes, τα στέλνει στο Sentry και δείχνει fallback UI */}
     <Sentry.ErrorBoundary
+      onError={(error) => reportClientEvent({ message: error?.message, stack: error?.stack, type: "react_render_error" })}
       fallback={({ error, resetError }) => (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center">
           <h1 className="text-xl font-semibold text-gray-800">

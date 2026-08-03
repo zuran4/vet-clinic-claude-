@@ -28,6 +28,7 @@ import reminderRoutes from "./routes/reminders.js";
 import exportRoutes from "./routes/export.js";
 import registryRoutes from "./routes/registry/index.js";
 import userRoutes from "./routes/users/index.js";
+import clientEventsRoutes from "./routes/clientEvents.js";
 import healthRoutes from "./routes/health.js";
 import internalTenantRoutes from "./routes/internal/tenants.js";
 import internalSystemRoutes from "./routes/internal/system.js";
@@ -221,6 +222,7 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/registry", registryRoutes);
 app.use("/api/export", exportRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/client-events", clientEventsRoutes);
 
 // ==============================
 // 🌐 Health Check

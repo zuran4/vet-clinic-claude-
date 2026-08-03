@@ -32,7 +32,9 @@ export default function resolveTenant(req, res, next) {
     req.clinicId = clinicId;
 
     // Ώστε κάθε error σε αυτό το request να φιλτράρεται ανά κλινική στο Sentry
-    Sentry.setTag("clinicId", clinicId);
+    // (ίδιο scope API με το requestId στο middlewares/requestId.js — το global
+    // Sentry.setTag() γράφει σε άλλο scope και δεν "κολλάει" αξιόπιστα ανά request)
+    Sentry.getCurrentScope().setTag("clinicId", clinicId);
 
     if (req.user?.userId) {
       touchLastSeen(req.models, req.user.userId, clinicId);

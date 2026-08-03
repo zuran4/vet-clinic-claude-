@@ -10,7 +10,6 @@ import { getSession } from "../../controllers/registry/getSession.js";
 import { startWorker } from "../../controllers/registry/startWorker.js";
 import { stopWorker } from "../../controllers/registry/stopWorker.js";
 import { lookupMicrochipHandler } from "../../controllers/registry/lookupMicrochip.js";
-import { getMedicalEventsHandler } from "../../controllers/registry/getMedicalEvents.js";
 import { getWorkerState } from "../../controllers/registry/getWorkerState.js";
 import { getRegistryHistory, addRegistryHistoryEntry } from "../../controllers/registry/searchHistory.js";
 
@@ -96,11 +95,6 @@ router.get("/session", asyncHandler(getSession));
  * GET /api/registry/lookup?microchip=...
  */
 router.get("/lookup", validateMicrochipQuery, asyncHandler(lookupMicrochipHandler));
-
-/**
- * GET /api/registry/medical-events?microchip=...
- */
-router.get("/medical-events", validateMicrochipQuery, asyncHandler(getMedicalEventsHandler));
 
 /**
  * GET /api/registry/history
