@@ -2,6 +2,51 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.4.8 — 2026-07-31 (9031e9f)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/.env.example                               |  50 +++++++
+ vet-api/config/index.js                            |  26 ----
+ vet-api/controllers/customers/createCustomer.js    |  46 +++---
+ vet-api/jobs/appointmentReminder.js                | 140 +++++++++++++-----
+ vet-api/jobs/petBirthdayJob.js                     | 125 ++++++++++++++++
+ vet-api/jobs/petVaccinationJob.js                  | 154 +++++++++++++-------
+ vet-api/jobs/purchaseReminderJob.js                | 157 ++++++++++++++-------
+ vet-api/models/Settings.js                         |  17 +++
+ vet-api/queues/workers/emailWorker.js              |  44 ------
+ vet-api/routes/settings.js                         |  45 ++++++
+ vet-api/server.js                                  |   2 +
+ vet-api/services/emailService.js                   |  39 ++++-
+ vet-api/services/emailTemplates.js                 |  30 ++++
+ vet-api/services/smsService.js                     |  47 ++++++
+ vet-api/services/smsTemplates.js                   |  47 ++++++
+ vet-api/utils/emailService.js                      |  44 ------
+ vet-api/utils/smsService.js                        |  29 ----
+ .../appointments/AppointmentHistoryPanel.jsx       |  14 +-
+ .../components/appointments/AppointmentSlots.jsx   |  16 ++-
+ .../appointments/CompactAppointmentCard.jsx        |  25 +---
+ .../components/appointments/CompactSlotGrid.jsx    |   6 +-
+ .../src/components/dashboard/TodayTimeline.jsx     |  41 ++----
+ .../components/dashboard/WeekMonthAgendaModal.jsx  |  33 ++++-
+ vet-frontend/src/hooks/useAppointmentSlots.jsx     |  17 +--
+ vet-frontend/src/pages/AppointmentsPage.jsx        |   3 -
+ vet-frontend/src/pages/SettingsPage.jsx            | 121 +++++++++++++++-
+ vet-frontend/src/utils/appointmentTypeColors.js    |  74 ++++++++++
+ 27 files changed, 995 insertions(+), 397 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.4.7 — 2026-07-30 (abfe04d)
 
 ### Ενημέρωση κώδικα
