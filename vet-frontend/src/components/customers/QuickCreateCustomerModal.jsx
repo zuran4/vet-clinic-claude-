@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { User, Phone, Mail, MapPin, StickyNote, Bell, X, Save, UserPlus, ChevronDown, ChevronUp, PawPrint } from "lucide-react";
 import request from "@/api/apiClient.js";
 import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
+import reportClientEvent from "../../utils/reportClientEvent.js";
 
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-2xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400 dark:placeholder-gray-500 dark:bg-win-elevated dark:text-gray-100";
 const LABEL = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1";
@@ -73,13 +74,15 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
           method: "POST",
           body: { owner: customer._id, name: petName.trim(), species: petSpecies, gender: petGender },
         });
-      } catch {
+      } catch (err) {
         toast.error("Ο πελάτης δημιουργήθηκε, αλλά το κατοικίδιο απέτυχε. Πρόσθεσέ το χειροκίνητα.");
+        reportClientEvent({ message: err?.message || "Αποτυχία δημιουργίας κατοικιδίου μετά από νέο πελάτη", type: "pet_create_failed", level: "warning" });
       }
 
       onCreated(customer);
-    } catch {
-      setError("Αποτυχία δημιουργίας. Έλεγξε τα στοιχεία.");
+    } catch (err) {
+      setError(err?.message || "Αποτυχία δημιουργίας. Έλεγξε τα στοιχεία.");
+      reportClientEvent({ message: err?.message || "Αποτυχία δημιουργίας πελάτη", type: "customer_create_failed", level: "warning" });
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { API_URL } from "../../../config/api.js";
+import reportClientEvent from "../../../utils/reportClientEvent.js";
 
 export function useCustomerForm(initialData, onSaved, onCancel) {
   // -------------------------------------
@@ -144,8 +145,9 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
                 gender: petGender,
               }),
             });
-          } catch {
+          } catch (err) {
             toast.error("Ο πελάτης δημιουργήθηκε, αλλά το κατοικίδιο απέτυχε. Πρόσθεσέ το χειροκίνητα.");
+            reportClientEvent({ message: err?.message || "Αποτυχία δημιουργίας κατοικιδίου μετά από νέο πελάτη", type: "pet_create_failed", level: "warning" });
           }
         }
 
@@ -161,7 +163,8 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
         console.log("✅ saved customer:", customerData);
       } catch (err) {
         console.error("❌ Σφάλμα αποθήκευσης πελάτη:", err);
-        toast.error("❌ Αποτυχία αποθήκευσης πελάτη.");
+        toast.error(err?.message ? `❌ ${err.message}` : "❌ Αποτυχία αποθήκευσης πελάτη.");
+        reportClientEvent({ message: err?.message || "Αποτυχία αποθήκευσης πελάτη", type: "customer_save_failed", level: "warning" });
       } finally {
         setLoading(false);
       }
