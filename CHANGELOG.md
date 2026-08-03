@@ -2,6 +2,57 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.4.9 — 2026-08-03 (df7d04a)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/.env.example                               |   4 +
+ vet-api/config/index.js                            |   9 +
+ vet-api/controllers/clientEvents/report.js         |  28 ++
+ vet-api/controllers/registry/getMedicalEvents.js   |  71 -----
+ vet-api/fix_registry_worker_startup_grace.patch    | 167 ------------
+ vet-api/middlewares/appointments/checkOverlap.js   |   9 +
+ vet-api/middlewares/auth/requireAuth.js            |   2 +-
+ vet-api/middlewares/errorHandler.js                |  10 +
+ vet-api/middlewares/resolveTenant.js               |   4 +-
+ vet-api/routes/clientEvents.js                     |   8 +
+ vet-api/routes/registry/index.js                   |   6 -
+ vet-api/scripts/medical-events-flow-helpers.mjs    | 273 -------------------
+ vet-api/scripts/microchip-flow-helpers.mjs         |  57 ++--
+ vet-api/scripts/registry-worker.mjs                |   2 -
+ vet-api/scripts/registry-worker/http-server.mjs    |  61 +----
+ vet-api/scripts/registry-worker/recovery.mjs       |   2 +-
+ vet-api/scripts/zk-helpers.mjs                     |  56 +++-
+ vet-api/server.js                                  |   2 +
+ vet-api/services/controlPlaneReporter.js           |  27 ++
+ vet-api/services/registryWorkerClient.js           |  49 ----
+ vet-api/services/registryWorkerLauncher.js         |  20 ++
+ vet-api/services/registryWorkerProcess.js          |  19 ++
+ vet-api/validators/appointments/validateBody.js    |  25 +-
+ vet-frontend/src/api/registryApi.js                |  57 ----
+ .../appointments/AppointmentDetailsForm.jsx        |  17 +-
+ .../src/components/pets/MedicalEventsTab.jsx       | 295 ---------------------
+ vet-frontend/src/components/pets/PetProfile.jsx    |  11 +-
+ .../src/components/registry/RegistryLookup.jsx     | 124 +--------
+ .../registry/RegistryMicrochipSearchBlock.jsx      |   3 +-
+ vet-frontend/src/hooks/useAppointmentForm.jsx      |   8 +-
+ vet-frontend/src/main.jsx                          |  19 ++
+ vet-frontend/src/utils/reportClientEvent.js        |  22 ++
+ vet-frontend/src/utils/slotDuration.js             |  19 ++
+ 33 files changed, 349 insertions(+), 1137 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.4.8 — 2026-07-31 (9031e9f)
 
 ### Ενημέρωση κώδικα
