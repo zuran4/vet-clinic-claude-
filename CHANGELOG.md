@@ -2,6 +2,22 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.5.1 — 2026-08-04 (4248061)
+
+### Αφαίρεση αρχείων test browser profile
+
+**🔧 Τεχνική περιγραφή**
+
+- Διαγραφή του tracked φακέλου `vet-api/playwright-registry-worker-test/Default/Cache/...` που περιείχε cache δεδομένα Playwright browser profile
+- Σταμάτημα version control tracking για test tenant artifacts (binary cache files, εικόνες, css)
+- Δεν επηρεάζεται η λειτουργικότητα της εφαρμογής, μόνο καθαρισμός repository
+
+**🌱 Σε απλά λόγια**
+
+Αφαιρέθηκαν από το repository άχρηστα αρχεία που δημιουργούνται αυτόματα κατά τα αυτοματοποιημένα tests και δεν έπρεπε να αποθηκεύονται. Δεν επηρεάζει καθόλου τη λειτουργία του προγράμματος, απλώς κάνει το project πιο καθαρό.
+
+---
+
 ## v1.5.0 — 2026-08-03 (a2f6f89)
 
 ### Καταγραφή σφαλμάτων validation και client events
