@@ -213,21 +213,52 @@ export function purchaseReminderHtml({
 export function welcomeEmailHtml({
   clinicName = "Κτηνιατρείο",
   clientName = "",
+  petName = "",
+  phone = "",
+  address = "",
+  logo = "",
 } = {}) {
+  const contactRows = [
+    phone ? { icon: "📞", label: "Τηλέφωνο", value: phone } : null,
+    address ? { icon: "📍", label: "Διεύθυνση", value: address } : null,
+  ].filter(Boolean);
+
+  const contactTable = contactRows.length
+    ? `
+        <table style="width:100%; border-collapse:collapse; margin-top:18px;">
+          ${contactRows.map((row, i) => `
+          <tr>
+            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; border-radius:${i === 0 ? "6px 6px" : "0 0"} ${i === contactRows.length - 1 ? "6px 6px" : "0 0"}; font-size:13px; color:#64748b; width:40%;">${row.icon} ${row.label}</td>
+            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; border-radius:${i === 0 ? "6px 6px" : "0 0"} ${i === contactRows.length - 1 ? "6px 6px" : "0 0"}; font-size:14px; color:#1e293b; font-weight:600;">${row.value}</td>
+          </tr>`).join("")}
+        </table>`
+    : "";
+
   return `
   <body style="${BASE_STYLE}">
     <div style="${CARD_STYLE}">
       <div style="${HEADER_STYLE("#4f46e5")}">
+        ${logo ? `<img src="${logo}" alt="${clinicName}" style="max-height:48px; margin-bottom:10px;" />` : ""}
         <h1 style="margin:0; color:#ffffff; font-size:22px;">🐾 ${clinicName}</h1>
-        <p style="margin:6px 0 0; color:#c7d2fe; font-size:14px;">Καλωσήρθατε!</p>
+        <p style="margin:6px 0 0; color:#c7d2fe; font-size:14px;">Καλωσήρθατε στην οικογένειά μας!</p>
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
           Αγαπητέ/ή <strong>${clientName}</strong>,
         </p>
         <p style="color:#475569; line-height:1.6;">
-          Σας ευχαριστούμε που μας εμπιστευθήκατε! Θα είμαστε πάντα δίπλα
-          στα κατοικίδιά σας.
+          Σας ευχαριστούμε που εμπιστευθήκατε το <strong>${clinicName}</strong>${petName ? ` για τον/την <strong>${petName}</strong>` : ""}!
+          Είμαστε εδώ για να φροντίσουμε την υγεία και την ευεξία του κατοικιδίου σας
+          σε κάθε βήμα.
+        </p>
+        <p style="color:#475569; line-height:1.6;">
+          Από εδώ και πέρα θα λαμβάνετε από εμάς υπενθυμίσεις για ραντεβού,
+          εμβολιασμούς και ό,τι άλλο χρειάζεται το κατοικίδιό σας — δεν χρειάζεται
+          να θυμάστε τίποτα μόνοι σας!
+        </p>
+        ${contactTable}
+        <p style="margin-top:20px; color:#64748b; font-size:13px;">
+          Αν έχετε οποιαδήποτε απορία, μη διστάσετε να επικοινωνήσετε μαζί μας.
         </p>
       </div>
       <div style="${FOOTER_STYLE}">

@@ -63,6 +63,14 @@ export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDele
             {(Array.isArray(appt.type) ? appt.type[0] : appt.type)}
           </span>
         )}
+        {appt.notes && (
+          <span
+            title={appt.notes}
+            className="block mt-0.5 text-[9px] font-medium px-1 py-0.5 rounded-full truncate max-w-full bg-orange-300 text-black"
+          >
+            {appt.notes}
+          </span>
+        )}
       </button>
     </li>
   );

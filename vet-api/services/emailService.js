@@ -77,7 +77,13 @@ export async function sendWelcomeEmail({ settings, customer }) {
     settings,
     to: customer.email,
     subject: `Καλωσήρθες στην κλινική μας, ${customer.name}!`,
-    html: welcomeEmailHtml({ clinicName, clientName: customer.name }),
+    html: welcomeEmailHtml({
+      clinicName,
+      clientName: customer.name,
+      phone: settings?.phone || "",
+      address: settings?.address || "",
+      logo: settings?.logo || "",
+    }),
   });
 
   logger.info(`✅ Email καλωσορίσματος στάλθηκε σε ${customer.email}`);

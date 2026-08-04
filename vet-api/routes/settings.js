@@ -1,7 +1,14 @@
 import express from "express";
 
 import { sendEmail } from "../services/emailService.js";
-import { testEmailHtml } from "../services/emailTemplates.js";
+import {
+  testEmailHtml,
+  welcomeEmailHtml,
+  appointmentReminderHtml,
+  vaccinationReminderHtml,
+  purchaseReminderHtml,
+  birthdayHtml,
+} from "../services/emailTemplates.js";
 import { sendSMS } from "../services/smsService.js";
 import { testSms } from "../services/smsTemplates.js";
 import { emitChange } from "../utils/realtime.js";
@@ -151,6 +158,68 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
   }
 });
 
+
+// ==========================
+// 🔹 GET /api/settings/email-preview?type=welcome — δεν στέλνει τίποτα,
+// απλά επιστρέφει το HTML του template με πραγματικά στοιχεία κλινικής
+// (από τις Ρυθμίσεις) + δείγμα δεδομένων πελάτη, για προεπισκόπηση στο UI.
+// ==========================
+const EMAIL_TEMPLATE_BUILDERS = {
+  welcome: (settings) => welcomeEmailHtml({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    petName: "Μπόνι",
+    phone: settings?.phone || "",
+    address: settings?.address || "",
+    logo: settings?.logo || "",
+  }),
+  appointmentReminder: (settings) => appointmentReminderHtml({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    animalName: "Μπόνι",
+    date: "12/08/2026",
+    time: "10:30",
+    reason: "Τακτικός έλεγχος",
+  }),
+  vaccinationReminder: (settings) => vaccinationReminderHtml({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    petName: "Μπόνι",
+    vaccineType: "Εμβόλιο Λύσσας",
+    dueDate: "20/08/2026",
+  }),
+  purchaseReminder: (settings) => purchaseReminderHtml({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    productNames: ["Royal Canin Medium Adult 15kg", "Frontline Combo Spot-On"],
+    note: "Έχει μείνει περίπου για 1 εβδομάδα ακόμα.",
+    reminderDate: "15/08/2026",
+  }),
+  birthday: (settings) => birthdayHtml({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    petName: "Μπόνι",
+    age: 3,
+  }),
+};
+
+router.get("/email-preview", async (req, res) => {
+  try {
+    const { type } = req.query;
+    const builder = EMAIL_TEMPLATE_BUILDERS[type];
+    if (!builder) {
+      return res.status(400).json({ error: `Άγνωστος τύπος template: "${type}".` });
+    }
+
+    const { Settings } = req.models;
+    const settings = await Settings.findOne();
+
+    res.json({ html: builder(settings) });
+  } catch (err) {
+    console.error("❌ Σφάλμα preview email:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ==========================
 // 🔹 POST /api/settings/test-email (μόνο admin)

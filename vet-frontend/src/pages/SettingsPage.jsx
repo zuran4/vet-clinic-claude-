@@ -1,5 +1,6 @@
 // src/pages/SettingsPage.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
@@ -285,6 +286,11 @@ const SettingsPage = ({ onClose, user }) => {
   const [testEmailTo, setTestEmailTo]           = useState("");
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [testEmailResult, setTestEmailResult]   = useState(null);
+  const [previewType, setPreviewType]           = useState("welcome");
+  const [previewHtml, setPreviewHtml]           = useState("");
+  const [previewLoading, setPreviewLoading]     = useState(false);
+  const [previewError, setPreviewError]         = useState(null);
+  const [showPreview, setShowPreview]           = useState(false);
   const [testSmsTo, setTestSmsTo]               = useState("");
   const [testSmsSending, setTestSmsSending]     = useState(false);
   const [testSmsResult, setTestSmsResult]       = useState(null);
@@ -336,6 +342,19 @@ const SettingsPage = ({ onClose, user }) => {
       setSaveError(err?.message || "Αποτυχία αποθήκευσης");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePreviewEmail = async () => {
+    setPreviewLoading(true); setPreviewError(null);
+    try {
+      const data = await request(`/settings/email-preview?type=${previewType}`);
+      setPreviewHtml(data.html);
+      setShowPreview(true);
+    } catch (err) {
+      setPreviewError(err?.message || "Αποτυχία φόρτωσης προεπισκόπησης");
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -763,6 +782,31 @@ const SettingsPage = ({ onClose, user }) => {
         </Section>
 
         <div className="mt-4">
+          <Section title="Προεπισκόπηση Email Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο email με τα στοιχεία της κλινικής σου, χωρίς να σταλεί τίποτα.">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <label className={LABEL}>Template</label>
+                <select value={previewType} onChange={(e) => setPreviewType(e.target.value)} className={INPUT}>
+                  <option value="welcome">Καλωσόρισμα νέου πελάτη</option>
+                  <option value="appointmentReminder">Υπενθύμιση ραντεβού</option>
+                  <option value="vaccinationReminder">Υπενθύμιση εμβολίου</option>
+                  <option value="purchaseReminder">Υπενθύμιση αγοράς</option>
+                  <option value="birthday">Χρόνια Πολλά κατοικιδίου</option>
+                </select>
+              </div>
+              <button type="button" onClick={handlePreviewEmail} disabled={previewLoading} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex-shrink-0">
+                <Eye className="w-3.5 h-3.5" /> {previewLoading ? "Φόρτωση..." : "Προεπισκόπηση"}
+              </button>
+            </div>
+            {previewError && (
+              <div className="mt-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-100">
+                ❌ {previewError}
+              </div>
+            )}
+          </Section>
+        </div>
+
+        <div className="mt-4">
           <Section title="Δοκιμαστικό Email">
             <div className="flex gap-2 items-end">
               <div className="flex-1">
@@ -1058,6 +1102,24 @@ const SettingsPage = ({ onClose, user }) => {
           {sections}
         </div>
       </div>
+
+      {showPreview && createPortal(
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowPreview(false)}>
+          <div
+            className="relative w-full max-w-[640px] max-h-[90vh] bg-white dark:bg-win-surface rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-win-border bg-gray-50 dark:bg-win-elevated/50 flex-shrink-0">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Προεπισκόπηση Email</p>
+              <button onClick={() => setShowPreview(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <iframe title="email-preview" srcDoc={previewHtml} className="flex-1 w-full" style={{ minHeight: "70vh", border: "none" }} />
+          </div>
+        </div>,
+        document.body
+      )}
 
     </div>
   );
