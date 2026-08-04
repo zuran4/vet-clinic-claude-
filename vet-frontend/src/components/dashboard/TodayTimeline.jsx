@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import dayjs from "dayjs";
-import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Trash2, Plus, StickyNote, CheckCircle2 } from "lucide-react";
+import { Calendar, CalendarDays, Clock, Stethoscope, Scissors, ChevronRight, Pencil, Trash2, Plus, CheckCircle2 } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
@@ -55,10 +55,9 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
             )}
           </div>
           {appt.notes && (
-            <p title={appt.notes} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 truncate mt-1">
-              <StickyNote className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{appt.notes}</span>
-            </p>
+            <span title={appt.notes} className="inline-block mt-1 max-w-full truncate text-xs font-medium px-2 py-0.5 rounded-full bg-orange-300 text-black">
+              {appt.notes}
+            </span>
           )}
         </div>
 
@@ -78,8 +77,8 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
             </span>
           )}
           {appt.notes && (
-            <span title={appt.notes} className="flex-shrink-0">
-              <StickyNote className="w-3 h-3 text-amber-500 dark:text-amber-400" />
+            <span title={appt.notes} className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 max-w-[160px] truncate bg-orange-300 text-black">
+              {appt.notes}
             </span>
           )}
         </div>
