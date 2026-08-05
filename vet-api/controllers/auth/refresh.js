@@ -19,7 +19,7 @@ export async function refresh(req, res, next) {
     const Tenant = getTenantModel();
     const tenant = await Tenant.findOne({ clinicId, isActive: true }).lean();
     if (!tenant) {
-      return res.status(401).json({ message: "Άγνωστη ή ανενεργή κλινική" });
+      return res.status(401).json({ message: "Άγνωστο ή ανενεργό κτηνιατρείο" });
     }
 
     const { User, RefreshToken } = getTenantModels(clinicId);

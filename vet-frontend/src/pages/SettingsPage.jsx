@@ -218,7 +218,7 @@ function AuditLogViewer() {
 }
 
 const SettingsPage = ({ onClose, user }) => {
-  const { settings, setSettings, updateSettings, uploadLogo, loading, error } = useSettingsPage();
+  const { settings, setSettings, updateSettings, loading, error } = useSettingsPage();
   const navGroups = useMemo(() => NAV_GROUPS.map((g) => ({
     ...g,
     items: g.items.filter((item) => !item.adminOnly || user?.role === "admin"),
@@ -507,7 +507,7 @@ const SettingsPage = ({ onClose, user }) => {
         <Section title="Στοιχεία Κλινικής" description="Βασικές πληροφορίες εμφάνισης και επικοινωνίας." {...saveProps}>
           <div>
             <label className={LABEL}>Λογότυπο</label>
-            <LogoUpload value={form.logo} onUploadFile={async (file) => { const url = await uploadLogo(file); patch("logo", url); }} />
+            <LogoUpload value={form.logo} onChange={(url) => patch("logo", url)} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -645,13 +645,13 @@ const SettingsPage = ({ onClose, user }) => {
       <div className={activeSection !== "gov" ? "hidden" : ""}>
         <Section
           title="Σύνδεση GOV.GR"
-          description="Στοιχεία σύνδεσης Taxisnet για το εθνικό μητρώο ζώων συντροφιάς (pet.gov.gr). Κάθε κλινική τρέχει τον δικό της, ξεχωριστό worker — τα credentials δεν μοιράζονται με άλλες κλινικές."
+          description="Στοιχεία σύνδεσης Taxisnet για το εθνικό μητρώο ζώων συντροφιάς (pet.gov.gr). Κάθε κτηνιατρείο τρέχει τον δικό του, ξεχωριστό worker — τα credentials δεν μοιράζονται με άλλα κτηνιατρεία."
           {...saveProps}
         >
           <div className="flex gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-700/50">
             <Landmark className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed">
-              Χρησιμοποίησε τα προσωπικά στοιχεία Taxisnet του κτηνιάτρου (όχι το ΑΦΜ της κλινικής). Το password αποθηκεύεται κρυπτογραφημένο.
+              Χρησιμοποίησε τα προσωπικά στοιχεία Taxisnet του κτηνιάτρου (όχι το ΑΦΜ του κτηνιατρείου). Το password αποθηκεύεται κρυπτογραφημένο.
             </p>
           </div>
 
@@ -782,7 +782,7 @@ const SettingsPage = ({ onClose, user }) => {
         </Section>
 
         <div className="mt-4">
-          <Section title="Προεπισκόπηση Email Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο email με τα στοιχεία της κλινικής σου, χωρίς να σταλεί τίποτα.">
+          <Section title="Προεπισκόπηση Email Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο email με τα στοιχεία του κτηνιατρείου σου, χωρίς να σταλεί τίποτα.">
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className={LABEL}>Template</label>
@@ -898,7 +898,7 @@ const SettingsPage = ({ onClose, user }) => {
 
       {/* ── Οθόνη Αφής ── */}
       <div className={activeSection !== "touchscreen" ? "hidden" : ""}>
-        <Section title="Οθόνη Αφής" description="Ρύθμιση συσκευής — ισχύει μόνο σε αυτή τη συσκευή/browser, όχι σε όλη την κλινική.">
+        <Section title="Οθόνη Αφής" description="Ρύθμιση συσκευής — ισχύει μόνο σε αυτή τη συσκευή/browser, όχι σε όλο το κτηνιατρείο.">
           <TouchscreenSettings />
         </Section>
       </div>
@@ -1025,7 +1025,7 @@ const SettingsPage = ({ onClose, user }) => {
           </div>
           <div>
             <h1 className="text-base font-bold text-gray-800 dark:text-gray-100">Ρυθμίσεις Συστήματος</h1>
-            <p className="text-xs text-gray-400 dark:text-gray-500">Διαχείριση κλινικής, προσωπικού και συστήματος</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Διαχείριση κτηνιατρείου, προσωπικού και συστήματος</p>
           </div>
         </div>
         {onClose && (

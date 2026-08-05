@@ -7,7 +7,7 @@ import request, { API_BASE_URL } from "./apiClient";
  */
 
 const SETTINGS_ENDPOINT = "/settings";
-const UPLOAD_LOGO_ENDPOINT = "/upload/logo";
+const UPLOAD_LOGO_ENDPOINT = "/uploads/logo";
 
 // ===============================
 // 📋 Ρυθμίσεις Κλινικής

@@ -43,5 +43,5 @@ export function welcomeSms({
   clinicName = "Κτηνιατρείο",
   clientName = "",
 } = {}) {
-  return `${clinicName}: Αγαπητέ/ή ${clientName}, σας καλωσορίζουμε στην κλινική μας!`;
+  return `${clinicName}: Αγαπητέ/ή ${clientName}, σας καλωσορίζουμε στο κτηνιατρείο μας!`;
 }

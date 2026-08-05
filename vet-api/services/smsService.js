@@ -25,11 +25,23 @@ function buildClient(settings) {
   };
 }
 
+// Οι πελάτες αποθηκεύονται με ελληνικό τηλέφωνο χωρίς πρόθεμα (π.χ.
+// "6912345678"), αλλά το Twilio απαιτεί πάντα διεθνή μορφή E.164 (+30...)
+// — γι' αυτό η μετατροπή γίνεται εδώ, μόνο προς το Twilio, χωρίς να
+// αλλάζει πουθενά αλλού η αποθηκευμένη/εμφανιζόμενη μορφή του τηλεφώνου.
+function toE164Greek(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (phone.trim().startsWith("+")) return `+${digits}`;
+  if (digits.startsWith("30")) return `+${digits}`;
+  return `+30${digits.replace(/^0+/, "")}`;
+}
+
 /**
  * Αποστολή SMS.
  * @param {object} opts
  * @param {object} opts.settings - Settings document της κλινικής (ήδη φορτωμένο)
- * @param {string} opts.to      - αριθμός παραλήπτη (E.164, π.χ. +306912345678)
+ * @param {string} opts.to      - αριθμός παραλήπτη (ελληνική ή διεθνής μορφή)
  * @param {string} opts.message - κείμενο μηνύματος
  */
 export async function sendSMS({ settings, to, message }) {
@@ -39,9 +51,10 @@ export async function sendSMS({ settings, to, message }) {
   }
 
   const { client, from } = buildClient(settings);
+  const normalizedTo = toE164Greek(to);
 
-  const sms = await client.messages.create({ from, to, body: message });
+  const sms = await client.messages.create({ from, to: normalizedTo, body: message });
 
-  logger.info(`📱 SMS στάλθηκε σε ${to} — SID: ${sms.sid}`);
+  logger.info(`📱 SMS στάλθηκε σε ${normalizedTo} — SID: ${sms.sid}`);
   return sms;
 }

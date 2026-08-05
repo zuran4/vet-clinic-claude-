@@ -39,12 +39,12 @@ export default async function checkSubscription(req, res, next) {
     const tenant = await getCachedTenant(clinicId);
 
     if (!tenant) {
-      return next(new ApiError(403, "Η κλινική δεν βρέθηκε.", { code: "TENANT_NOT_FOUND", expose: true }));
+      return next(new ApiError(403, "Το κτηνιατρείο δεν βρέθηκε.", { code: "TENANT_NOT_FOUND", expose: true }));
     }
 
     if (!tenant.isActive) {
       return next(
-        new ApiError(403, "Ο λογαριασμός της κλινικής είναι απενεργοποιημένος.", {
+        new ApiError(403, "Ο λογαριασμός του κτηνιατρείου είναι απενεργοποιημένος.", {
           code: "TENANT_INACTIVE",
           expose: true,
         })

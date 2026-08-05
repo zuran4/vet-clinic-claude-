@@ -1401,7 +1401,6 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               {[
                                 { field: "followUpReminder", label: "Reminder επόμενου grooming" },
                                 { field: "sendEmailSms",     label: "Αποστολή οδηγιών με Email/SMS" },
-                                { field: "scheduleFollowUp", label: "Προγραμματισμός επανελέγχου αν χρειαστεί" },
                               ].map(({ field, label }) => (
                                 <label key={field} className="flex items-center gap-3 cursor-pointer">
                                   <div onClick={() => setTreatmentForm((p) => ({ ...p, [field]: !p[field] }))}

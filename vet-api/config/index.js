@@ -112,6 +112,11 @@ const internalApiKey = optionalEnv("INTERNAL_API_KEY", "");
 
 const redisUrl = optionalEnv("REDIS_URL", "");
 
+// Δημόσια διεύθυνση αυτού του backend — χρειάζεται για απόλυτα URLs μέσα σε
+// emails (π.χ. λογότυπο), αφού οι παραλήπτες τα ανοίγουν εκτός της εφαρμογής
+// και δεν υπάρχει "τρέχον origin" να συμπληρώσει σχετικά paths.
+const publicBaseUrl = optionalEnv("PUBLIC_BASE_URL", "").replace(/\/+$/, "");
+
 // MASTER ADMIN APP (control-plane) event reporting — κενό = σιωπηλά off.
 const controlPlaneApiUrl = optionalEnv("CONTROL_PLANE_API_URL", "");
 const controlPlaneEventsKey = optionalEnv("CONTROL_PLANE_EVENTS_KEY", "");
@@ -146,6 +151,7 @@ const config = Object.freeze({
   internalApiKey,
 
   redisUrl,
+  publicBaseUrl,
 
   controlPlane: {
     apiUrl: controlPlaneApiUrl,

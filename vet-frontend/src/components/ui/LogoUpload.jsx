@@ -2,6 +2,16 @@ import { useState, useRef } from "react";
 import { Upload } from "lucide-react";
 import Button from "./button";
 import settingsApi from "../../api/settingsApi.js"; // ✅ χρήση του settingsApi
+import { API_BASE_URL } from "../../api/apiClient.js";
+
+// Το backend επιστρέφει σχετικό path (π.χ. "/uploads/xxx.png") — το αρχείο
+// σερβίρεται από το ΙΔΙΟ origin με το API, όχι από το frontend, οπότε πρέπει
+// να το κάνουμε absolute πριν το βάλουμε σε <img src>.
+const UPLOADS_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+function resolveUploadUrl(url) {
+  if (!url || /^https?:\/\//i.test(url)) return url;
+  return `${UPLOADS_ORIGIN}${url}`;
+}
 
 export default function LogoUpload({ value, onChange }) {
   const [uploading, setUploading] = useState(false);
@@ -45,7 +55,7 @@ export default function LogoUpload({ value, onChange }) {
     <div className="flex items-center gap-3">
       {value && (
         <img
-          src={value}
+          src={resolveUploadUrl(value)}
           alt="Logo"
           className="w-12 h-12 rounded-lg border dark:border-win-border-light shadow"
         />

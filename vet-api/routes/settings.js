@@ -1,6 +1,6 @@
 import express from "express";
 
-import { sendEmail } from "../services/emailService.js";
+import { sendEmail, resolveLogoUrl } from "../services/emailService.js";
 import {
   testEmailHtml,
   welcomeEmailHtml,
@@ -171,7 +171,7 @@ const EMAIL_TEMPLATE_BUILDERS = {
     petName: "Μπόνι",
     phone: settings?.phone || "",
     address: settings?.address || "",
-    logo: settings?.logo || "",
+    logo: resolveLogoUrl(settings?.logo),
   }),
   appointmentReminder: (settings) => appointmentReminderHtml({
     clinicName: settings?.clinicName || "Κτηνιατρείο",

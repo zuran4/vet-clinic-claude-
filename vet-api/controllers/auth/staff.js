@@ -9,7 +9,7 @@ export async function getStaff(req, res, next) {
 
     const data = await authService.getActiveStaff(clinicId);
     if (!data) {
-      return res.status(404).json({ message: "Άγνωστη ή ανενεργή κλινική" });
+      return res.status(404).json({ message: "Άγνωστο ή ανενεργό κτηνιατρείο" });
     }
 
     res.json(data);

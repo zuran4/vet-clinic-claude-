@@ -199,7 +199,7 @@ function MainLayout({
       case "export":
         return { title: "Πωλήσεις", subtitle: "Καταχώρηση πωλήσεων και ενημέρωση αποθέματος." };
       case "settings":
-        return { title: "Ρυθμίσεις", subtitle: "Διαμόρφωση κλινικής και συστήματος." };
+        return { title: "Ρυθμίσεις", subtitle: "Διαμόρφωση κτηνιατρείου και συστήματος." };
       default:
         return { title: "Επισκόπηση" };
     }

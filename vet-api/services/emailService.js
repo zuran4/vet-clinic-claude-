@@ -2,8 +2,19 @@ import nodemailer from "nodemailer";
 
 import logger from "../utils/logger.js";
 import { decrypt } from "../utils/crypto.js";
+import config from "../config/index.js";
 
 import { welcomeEmailHtml } from "./emailTemplates.js";
+
+// Το settings.logo αποθηκεύεται σαν σχετικό path (π.χ. "/uploads/xxx.png") —
+// μέσα σε email πρέπει να είναι απόλυτο URL, αλλιώς ο παραλήπτης βλέπει
+// σπασμένη εικόνα (δεν υπάρχει "τρέχον origin" σε ένα email client).
+export function resolveLogoUrl(logo) {
+  if (!logo) return "";
+  if (/^https?:\/\//i.test(logo)) return logo;
+  if (!config.publicBaseUrl) return "";
+  return `${config.publicBaseUrl}${logo}`;
+}
 
 /**
  * Δημιουργεί nodemailer transporter από ένα ήδη-φορτωμένο Settings document.
@@ -76,13 +87,13 @@ export async function sendWelcomeEmail({ settings, customer }) {
   await sendEmail({
     settings,
     to: customer.email,
-    subject: `Καλωσήρθες στην κλινική μας, ${customer.name}!`,
+    subject: `Καλωσήρθες στο κτηνιατρείο μας, ${customer.name}!`,
     html: welcomeEmailHtml({
       clinicName,
       clientName: customer.name,
       phone: settings?.phone || "",
       address: settings?.address || "",
-      logo: settings?.logo || "",
+      logo: resolveLogoUrl(settings?.logo),
     }),
   });
 

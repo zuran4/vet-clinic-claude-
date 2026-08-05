@@ -15,7 +15,7 @@ function friendlyError(err, context) {
   const msg = (err?.message || "").toLowerCase();
 
   if (context === "setup") {
-    if (status === 404 || /άγνωστ|κλινικ/i.test(msg)) return "Άγνωστη ή ανενεργή κλινική. Έλεγξε τον κωδικό.";
+    if (status === 404 || /άγνωστ|κλινικ|κτηνιατρ/i.test(msg)) return "Άγνωστο ή ανενεργό κτηνιατρείο. Έλεγξε τον κωδικό.";
     if (status === 429 || /πολλ|too many/i.test(msg)) return "Πάρα πολλές προσπάθειες. Δοκίμασε ξανά σε λίγο.";
     return "Παρουσιάστηκε σφάλμα. Δοκίμασε ξανά.";
   }
@@ -148,7 +148,7 @@ function StaffPicker({ clinicId, clinicName, users, onSelect, onChangeClinic }) 
     <div className="flex flex-col gap-6">
       <Header title={clinicName || clinicId} subtitle="Διάλεξε ποιος είσαι" />
       {users.length === 0 ? (
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Δεν υπάρχουν ενεργοί χρήστες σε αυτή την κλινική.</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Δεν υπάρχουν ενεργοί χρήστες σε αυτό το κτηνιατρείο.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-1">
           {users.map((u) => (
@@ -174,7 +174,7 @@ function StaffPicker({ clinicId, clinicName, users, onSelect, onChangeClinic }) 
         onClick={onChangeClinic}
         className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors text-center"
       >
-        Άλλαξε κλινική σε αυτή τη συσκευή
+        Άλλαξε κτηνιατρείο σε αυτή τη συσκευή
       </button>
     </div>
   );
@@ -301,7 +301,7 @@ const LoginForm = ({ onLogin }) => {
     } catch {
       // Η αποθηκευμένη κλινική δεν είναι πια έγκυρη — ζήτα ξανά ρύθμιση συσκευής
       localStorage.removeItem("clinicId");
-      setLoadError("Η κλινική αυτής της συσκευής δεν είναι πλέον διαθέσιμη.");
+      setLoadError("Το κτηνιατρείο αυτής της συσκευής δεν είναι πλέον διαθέσιμο.");
       setStep("setup");
     }
   };
@@ -324,7 +324,7 @@ const LoginForm = ({ onLogin }) => {
   };
 
   const handleChangeClinic = () => {
-    if (!window.confirm("Να αλλάξει η κλινική αυτής της συσκευής;")) return;
+    if (!window.confirm("Να αλλάξει το κτηνιατρείο αυτής της συσκευής;")) return;
     localStorage.removeItem("clinicId");
     setSelectedUser(null);
     setStep("setup");

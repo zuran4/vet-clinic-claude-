@@ -237,10 +237,10 @@ export function welcomeEmailHtml({
   return `
   <body style="${BASE_STYLE}">
     <div style="${CARD_STYLE}">
-      <div style="${HEADER_STYLE("#4f46e5")}">
+      <div style="${HEADER_STYLE("#f97316")}">
         ${logo ? `<img src="${logo}" alt="${clinicName}" style="max-height:48px; margin-bottom:10px;" />` : ""}
-        <h1 style="margin:0; color:#ffffff; font-size:22px;">🐾 ${clinicName}</h1>
-        <p style="margin:6px 0 0; color:#c7d2fe; font-size:14px;">Καλωσήρθατε στην οικογένειά μας!</p>
+        <h1 style="margin:0; color:#ffffff; font-size:22px;">${clinicName}</h1>
+        <p style="margin:6px 0 0; color:#fed7aa; font-size:14px;">Καλωσήρθατε στην οικογένειά μας!</p>
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
