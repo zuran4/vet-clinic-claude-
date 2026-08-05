@@ -2,6 +2,43 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.5.3 — 2026-08-05 (c020f2c)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+up.bat                                               |   9 +++++++++
+ vet-api/.env.example                                 |   3 +++
+ vet-api/config/index.js                              |   6 ++++++
+ vet-api/controllers/auth/refresh.js                  |   2 +-
+ vet-api/controllers/auth/staff.js                    |   2 +-
+ vet-api/middlewares/checkSubscription.js             |   4 ++--
+ vet-api/routes/settings.js                           |   4 ++--
+ vet-api/services/emailService.js                     |  15 +++++++++++++--
+ vet-api/services/emailTemplates.js                   |   6 +++---
+ vet-api/services/smsService.js                       |  19 ++++++++++++++++---
+ vet-api/services/smsTemplates.js                     |   2 +-
+ vet-api/uploads/1785943402586-3e903a9b33d272d3.png   | Bin 0 -> 1508557 bytes
+ vet-api/uploads/1785943569142-dad55c0f2d4e26eb.png   | Bin 0 -> 1508557 bytes
+ vet-frontend/src/api/settingsApi.js                  |   2 +-
+ .../appointments/AppointmentPreviewModal.jsx         |   1 -
+ vet-frontend/src/components/ui/LoginForm.jsx         |  10 +++++-----
+ vet-frontend/src/components/ui/LogoUpload.jsx        |  12 +++++++++++-
+ vet-frontend/src/layout/MainLayout.jsx               |   2 +-
+ vet-frontend/src/pages/SettingsPage.jsx              |  14 +++++++-------
+ 19 files changed, 82 insertions(+), 31 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.5.2 — 2026-08-04 (381fdff)
 
 ### Αλλαγή εμφάνισης σημειώσεων στο χρονοδιάγραμμα
