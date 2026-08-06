@@ -54,6 +54,7 @@ export const createCustomer = async (req, res, next) => {
             message: welcomeSms({
               clinicName: settings?.clinicName || "Κτηνιατρείο",
               clientName: saved.name,
+              template: settings?.smsTemplates?.welcome,
             }),
           }).catch((err) => logger.error(`❌ Αποτυχία αποστολής SMS: ${err.message}`));
         }

@@ -78,6 +78,7 @@ async function processTenant(clinicId, clinicNameFallback) {
             animalName: appt.animalName || "",
             date:       appt.date        || tomorrow,
             time:       appt.time        || "",
+            template:   settings.smsTemplates?.appointmentReminder,
           }),
         });
 

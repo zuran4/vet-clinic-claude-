@@ -75,7 +75,7 @@ async function processTenant(clinicId, clinicNameFallback) {
         await sendSMS({
           settings,
           to: ownerPhone,
-          message: birthdaySms({ clinicName, petName: pet.name }),
+          message: birthdaySms({ clinicName, petName: pet.name, template: settings.smsTemplates?.birthday }),
         });
 
         smsSent++;

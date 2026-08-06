@@ -80,6 +80,7 @@ async function processTenant(clinicId, clinicNameFallback) {
                 clinicName,
                 petName: pet.name,
                 dueDate: nextDate.format("DD/MM/YYYY"),
+                template: settings.smsTemplates?.vaccinationReminder,
               }),
             });
 

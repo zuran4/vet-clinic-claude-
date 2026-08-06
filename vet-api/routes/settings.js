@@ -10,7 +10,14 @@ import {
   birthdayHtml,
 } from "../services/emailTemplates.js";
 import { sendSMS } from "../services/smsService.js";
-import { testSms } from "../services/smsTemplates.js";
+import {
+  testSms,
+  welcomeSms,
+  appointmentReminderSms,
+  vaccinationReminderSms,
+  purchaseReminderSms,
+  birthdaySms,
+} from "../services/smsTemplates.js";
 import { emitChange } from "../utils/realtime.js";
 import requirePermission from "../middlewares/auth/requirePermission.js";
 import { encrypt } from "../utils/crypto.js";
@@ -69,6 +76,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       darkMode,
       emailConfig,
       smsConfig,
+      smsTemplates,
       notifications,
       registryGov,
     } = req.body;
@@ -98,6 +106,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
         smsConfig:     smsConfig
           ? { ...smsConfig, authToken: smsConfig.authToken ? encrypt(smsConfig.authToken) : "" }
           : {},
+        smsTemplates:  smsTemplates  || {},
         notifications: notifications || {},
         registryGov:   registryGov
           ? { ...registryGov, password: registryGov.password ? encrypt(registryGov.password) : "" }
@@ -120,6 +129,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       if (staff !== undefined) settings.staff = staff;
       if (darkMode !== undefined) settings.darkMode = darkMode;
       if (notifications !== undefined) settings.notifications = { ...settings.notifications, ...notifications };
+      if (smsTemplates !== undefined) settings.smsTemplates = { ...settings.smsTemplates, ...smsTemplates };
       if (emailConfig !== undefined) {
         // Το GET δεν επιστρέφει ποτέ το πραγματικό password, οπότε ένα κενό
         // password εδώ σημαίνει "δεν το άλλαξε ο χρήστης" — κρατάμε το παλιό.
@@ -221,6 +231,61 @@ router.get("/email-preview", async (req, res) => {
     res.json({ html: builder(settings) });
   } catch (err) {
     console.error("❌ Σφάλμα preview email:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================
+// 🔹 POST /api/settings/sms-preview — δεν στέλνει τίποτα, επιστρέφει το
+// κείμενο του SMS template με δείγμα δεδομένων. Δέχεται προαιρετικά ένα
+// `template` (κείμενο που πληκτρολογεί ο χρήστης, ακόμα μη αποθηκευμένο)
+// ώστε η προεπισκόπηση να αντανακλά τις τρέχουσες, μη αποθηκευμένες αλλαγές.
+// ==========================
+const SMS_TEMPLATE_BUILDERS = {
+  welcome: (settings, template) => welcomeSms({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    clientName: "Γιώργος Παπαδόπουλος",
+    template,
+  }),
+  appointmentReminder: (settings, template) => appointmentReminderSms({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    animalName: "Μπόνι",
+    date: "12/08/2026",
+    time: "10:30",
+    template,
+  }),
+  vaccinationReminder: (settings, template) => vaccinationReminderSms({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    petName: "Μπόνι",
+    dueDate: "20/08/2026",
+    template,
+  }),
+  purchaseReminder: (settings, template) => purchaseReminderSms({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    productNames: ["Royal Canin Medium Adult 15kg", "Frontline Combo Spot-On"],
+    template,
+  }),
+  birthday: (settings, template) => birthdaySms({
+    clinicName: settings?.clinicName || "Κτηνιατρείο",
+    petName: "Μπόνι",
+    template,
+  }),
+};
+
+router.post("/sms-preview", async (req, res) => {
+  try {
+    const { type, template } = req.body;
+    const builder = SMS_TEMPLATE_BUILDERS[type];
+    if (!builder) {
+      return res.status(400).json({ error: `Άγνωστος τύπος template: "${type}".` });
+    }
+
+    const { Settings } = req.models;
+    const settings = await Settings.findOne();
+
+    res.json({ text: builder(settings, template) });
+  } catch (err) {
+    console.error("❌ Σφάλμα preview SMS:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

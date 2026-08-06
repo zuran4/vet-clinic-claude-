@@ -78,6 +78,7 @@ async function processTenant(clinicId, clinicNameFallback) {
           message: purchaseReminderSms({
             clinicName,
             productNames: reminder.productNames || [],
+            template: settings.smsTemplates?.purchaseReminder,
           }),
         });
 

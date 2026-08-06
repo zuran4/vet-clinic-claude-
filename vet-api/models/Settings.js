@@ -49,6 +49,16 @@ const settingsSchema = new mongoose.Schema({
     fromNumber: { type: String, default: "" },
   },
 
+  // 🔹 Custom κείμενο SMS templates — κενό string σημαίνει "χρήση του
+  // προεπιλεγμένου κειμένου" (βλ. services/smsTemplates.js)
+  smsTemplates: {
+    welcome:              { type: String, default: "" },
+    appointmentReminder:  { type: String, default: "" },
+    vaccinationReminder:  { type: String, default: "" },
+    purchaseReminder:     { type: String, default: "" },
+    birthday:             { type: String, default: "" },
+  },
+
   // 🔹 Προσωπικό κλινικής
   staff: {
     type: [

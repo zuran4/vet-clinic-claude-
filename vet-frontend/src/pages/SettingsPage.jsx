@@ -99,6 +99,14 @@ const LABEL = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercas
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 const ICON_INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
 
+const SMS_TEMPLATE_OPTIONS = [
+  { key: "welcome",             label: "Καλωσόρισμα νέου πελάτη", placeholders: ["clinicName", "clientName"] },
+  { key: "appointmentReminder", label: "Υπενθύμιση ραντεβού",     placeholders: ["clinicName", "animalName", "date", "time"] },
+  { key: "vaccinationReminder", label: "Υπενθύμιση εμβολίου",     placeholders: ["clinicName", "petName", "dueDate"] },
+  { key: "purchaseReminder",    label: "Υπενθύμιση αγοράς",       placeholders: ["clinicName", "products"] },
+  { key: "birthday",            label: "Χρόνια Πολλά κατοικιδίου", placeholders: ["clinicName", "petName"] },
+];
+
 function NotifToggle({ label, desc, icon, value, onChange }) {
   return (
     <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-win-elevated/50 border border-gray-100 dark:border-win-border/50">
@@ -260,6 +268,14 @@ const SettingsPage = ({ onClose, user }) => {
           fromNumber: "",
           ...(settings.smsConfig || {}),
         },
+        smsTemplates: {
+          welcome:             "",
+          appointmentReminder: "",
+          vaccinationReminder: "",
+          purchaseReminder:    "",
+          birthday:             "",
+          ...(settings.smsTemplates || {}),
+        },
         notifications: {
           appointmentReminder: true,
           vaccineReminder:     true,
@@ -295,6 +311,10 @@ const SettingsPage = ({ onClose, user }) => {
   const [testSmsTo, setTestSmsTo]               = useState("");
   const [testSmsSending, setTestSmsSending]     = useState(false);
   const [testSmsResult, setTestSmsResult]       = useState(null);
+  const [smsPreviewType, setSmsPreviewType]     = useState("welcome");
+  const [smsPreviewText, setSmsPreviewText]     = useState("");
+  const [smsPreviewLoading, setSmsPreviewLoading] = useState(false);
+  const [smsPreviewError, setSmsPreviewError]   = useState(null);
   const [showPassword, setShowPassword]         = useState(false);
   const [showSmsToken, setShowSmsToken]         = useState(false);
   const [showGovPassword, setShowGovPassword]   = useState(false);
@@ -317,6 +337,7 @@ const SettingsPage = ({ onClose, user }) => {
   const patchSms   = (f, v) => { setForm(p => ({ ...p, smsConfig: { ...p.smsConfig, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchNotif = (f, v) => { setForm(p => ({ ...p, notifications: { ...p.notifications, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchGov   = (f, v) => { setForm(p => ({ ...p, registryGov: { ...p.registryGov, [f]: v } })); setSaved(false); setSaveError(null); };
+  const patchSmsTemplate = (f, v) => { setForm(p => ({ ...p, smsTemplates: { ...p.smsTemplates, [f]: v } })); setSaved(false); setSaveError(null); };
 
   const handleSave = async () => {
     try {
@@ -369,6 +390,21 @@ const SettingsPage = ({ onClose, user }) => {
       setTestEmailResult({ ok: false, msg: `❌ ${err.message}` });
     } finally {
       setTestEmailSending(false);
+    }
+  };
+
+  const handlePreviewSms = async () => {
+    setSmsPreviewLoading(true); setSmsPreviewError(null);
+    try {
+      const data = await request("/settings/sms-preview", {
+        method: "POST",
+        body: { type: smsPreviewType, template: form.smsTemplates?.[smsPreviewType] || "" },
+      });
+      setSmsPreviewText(data.text);
+    } catch (err) {
+      setSmsPreviewError(err?.message || "Αποτυχία φόρτωσης προεπισκόπησης");
+    } finally {
+      setSmsPreviewLoading(false);
     }
   };
 
@@ -862,6 +898,55 @@ const SettingsPage = ({ onClose, user }) => {
               <label className={LABEL}>Αριθμός αποστολέα</label>
               <input type="text" value={form.smsConfig?.fromNumber || ""} onChange={(e) => patchSms("fromNumber", e.target.value)} placeholder="+306912345678" className={INPUT} />
             </div>
+          </Section>
+        </div>
+
+        <div className="mt-4">
+          <Section title="Προεπισκόπηση & Επεξεργασία SMS Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο SMS και άλλαξε το κείμενό του αν χρειάζεται — άδειο πεδίο σημαίνει προεπιλεγμένο κείμενο." {...saveProps}>
+            <div>
+              <label className={LABEL}>Template</label>
+              <select value={smsPreviewType} onChange={(e) => { setSmsPreviewType(e.target.value); setSmsPreviewText(""); setSmsPreviewError(null); }} className={INPUT}>
+                {SMS_TEMPLATE_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className={LABEL}>Κείμενο SMS</label>
+                {form.smsTemplates?.[smsPreviewType] && (
+                  <button type="button" onClick={() => patchSmsTemplate(smsPreviewType, "")} className="text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    Επαναφορά προεπιλογής
+                  </button>
+                )}
+              </div>
+              <textarea
+                rows={3}
+                value={form.smsTemplates?.[smsPreviewType] || ""}
+                onChange={(e) => patchSmsTemplate(smsPreviewType, e.target.value)}
+                placeholder="Κενό = χρήση προεπιλεγμένου κειμένου"
+                className={INPUT}
+              />
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                Διαθέσιμα πεδία: {SMS_TEMPLATE_OPTIONS.find((o) => o.key === smsPreviewType)?.placeholders.map((p) => `{${p}}`).join(", ")}
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <button type="button" onClick={handlePreviewSms} disabled={smsPreviewLoading} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex-shrink-0">
+                <Eye className="w-3.5 h-3.5" /> {smsPreviewLoading ? "Φόρτωση..." : "Προεπισκόπηση"}
+              </button>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Η αποθήκευση του κειμένου γίνεται με το κουμπί "Αποθήκευση" της ενότητας.</p>
+            </div>
+            {smsPreviewError && (
+              <div className="px-4 py-2.5 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-100">
+                ❌ {smsPreviewError}
+              </div>
+            )}
+            {smsPreviewText && !smsPreviewError && (
+              <div className="px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 text-sm text-emerald-800 dark:text-emerald-300 whitespace-pre-wrap">
+                {smsPreviewText}
+              </div>
+            )}
           </Section>
         </div>
 
