@@ -1,6 +1,6 @@
 {
   "name": "vet-project2",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Documentation and utility scripts for VET Project (frontend + backend)",
   "type": "module",
   "scripts": {

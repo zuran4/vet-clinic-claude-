@@ -2,6 +2,45 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.5.6 — 2026-08-06 (309b9fc)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/controllers/appointments/base.js           | 21 +++++++--
+ vet-api/controllers/auth/refresh.js                |  2 +
+ vet-api/controllers/auth/staff.js                  |  2 +
+ vet-api/controllers/pets/updateRegistrySnapshot.js |  3 ++
+ vet-api/middlewares/appointments/checkOverlap.js   |  2 +
+ vet-api/models/Settings.js                         |  1 +
+ vet-api/routes/authRoutes.js                       |  7 ++-
+ vet-api/routes/prescriptionRoutes.js               |  1 +
+ vet-api/routes/purchases.js                        |  2 +
+ vet-api/routes/settings.js                         |  4 ++
+ vet-api/services/emailService.js                   |  1 +
+ vet-api/services/emailTemplates.js                 | 35 ++++++--------
+ vet-api/validators/appointments/validateBody.js    |  2 +
+ vet-api/validators/validateBody.js                 |  2 +
+ vet-frontend/src/App.jsx                           |  2 +-
+ .../appointments/AppointmentDetailsForm.jsx        | 23 +++++++--
+ .../src/components/dashboard/TodayTimeline.jsx     | 16 +++----
+ vet-frontend/src/hooks/useAppointmentForm.jsx      | 54 ++++++++++++++--------
+ vet-frontend/src/hooks/useAppointmentsData.jsx     |  1 +
+ vet-frontend/src/main.jsx                          |  3 ++
+ vet-frontend/src/pages/SettingsPage.jsx            | 10 ++++
+ 21 files changed, 137 insertions(+), 57 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.5.5 — 2026-08-05 (2e04d73)
 
 ### Μεγέθυνση λογότυπου στο welcome email
