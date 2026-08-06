@@ -1,6 +1,7 @@
 import express from "express";
 
 import requirePermission from "../middlewares/auth/requirePermission.js";
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.post("/", requirePermission("purchases:write"), async (req, res) => {
       }
 
       if (product.quantity < item.quantity) {
+        logger.warn(`⚠️ Απόπειρα αγοράς με ανεπαρκές απόθεμα: ${product.name} (ζητήθηκαν ${item.quantity}, διαθέσιμα ${product.quantity})`, { requestId: req.requestId, clinicId: req.clinicId });
         return res.status(400).json({ error: `Μη επαρκές απόθεμα για ${product.name}` });
       }
 

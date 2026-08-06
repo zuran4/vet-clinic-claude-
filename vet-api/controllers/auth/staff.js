@@ -1,4 +1,5 @@
 import * as authService from "../../services/auth/authService.js";
+import logger from "../../utils/logger.js";
 
 export async function getStaff(req, res, next) {
   try {
@@ -9,6 +10,7 @@ export async function getStaff(req, res, next) {
 
     const data = await authService.getActiveStaff(clinicId);
     if (!data) {
+      logger.warn(`⚠️ Απόπειρα login σε άγνωστο/ανενεργό κτηνιατρείο: ${clinicId}`, { requestId: req.requestId });
       return res.status(404).json({ message: "Άγνωστο ή ανενεργό κτηνιατρείο" });
     }
 

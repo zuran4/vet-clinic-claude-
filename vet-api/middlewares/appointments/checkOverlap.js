@@ -1,5 +1,6 @@
 import { toDateRange, hasOverlap, findSameDayByDoctor } from "../../services/appointments/service.js";
 import { reportEvent } from "../../services/controlPlaneReporter.js";
+import logger from "../../utils/logger.js";
 
 export default async function checkOverlap(req, res, next) {
   try {
@@ -9,6 +10,7 @@ export default async function checkOverlap(req, res, next) {
     const existing = await findSameDayByDoctor(date, doctor, req.params?.id, req.models);
 
     if (hasOverlap(existing, start, end)) {
+      logger.warn(`⚠️ Σύγκρουση ραντεβού (${doctor}, ${date} ${time})`, { requestId: req.requestId, clinicId: req.clinicId });
       reportEvent({
         clinicId: req.clinicId,
         type: "appointment_conflict",

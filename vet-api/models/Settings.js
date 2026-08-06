@@ -64,6 +64,7 @@ const settingsSchema = new mongoose.Schema({
   phone:   { type: String, default: "" },
   address: { type: String, default: "" },
   afm:     { type: String, default: "" },
+  email:   { type: String, default: "" },
 
   // 🔹 Ειδοποιήσεις email
   notifications: {

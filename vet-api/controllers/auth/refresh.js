@@ -3,6 +3,7 @@ import { rotateRefreshToken, generateRefreshToken, saveRefreshToken } from "../.
 import { getPermissions } from "../../config/roles.js";
 import { getTenantModels } from "../../services/tenantConnectionManager.js";
 import { getTenantModel } from "../../services/adminConnection.js";
+import logger from "../../utils/logger.js";
 
 export async function refresh(req, res, next) {
   try {
@@ -26,6 +27,7 @@ export async function refresh(req, res, next) {
 
     const userId = await rotateRefreshToken(refreshToken, RefreshToken);
     if (!userId) {
+      logger.warn("⚠️ Μη έγκυρο ή ληγμένο refresh token", { requestId: req.requestId, clinicId });
       return res.status(401).json({ message: "Μη έγκυρο ή ληγμένο refresh token" });
     }
 

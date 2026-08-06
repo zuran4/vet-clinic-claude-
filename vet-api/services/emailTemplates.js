@@ -216,22 +216,21 @@ export function welcomeEmailHtml({
   petName = "",
   phone = "",
   address = "",
+  email = "",
   logo = "",
 } = {}) {
-  const contactRows = [
-    phone ? { icon: "📞", label: "Τηλέφωνο", value: phone } : null,
-    address ? { icon: "📍", label: "Διεύθυνση", value: address } : null,
+  const sealLines = [
+    address || null,
+    phone ? `Τηλ: ${phone}` : null,
+    email || null,
   ].filter(Boolean);
 
-  const contactTable = contactRows.length
+  const seal = sealLines.length
     ? `
-        <table style="width:100%; border-collapse:collapse; margin-top:18px;">
-          ${contactRows.map((row, i) => `
-          <tr>
-            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; border-radius:${i === 0 ? "6px 6px" : "0 0"} ${i === contactRows.length - 1 ? "6px 6px" : "0 0"}; font-size:13px; color:#64748b; width:40%;">${row.icon} ${row.label}</td>
-            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; border-radius:${i === 0 ? "6px 6px" : "0 0"} ${i === contactRows.length - 1 ? "6px 6px" : "0 0"}; font-size:14px; color:#1e293b; font-weight:600;">${row.value}</td>
-          </tr>`).join("")}
-        </table>`
+        <div style="margin-top:22px; padding-top:14px; border-top:1px solid #e2e8f0;">
+          <p style="margin:0; color:#334155; font-size:13px; font-weight:600;">${clinicName}</p>
+          ${sealLines.map((line) => `<p style="margin:4px 0 0; color:#94a3b8; font-size:12px; line-height:1.6;">${line}</p>`).join("")}
+        </div>`
     : "";
 
   return `
@@ -247,19 +246,15 @@ export function welcomeEmailHtml({
           Αγαπητέ/ή <strong>${clientName}</strong>,
         </p>
         <p style="color:#475569; line-height:1.6;">
-          Σας ευχαριστούμε που εμπιστευθήκατε το <strong>${clinicName}</strong>${petName ? ` για τον/την <strong>${petName}</strong>` : ""}!
-          Είμαστε εδώ για να φροντίσουμε την υγεία και την ευεξία του κατοικιδίου σας
-          σε κάθε βήμα.
+          Η εγγραφή σας στο <strong>${clinicName}</strong> ολοκληρώθηκε${petName ? ` για τον/την <strong>${petName}</strong>` : ""}.
         </p>
         <p style="color:#475569; line-height:1.6;">
-          Από εδώ και πέρα θα λαμβάνετε από εμάς υπενθυμίσεις για ραντεβού,
-          εμβολιασμούς και ό,τι άλλο χρειάζεται το κατοικίδιό σας — δεν χρειάζεται
-          να θυμάστε τίποτα μόνοι σας!
+          Θα λαμβάνετε ενημερώσεις για ραντεβού, εμβολιασμούς και λοιπές υπενθυμίσεις που αφορούν το κατοικίδιό σας.
         </p>
-        ${contactTable}
-        <p style="margin-top:20px; color:#64748b; font-size:13px;">
-          Αν έχετε οποιαδήποτε απορία, μη διστάσετε να επικοινωνήσετε μαζί μας.
+        <p style="color:#475569; line-height:1.6;">
+          Για οποιαδήποτε ερώτηση, επικοινωνήστε μαζί μας στα παρακάτω στοιχεία.
         </p>
+        ${seal}
       </div>
       <div style="${FOOTER_STYLE}">
         ${clinicName} • Αυτόματο μήνυμα — παρακαλώ μην απαντάτε

@@ -10,6 +10,7 @@ router.post("/", requirePermission("prescriptions:write"), async (req, res) => {
   try {
     const { Prescription } = req.models;
     if (!req.body.animalId || !req.body.animalName) {
+      logger.warn("⚠️ Απόπειρα καταχώρησης συνταγής χωρίς animalId/animalName", { requestId: req.requestId });
       return res.status(400).json({ error: "animalId και animalName είναι υποχρεωτικά" });
     }
     const newPrescription = new Prescription(req.body);

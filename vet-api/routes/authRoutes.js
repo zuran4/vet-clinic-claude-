@@ -12,6 +12,7 @@ import { logout } from "../controllers/auth/logout.js";
 import requireAuth from "../middlewares/auth/requireAuth.js";
 import { getTenantModels } from "../services/tenantConnectionManager.js";
 import { comparePin, hashPin } from "../services/auth/pinCrypto.js";
+import logger from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -58,13 +59,17 @@ router.post("/change-pin", requireAuth, async (req, res) => {
     if (!user) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε." });
 
     const valid = await comparePin(String(oldPin), user.pinHash);
-    if (!valid) return res.status(401).json({ error: "Λανθασμένο τρέχον PIN." });
+    if (!valid) {
+      logger.warn("⚠️ Λανθασμένο τρέχον PIN σε αλλαγή PIN", { requestId: req.requestId, clinicId: req.user.clinicId, userId: req.user.userId });
+      return res.status(401).json({ error: "Λανθασμένο τρέχον PIN." });
+    }
 
     const newHash = await hashPin(String(newPin));
     await User.findByIdAndUpdate(req.user.userId, { pinHash: newHash });
 
     res.json({ ok: true, message: "Το PIN άλλαξε επιτυχώς." });
   } catch (err) {
+    logger.error("❌ Σφάλμα αλλαγής PIN", { requestId: req.requestId, stack: err.stack });
     res.status(500).json({ error: "Σφάλμα αλλαγής PIN." });
   }
 });

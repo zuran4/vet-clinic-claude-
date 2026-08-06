@@ -93,6 +93,7 @@ export async function sendWelcomeEmail({ settings, customer }) {
       clientName: customer.name,
       phone: settings?.phone || "",
       address: settings?.address || "",
+      email: settings?.email || "",
       logo: resolveLogoUrl(settings?.logo),
     }),
   });

@@ -1,5 +1,5 @@
 import React from "react";
-import { Save, BookmarkPlus, FileText, Stethoscope, Scissors, X } from "lucide-react";
+import { Save, BookmarkPlus, FileText, Stethoscope, Scissors, X, AlertTriangle } from "lucide-react";
 import { VISIT_REASONS } from "../../constants/visitReasons.js";
 
 import PrescriptionModal from "../prescriptions/PrescriptionModal";
@@ -36,6 +36,8 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
     handlePetChange,
     handleSubmit,
     handlePrescriptionSubmit,
+    saving,
+    saveError,
   } = useAppointmentForm({ time, doctor, selectedDate, existingData, onSave });
 
   const optionsByDoctor = {
@@ -187,6 +189,13 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
           </div>
         </div>
 
+        {saveError && (
+          <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 rounded-2xl px-4 py-2.5">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            {saveError}
+          </div>
+        )}
+
         {/* Actions */}
         <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
           {existingData && (
@@ -207,16 +216,20 @@ const AppointmentDetailsForm = ({ time, doctor, selectedDate, existingData, onSa
               type="submit"
               variant="success"
               disabled={
+                saving ||
                 (existingData && !selectedTime) ||
                 formData.type.length === 0 ||
                 (!existingData && selectedPetIds.length === 0)
               }
               className="flex items-center gap-2"
             >
-              {existingData
-                ? <><Save className="w-4 h-4" /> Αποθήκευση</>
-                : <><BookmarkPlus className="w-4 h-4" /> Καταχώρηση</>
-              }
+              {saving ? (
+                "Αποθήκευση..."
+              ) : existingData ? (
+                <><Save className="w-4 h-4" /> Αποθήκευση</>
+              ) : (
+                <><BookmarkPlus className="w-4 h-4" /> Καταχώρηση</>
+              )}
             </Button>
           </div>
         </div>

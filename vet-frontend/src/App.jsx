@@ -92,7 +92,7 @@ function App() {
       time: selectedTime,
       ...details, // details.date, details.time, details.doctor από τη φόρμα
     };
-    await saveAppointment(newAppt, appointmentId);
+    await saveAppointment(newAppt, appointmentId); // πετάει σφάλμα σε αποτυχία — δεν κλείνουμε τη φόρμα
     setSelectedTime(null);
     setEditingAppointment(null);
   };

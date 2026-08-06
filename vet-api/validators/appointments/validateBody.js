@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { reportEvent } from "../../services/controlPlaneReporter.js";
+import logger from "../../utils/logger.js";
 dayjs.extend(customParseFormat);
 
 export default function validateAppointmentBody(req, res, next) {
@@ -19,6 +20,7 @@ export default function validateAppointmentBody(req, res, next) {
   } = req.body || {};
 
   const reject = (message) => {
+    logger.warn(`⚠️ Αποτυχία validation ραντεβού: ${message}`, { requestId: req.requestId, clinicId: req.clinicId });
     reportEvent({
       clinicId: req.clinicId,
       type: "appointment_validation_failed",

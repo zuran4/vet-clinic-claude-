@@ -34,6 +34,7 @@ export function useAppointmentsData(setErrorMessage) {
         console.error("❌ Σφάλμα αποθήκευσης:", err);
         setErrorMessage(err.message || "Αποτυχία αποθήκευσης ραντεβού.");
         setTimeout(() => setErrorMessage(""), 4000);
+        throw err; // ο caller (App.jsx) πρέπει να ξέρει ότι απέτυχε, ώστε να ΜΗΝ κλείσει τη φόρμα σαν να πέτυχε
       }
     },
     [setErrorMessage]

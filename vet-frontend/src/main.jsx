@@ -9,6 +9,9 @@ import reportClientEvent from "./utils/reportClientEvent.js";
 // 🛰️ Πιάνει JS errors/unhandled promise rejections εκτός React tree (π.χ. σε
 // event handlers, timers) και τα προωθεί στο MASTER ADMIN APP.
 window.addEventListener("error", (event) => {
+  // Αβλαβές browser noise, όχι πραγματικό bug — δεν χρειάζεται καταγραφή.
+  if (event.message?.includes("ResizeObserver loop")) return;
+
   reportClientEvent({
     message: event.message,
     stack: event.error?.stack,

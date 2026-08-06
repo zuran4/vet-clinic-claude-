@@ -37,13 +37,13 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
       >
         {/* Mobile: 2 γραμμές — ώρα/πελάτης, divider, κατοικίδιο/λόγος */}
         <div className="sm:hidden flex-1 min-w-0">
-          <div className="flex items-baseline gap-2 min-w-0">
+          <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 min-w-0">
             <span className={`text-sm font-bold flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
-            <span className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.clientName}</span>
+            <span className={`text-sm font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.clientName}</span>
           </div>
           <div className="my-1.5 border-t border-gray-200/70 dark:border-win-border/50" />
-          <div className="flex items-center gap-2 min-w-0">
-            <span className={`text-xs font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-600 dark:text-gray-300"}`}>{appt.animalName}</span>
+          <div className="flex items-center flex-wrap gap-2 min-w-0">
+            <span className={`text-xs font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-600 dark:text-gray-300"}`}>{appt.animalName}</span>
             {isCompleted ? (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                 Ολοκληρώθηκε
@@ -61,12 +61,12 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           )}
         </div>
 
-        {/* Desktop: μία οριζόντια γραμμή — όνομα, πελάτης και τύπος κολλητά, χωρίς κενό ανάμεσά τους */}
+        {/* Desktop: όνομα, πελάτης και τύπος κολλητά· κάνει wrap σε πολλές γραμμές αντί να κόβεται όταν το κείμενο είναι μεγάλο */}
         <span className={`hidden sm:inline text-sm font-bold w-12 flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
-        <div className="hidden sm:flex items-center gap-1.5 min-w-0 flex-shrink">
-          <p className={`text-sm font-medium truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
+        <div className="hidden sm:flex items-center flex-wrap gap-x-1.5 gap-y-1 min-w-0 flex-shrink">
+          <p className={`text-sm font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
           <span className="text-gray-300 dark:text-gray-600 flex-shrink-0">·</span>
-          <p className={`text-xs truncate ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-400 dark:text-gray-500"}`}>{appt.clientName}</p>
+          <p className={`text-xs break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-400 dark:text-gray-500"}`}>{appt.clientName}</p>
           {isCompleted ? (
             <span className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               Ολοκληρώθηκε

@@ -47,6 +47,8 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
   const [selectedTime, setSelectedTime] = useState(existingData?.time || time);
   const [allCustomers, setAllCustomers] = useState([]);
   const [showPrescription, setShowPrescription] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   // 🔹 Φόρτωση πελατών
   useEffect(() => {
@@ -226,27 +228,39 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const finalDate = date.toISOString().split("T")[0];
+    setSaving(true);
+    setSaveError("");
 
-    const baseDetails = {
-      ...formData,
-      date: finalDate,
-      time: selectedTime,
-      doctor,
-      owner: ownerId || null,
-    };
+    try {
+      const finalDate = date.toISOString().split("T")[0];
 
-    if (existingData) {
-      // Επεξεργασία: ένα ραντεβού, ένα κατοικίδιο.
-      await onSave(baseDetails, existingData._id);
-      return;
-    }
+      const baseDetails = {
+        ...formData,
+        date: finalDate,
+        time: selectedTime,
+        doctor,
+        owner: ownerId || null,
+      };
 
-    // Νέο ραντεβού: ένα ξεχωριστό ραντεβού ανά επιλεγμένο κατοικίδιο.
-    for (const petId of selectedPetIds) {
-      const pet = pets.find((p) => p._id === petId);
-      if (!pet) continue;
-      await onSave({ ...baseDetails, animalName: pet.name }, null);
+      if (existingData) {
+        // Επεξεργασία: ένα ραντεβού, ένα κατοικίδιο.
+        await onSave(baseDetails, existingData._id);
+        return;
+      }
+
+      // Νέο ραντεβού: ένα ξεχωριστό ραντεβού ανά επιλεγμένο κατοικίδιο.
+      for (const petId of selectedPetIds) {
+        const pet = pets.find((p) => p._id === petId);
+        if (!pet) continue;
+        await onSave({ ...baseDetails, animalName: pet.name }, null);
+      }
+    } catch (err) {
+      // Το onSave (App.jsx → saveAppointment) πετάει σφάλμα όταν αποτυγχάνει
+      // η αποθήκευση — δείχνουμε το ακριβές μήνυμα ΕΔΩ, μέσα στη φόρμα, ώστε
+      // να είναι ορατό (το modal ΔΕΝ κλείνει σε αποτυχία).
+      setSaveError(err?.message || "Αποτυχία αποθήκευσης ραντεβού.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -298,5 +312,7 @@ export function useAppointmentForm({ time, doctor, selectedDate, existingData, o
     handlePetChange,
     handleSubmit,
     handlePrescriptionSubmit,
+    saving,
+    saveError,
   };
 }

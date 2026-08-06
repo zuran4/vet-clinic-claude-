@@ -1,3 +1,5 @@
+import logger from "../../utils/logger.js";
+
 export default async function updateRegistrySnapshot(req, res, next) {
   try {
     const { Pet } = req.models;
@@ -19,6 +21,7 @@ export default async function updateRegistrySnapshot(req, res, next) {
     const pet = await Pet.findOneAndUpdate({ microchip }, { $set: update }, { new: true });
 
     if (!pet) {
+      logger.warn(`⚠️ Registry snapshot: δεν βρέθηκε κατοικίδιο για microchip ${microchip}`, { requestId: req.requestId, clinicId: req.clinicId });
       return res.status(404).json({ ok: false, message: "Pet not found for this microchip" });
     }
 

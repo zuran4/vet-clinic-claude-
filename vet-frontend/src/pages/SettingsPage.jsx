@@ -237,6 +237,7 @@ const SettingsPage = ({ onClose, user }) => {
         phone:      "",
         address:    "",
         afm:        "",
+        email:      "",
         staff:      [],
         clinicWorkingHours:   defaultWorkingHours(),
         groomingWorkingHours: defaultWorkingHours(),
@@ -537,6 +538,15 @@ const SettingsPage = ({ onClose, user }) => {
                 <input type="text" value={form.afm || ""} onChange={(e) => patch("afm", e.target.value)} placeholder="123456789" className={ICON_INPUT} />
               </div>
             </div>
+            <div>
+              <label className={LABEL}>Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                <input type="email" value={form.email || ""} onChange={(e) => patch("email", e.target.value)} placeholder="info@klinikh.gr" className={ICON_INPUT} />
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={LABEL}>Γλώσσα</label>
               <select value={form.language || "el"} onChange={(e) => patch("language", e.target.value)} className={INPUT}>

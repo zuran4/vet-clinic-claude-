@@ -2,6 +2,7 @@
 // Generic Joi validator middleware για Express
 
 import { reportEvent } from "../services/controlPlaneReporter.js";
+import logger from "../utils/logger.js";
 
 export default function validateBody(schema) {
   return async function (req, res, next) {
@@ -17,6 +18,7 @@ export default function validateBody(schema) {
       next();
     } catch (err) {
       const details = err?.details?.map(d => d.message) || ["Invalid request body"];
+      logger.warn(`⚠️ Σφάλμα επικύρωσης στο ${req.originalUrl}: ${details.join(", ")}`, { requestId: req.requestId, clinicId: req.clinicId });
       reportEvent({
         clinicId: req.clinicId,
         type: "validation_failed",

@@ -59,6 +59,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       phone,
       address,
       afm,
+      email,
       clinicWorkingHours,
       groomingWorkingHours,
       registryWorkerHeadless,
@@ -83,6 +84,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
         phone:    phone    || "",
         address:  address  || "",
         afm:      afm      || "",
+        email:    email    || "",
         clinicWorkingHours,
         groomingWorkingHours,
         registryWorkerHeadless,
@@ -109,6 +111,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       if (phone        !== undefined) settings.phone = phone;
       if (address      !== undefined) settings.address = address;
       if (afm          !== undefined) settings.afm = afm;
+      if (email        !== undefined) settings.email = email;
       if (clinicWorkingHours !== undefined) settings.clinicWorkingHours = clinicWorkingHours;
       if (groomingWorkingHours !== undefined) settings.groomingWorkingHours = groomingWorkingHours;
       if (clinicSlotDuration !== undefined) settings.clinicSlotDuration = clinicSlotDuration;
@@ -171,6 +174,7 @@ const EMAIL_TEMPLATE_BUILDERS = {
     petName: "Μπόνι",
     phone: settings?.phone || "",
     address: settings?.address || "",
+    email: settings?.email || "",
     logo: resolveLogoUrl(settings?.logo),
   }),
   appointmentReminder: (settings) => appointmentReminderHtml({
