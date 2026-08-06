@@ -2,6 +2,25 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.6.0 — 2026-08-06 (6282271)
+
+### Προσαρμοσμένα πρότυπα SMS ανά κλινική
+
+**🔧 Τεχνική περιγραφή**
+
+- Προστέθηκε πεδίο `smsTemplates` στο μοντέλο Settings (welcome, appointmentReminder, vaccinationReminder, purchaseReminder, birthday)
+- Το `services/smsTemplates.js` υποστηρίζει πλέον custom `template` param με fallback σε προεπιλεγμένα κείμενα (`SMS_TEMPLATE_DEFAULTS`, `SMS_TEMPLATE_PLACEHOLDERS`, `fillTemplate`, `renderSmsTemplate`)
+- Ενημερώθηκαν τα jobs (`appointmentReminder.js`, `petBirthdayJob.js`, `petVaccinationJob.js`, `purchaseReminderJob.js`) και το `createCustomer.js` ώστε να περνούν το αντίστοιχο custom template από τα settings
+- Νέο endpoint `POST /api/settings/sms-preview` για προεπισκόπηση SMS με sample δεδομένα, χωρίς αποστολή
+- Το `PUT /api/settings` αποθηκεύει/ενημερώνει το `smsTemplates`
+- Frontend: SettingsPage.jsx προσθέτει state/handlers (`smsPreviewType`, `smsPreviewText`, `patchSmsTemplate`) και λίστα `SMS_TEMPLATE_OPTIONS` για UI επεξεργασίας templates
+
+**🌱 Σε απλά λόγια**
+
+Οι κλινικές μπορούν πλέον να προσαρμόσουν το κείμενο των SMS που στέλνονται στους πελάτες (καλωσόρισμα, υπενθύμιση ραντεβού, εμβολιασμού, αγοράς, γενεθλίων κατοικιδίου) αντί να χρησιμοποιούν πάντα το προεπιλεγμένο κείμενο. Υπάρχει και προεπισκόπηση για να δουν πώς θα φαίνεται το SMS πριν το αποθηκεύσουν.
+
+---
+
 ## v1.5.6 — 2026-08-06 (309b9fc)
 
 ### Ενημέρωση κώδικα
