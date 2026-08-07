@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { normalizeGreek } from "../utils/greekNormalize.js";
+import { toDisplayName } from "../utils/greekNames.js";
 
 // 🧩 Υπομοντέλο για αγορές
 const purchaseSchema = new mongoose.Schema(
@@ -33,6 +34,13 @@ const customerSchema = new mongoose.Schema(
       trim: true,
       index: true,
       // unique: true, // προαιρετικό: ενεργοποίησέ το μόνο αν έχεις καθαρίσει διπλότυπα
+    },
+    // Πρώτη επίσκεψη στο κτηνιατρείο (για reporting/marketing) — ξεχωριστό
+    // από το αν υπάρχει ήδη ΕΓΓΡΑΦΗ στο σύστημα (π.χ. μπορεί να καταχωρείται
+    // τώρα ένας παλιός πελάτης που δεν ήταν ποτέ στο πρόγραμμα).
+    isNewCustomer: {
+      type: Boolean,
+      default: true,
     },
     email: {
       type: String,
@@ -85,18 +93,20 @@ customerSchema.index({ name: 1, phone: 1 });
 // 🔹 Συγχρονισμός nameNormalized σε κάθε save (create/save)
 customerSchema.pre("save", function (next) {
   if (this.isModified("name")) {
+    this.name = toDisplayName(this.name);
     this.nameNormalized = normalizeGreek(this.name);
   }
   next();
 });
 
-// 🔹 Συγχρονισμός nameNormalized και σε findOneAndUpdate/findByIdAndUpdate
-// (δεν περνάνε από το pre("save") hook παραπάνω)
+// 🔹 Διόρθωση εμφάνισης + συγχρονισμός nameNormalized και σε
+// findOneAndUpdate/findByIdAndUpdate (δεν περνάνε από το pre("save") hook παραπάνω)
 customerSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate() || {};
   const newName = update.name ?? update.$set?.name;
   if (newName != null) {
-    this.set({ nameNormalized: normalizeGreek(newName) });
+    const displayName = toDisplayName(newName);
+    this.set({ name: displayName, nameNormalized: normalizeGreek(displayName) });
   }
   next();
 });

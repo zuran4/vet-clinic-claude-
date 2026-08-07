@@ -24,6 +24,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
     address: "",
     notes: "",
     notifications: { email: false, sms: true, reminders: true, promotions: true },
+    isNewCustomer: true,
   });
   const [petName, setPetName] = useState("");
   const [petSpecies, setPetSpecies] = useState("Σκύλος");
@@ -139,6 +140,18 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
                   <input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)}
                     required placeholder="π.χ. 6912345678" className={INPUT} />
                 </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-2 cursor-pointer w-fit">
+                  <input
+                    type="checkbox"
+                    checked={form.isNewCustomer}
+                    onChange={(e) => update("isNewCustomer", e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 dark:border-win-border-light text-indigo-600 focus:ring-indigo-300"
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Καινούργιος πελάτης (πρώτη επίσκεψη)</span>
+                </label>
               </div>
 
               {showMore && (

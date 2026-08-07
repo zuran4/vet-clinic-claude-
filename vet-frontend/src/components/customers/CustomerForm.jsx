@@ -14,7 +14,7 @@ const NOTIF_OPTIONS = [
 
 const CustomerForm = ({ initialData, onSaved, onCancel, onDirty }) => {
   const {
-    formData, loading, handleChange, handleNotificationChange, handleSubmit,
+    formData, loading, handleChange, handleNotificationChange, handleIsNewCustomerChange, handleSubmit,
     petName, setPetName, petSpecies, setPetSpecies, petGender, setPetGender,
   } = useCustomerForm(initialData, onSaved, onCancel);
 
@@ -66,6 +66,20 @@ const CustomerForm = ({ initialData, onSaved, onCancel, onDirty }) => {
               />
             </div>
           </div>
+
+          {!isEdit && (
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-2 cursor-pointer w-fit">
+                <input
+                  type="checkbox"
+                  checked={formData.isNewCustomer}
+                  onChange={wrapChange(handleIsNewCustomerChange)}
+                  className="w-4 h-4 rounded border-gray-300 dark:border-win-border-light text-indigo-600 focus:ring-indigo-300"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-300">Καινούργιος πελάτης (πρώτη επίσκεψη)</span>
+              </label>
+            </div>
+          )}
 
           {showMore && (
             <>

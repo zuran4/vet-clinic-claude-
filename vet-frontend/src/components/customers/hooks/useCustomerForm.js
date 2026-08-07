@@ -26,6 +26,7 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
       reminders: true,
       promotions: true,
     },
+    isNewCustomer: true,
   });
 
   const [petName, setPetName] = useState("");
@@ -89,6 +90,11 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
       if (name === "email" && !prev.email.trim()) return prev; // δεν ενεργοποιείται χωρίς email
       return { ...prev, notifications: { ...prev.notifications, [name]: checked } };
     });
+  }, []);
+
+  const handleIsNewCustomerChange = useCallback((e) => {
+    const { checked } = e.target;
+    setFormData((prev) => ({ ...prev, isNewCustomer: checked }));
   }, []);
 
   // -------------------------------------
@@ -180,6 +186,7 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
     loading,
     handleChange,
     handleNotificationChange,
+    handleIsNewCustomerChange,
     handleSubmit,
     petName,
     setPetName,

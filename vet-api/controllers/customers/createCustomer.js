@@ -37,9 +37,10 @@ export const createCustomer = async (req, res, next) => {
     emitChange("customers");
 
     // --------------------------------------------
-    // 🔹 EMAIL / SMS ειδοποίηση (αν είναι ενεργές)
+    // 🔹 EMAIL / SMS καλωσορίσματος — μόνο σε πραγματικά νέους πελάτες
+    // (isNewCustomer), όχι σε παλιούς πελάτες που απλά καταχωρούνται τώρα.
     // --------------------------------------------
-    if (saved.notifications?.email || saved.notifications?.sms) {
+    if (saved.isNewCustomer && (saved.notifications?.email || saved.notifications?.sms)) {
       Settings.findOne().then((settings) => {
         if (saved.notifications?.email) {
           sendWelcomeEmail({ settings, customer: saved }).catch((err) =>
@@ -60,9 +61,10 @@ export const createCustomer = async (req, res, next) => {
         }
       }).catch((err) => logger.error(`❌ Αποτυχία φόρτωσης ρυθμίσεων για ειδοποιήσεις: ${err.message}`));
     } else {
-      logger.info(
-        `🚫 Δεν στάλθηκαν ειδοποιήσεις — ο πελάτης ${saved.name} έχει απενεργοποιήσει email και SMS.`
-      );
+      const reason = !saved.isNewCustomer
+        ? "δεν είναι νέος πελάτης (isNewCustomer=false)"
+        : "έχει απενεργοποιήσει email και SMS";
+      logger.info(`🚫 Δεν στάλθηκε καλωσόρισμα στον ${saved.name} — ${reason}.`);
     }
 
     // --------------------------------------------

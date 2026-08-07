@@ -58,7 +58,6 @@ export function testEmailHtml({ clinicName = "Κτηνιατρείο" } = {}) {
 // ────────────────────────────────────────────────────────────────────────────
 export function appointmentReminderHtml({
   clinicName = "Κτηνιατρείο",
-  clientName = "",
   animalName = "",
   date = "",
   time = "",
@@ -73,7 +72,7 @@ export function appointmentReminderHtml({
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
-          Αγαπητέ/ή <strong>${clientName}</strong>,
+          Καλησπέρα,
         </p>
         <p style="color:#475569; line-height:1.6;">
           Σας υπενθυμίζουμε ότι αύριο έχετε ραντεβού στο <strong>${clinicName}</strong>.
@@ -113,7 +112,6 @@ export function appointmentReminderHtml({
 // ────────────────────────────────────────────────────────────────────────────
 export function vaccinationReminderHtml({
   clinicName = "Κτηνιατρείο",
-  clientName = "",
   petName = "",
   vaccineType = "",
   dueDate = "",
@@ -127,7 +125,7 @@ export function vaccinationReminderHtml({
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
-          Αγαπητέ/ή <strong>${clientName}</strong>,
+          Καλησπέρα,
         </p>
         <p style="color:#475569; line-height:1.6;">
           Θέλουμε να σας ενημερώσουμε ότι ο/η <strong>${petName}</strong>
@@ -164,7 +162,6 @@ export function vaccinationReminderHtml({
 // ────────────────────────────────────────────────────────────────────────────
 export function purchaseReminderHtml({
   clinicName    = "Κτηνιατρείο",
-  clientName    = "",
   productNames  = [],
   note          = "",
   reminderDate  = "",
@@ -182,7 +179,7 @@ export function purchaseReminderHtml({
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
-          Αγαπητέ/ή <strong>${clientName}</strong>,
+          Καλησπέρα,
         </p>
         <p style="color:#475569; line-height:1.6;">
           Θέλαμε να σας υπενθυμίσουμε${reminderDate ? ` για τις <strong>${reminderDate}</strong>` : ""} για τα παρακάτω προϊόντα του κατοικιδίου σας:
@@ -212,7 +209,6 @@ export function purchaseReminderHtml({
 // ────────────────────────────────────────────────────────────────────────────
 export function welcomeEmailHtml({
   clinicName = "Κτηνιατρείο",
-  clientName = "",
   petName = "",
   phone = "",
   address = "",
@@ -243,7 +239,7 @@ export function welcomeEmailHtml({
       </div>
       <div style="${BODY_STYLE}">
         <p style="font-size:16px; color:#1e293b;">
-          Αγαπητέ/ή <strong>${clientName}</strong>,
+          Καλησπέρα,
         </p>
         <p style="color:#475569; line-height:1.6;">
           Η εγγραφή σας στο <strong>${clinicName}</strong> ολοκληρώθηκε${petName ? ` για τον/την <strong>${petName}</strong>` : ""}.
@@ -268,7 +264,6 @@ export function welcomeEmailHtml({
 // ────────────────────────────────────────────────────────────────────────────
 export function birthdayHtml({
   clinicName = "Κτηνιατρείο",
-  clientName = "",
   petName = "",
   age = null,
 } = {}) {
@@ -286,9 +281,8 @@ export function birthdayHtml({
         </p>
         ${age ? `<p style="color:#f59e0b; font-size:16px; font-weight:600;">${age} χρονών! 🥳</p>` : ""}
         <p style="color:#475569; line-height:1.6; margin-top:16px;">
-          Αγαπητέ/ή <strong>${clientName}</strong>, το ${clinicName} εύχεται
-          στον/στην <strong>${petName}</strong> χρόνια πολλά με υγεία,
-          χαρά και πολλές βόλτες! 🌟
+          Το ${clinicName} εύχεται στον/στην <strong>${petName}</strong>
+          χρόνια πολλά με υγεία, χαρά και πολλές βόλτες! 🌟
         </p>
         <p style="color:#64748b; font-size:13px; margin-top:20px;">
           Μην ξεχάσετε να κλείσετε ραντεβού για το ετήσιο check-up!

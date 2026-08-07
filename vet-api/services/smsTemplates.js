@@ -8,7 +8,7 @@
  */
 
 export const SMS_TEMPLATE_DEFAULTS = {
-  welcome:             "{clinicName}: Αγαπητέ/ή {clientName}, σας καλωσορίζουμε στο κτηνιατρείο μας!",
+  welcome:             "{clinicName}: Σας καλωσορίζουμε στο κτηνιατρείο μας!",
   appointmentReminder: "{clinicName}: Υπενθύμιση ραντεβού αύριο για {animalName}, {date} {time}. Επικοινωνήστε μαζί μας για αλλαγή.",
   vaccinationReminder: "{clinicName}: Ο/Η {petName} χρειάζεται εμβόλιο έως {dueDate}. Κλείστε ραντεβού μαζί μας.",
   purchaseReminder:    "{clinicName}: Υπενθύμιση για {products}. Επικοινωνήστε μαζί μας για ανανέωση.",
@@ -17,7 +17,7 @@ export const SMS_TEMPLATE_DEFAULTS = {
 
 // Ποια {placeholders} δέχεται κάθε template — χρήσιμο για το UI επεξεργασίας
 export const SMS_TEMPLATE_PLACEHOLDERS = {
-  welcome:             ["clinicName", "clientName"],
+  welcome:             ["clinicName"],
   appointmentReminder: ["clinicName", "animalName", "date", "time"],
   vaccinationReminder: ["clinicName", "petName", "dueDate"],
   purchaseReminder:    ["clinicName", "products"],

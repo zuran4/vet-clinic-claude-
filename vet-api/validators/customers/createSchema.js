@@ -27,4 +27,6 @@ export default Joi.object({
     reminders: Joi.boolean().default(true),
     promotions: Joi.boolean().default(false),
   }).optional(),
+
+  isNewCustomer: Joi.boolean().default(true),
 });

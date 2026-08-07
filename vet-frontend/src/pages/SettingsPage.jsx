@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import {
   Settings, Building2, Users, Clock, Monitor, Shield,
   Save, X, UserPlus, Globe, Mail, Send, Eye, EyeOff, Keyboard,
-  ChevronRight, ArrowLeft, Download, FileText, Phone, MapPin,
+  ChevronRight, ChevronDown, ArrowLeft, Download, FileText, Phone, MapPin,
   Hash, Lock, Activity, UserCog, Tablet, Landmark, CheckCircle2,
   AlertCircle, Loader2, User,
 } from "lucide-react";
@@ -73,27 +73,50 @@ const getSupportedTimeZones = () => {
   catch { return ["Europe/Athens", "UTC", "Europe/London", "America/New_York"]; }
 };
 
-const Section = ({ title, description, children, onSave, saving, saved, saveError }) => (
-  <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
-    <div className="px-6 py-4 border-b border-gray-100 dark:border-win-border">
-      <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</h2>
-      {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{description}</p>}
-    </div>
-    <div className="px-6 py-5 space-y-5">{children}</div>
-    {onSave && (
-      <div className="px-6 py-3 bg-gray-50 dark:bg-win-elevated/50 border-t border-gray-100 dark:border-win-border flex items-center justify-between">
-        <div>
-          {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Αποθηκεύτηκε</span>}
-          {saveError && <span className="text-xs text-red-500 dark:text-red-400">{saveError}</span>}
-        </div>
-        <button onClick={onSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
-          <Save className="w-3.5 h-3.5" />
-          {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+const Section = ({ title, description, children, onSave, saving, saved, saveError, collapsible = false, defaultOpen = false }) => {
+  const [open, setOpen] = useState(!collapsible || defaultOpen);
+  const isOpen = !collapsible || open;
+
+  return (
+    <div className="bg-white dark:bg-win-surface rounded-2xl border border-gray-100 dark:border-win-border overflow-hidden">
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="w-full flex items-center justify-between gap-3 px-6 py-4 border-b border-gray-100 dark:border-win-border text-left hover:bg-gray-50 dark:hover:bg-win-elevated/40 transition-colors"
+        >
+          <div>
+            <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</h2>
+            {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{description}</p>}
+          </div>
+          {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />}
         </button>
-      </div>
-    )}
-  </div>
-);
+      ) : (
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-win-border">
+          <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</h2>
+          {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{description}</p>}
+        </div>
+      )}
+      {isOpen && (
+        <>
+          <div className="px-6 py-5 space-y-5">{children}</div>
+          {onSave && (
+            <div className="px-6 py-3 bg-gray-50 dark:bg-win-elevated/50 border-t border-gray-100 dark:border-win-border flex items-center justify-between">
+              <div>
+                {saved && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Αποθηκεύτηκε</span>}
+                {saveError && <span className="text-xs text-red-500 dark:text-red-400">{saveError}</span>}
+              </div>
+              <button onClick={onSave} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors disabled:opacity-60">
+                <Save className="w-3.5 h-3.5" />
+                {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
 
 const LABEL = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5";
 const INPUT = "w-full border border-gray-200 dark:border-win-border-light rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500";
@@ -783,7 +806,7 @@ const SettingsPage = ({ onClose, user }) => {
 
       {/* ── Email / Ειδοποιήσεις ── */}
       <div className={activeSection !== "notifications" ? "hidden" : ""}>
-        <Section title="Ρυθμίσεις Email (SMTP)" description="Στοιχεία SMTP για αυτόματη αποστολή email." {...saveProps}>
+        <Section title="Ρυθμίσεις Email (SMTP)" description="Στοιχεία SMTP για αυτόματη αποστολή email." collapsible {...saveProps}>
           <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
             <Mail className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
@@ -828,7 +851,7 @@ const SettingsPage = ({ onClose, user }) => {
         </Section>
 
         <div className="mt-4">
-          <Section title="Προεπισκόπηση Email Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο email με τα στοιχεία του κτηνιατρείου σου, χωρίς να σταλεί τίποτα.">
+          <Section title="Προεπισκόπηση Email Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο email με τα στοιχεία του κτηνιατρείου σου, χωρίς να σταλεί τίποτα." collapsible>
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className={LABEL}>Template</label>
@@ -853,7 +876,7 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
-          <Section title="Δοκιμαστικό Email">
+          <Section title="Δοκιμαστικό Email" collapsible>
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className={LABEL}>Αποστολή σε</label>
@@ -872,7 +895,7 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
-          <Section title="Ρυθμίσεις SMS (Twilio)" description="Στοιχεία Twilio για αυτόματη αποστολή SMS." {...saveProps}>
+          <Section title="Ρυθμίσεις SMS (Twilio)" description="Στοιχεία Twilio για αυτόματη αποστολή SMS." collapsible {...saveProps}>
             <div className="flex gap-3 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-100 dark:border-sky-700/50">
               <Phone className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-sky-600 dark:text-sky-400 leading-relaxed">
@@ -902,7 +925,7 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
-          <Section title="Προεπισκόπηση & Επεξεργασία SMS Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο SMS και άλλαξε το κείμενό του αν χρειάζεται — άδειο πεδίο σημαίνει προεπιλεγμένο κείμενο." {...saveProps}>
+          <Section title="Προεπισκόπηση & Επεξεργασία SMS Templates" description="Δες πώς θα εμφανιστεί κάθε αυτόματο SMS και άλλαξε το κείμενό του αν χρειάζεται — άδειο πεδίο σημαίνει προεπιλεγμένο κείμενο." collapsible {...saveProps}>
             <div>
               <label className={LABEL}>Template</label>
               <select value={smsPreviewType} onChange={(e) => { setSmsPreviewType(e.target.value); setSmsPreviewText(""); setSmsPreviewError(null); }} className={INPUT}>
@@ -951,7 +974,7 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
-          <Section title="Δοκιμαστικό SMS">
+          <Section title="Δοκιμαστικό SMS" collapsible>
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className={LABEL}>Αποστολή σε</label>
@@ -970,7 +993,7 @@ const SettingsPage = ({ onClose, user }) => {
         </div>
 
         <div className="mt-4">
-          <Section title="Αυτόματες Ειδοποιήσεις" description="Ενεργοποίησε/απενεργοποίησε αυτόματες αποστολές." {...saveProps}>
+          <Section title="Αυτόματες Ειδοποιήσεις" description="Ενεργοποίησε/απενεργοποίησε αυτόματες αποστολές." collapsible {...saveProps}>
             <div className="space-y-2">
               <NotifToggle icon="📅" label="Υπενθύμιση ραντεβού"  desc="1 μέρα πριν — 08:00"  value={form.notifications?.appointmentReminder ?? true}  onChange={(v) => patchNotif("appointmentReminder", v)} />
               <NotifToggle icon="💉" label="Υπενθύμιση εμβολίου"  desc="7 και 1 μέρα πριν — 09:00" value={form.notifications?.vaccineReminder ?? true}   onChange={(v) => patchNotif("vaccineReminder", v)} />
