@@ -21,6 +21,11 @@ async function processTenant(clinicId, clinicNameFallback) {
     return { skippedByToggle: true };
   }
 
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  if (settings.jobRuns?.vaccinationReminder === todayStr) {
+    return { alreadyRanToday: true };
+  }
+
   const clinicName = settings?.clinicName || clinicNameFallback || "Κτηνιατρείο";
   const smsEnabled  = settings?.notifications?.smsEnabled === true;
 
@@ -94,7 +99,39 @@ async function processTenant(clinicId, clinicNameFallback) {
     }
   }
 
+  settings.jobRuns = { ...(settings.jobRuns || {}), vaccinationReminder: todayStr };
+  await settings.save();
+
   return { emailSent, emailSkipped, smsSent };
+}
+
+async function runVaccinationReminders() {
+  logger.info("🐾 Έλεγχος για εμβόλια κατοικιδίων...");
+
+  try {
+    const Tenant = getTenantModel();
+    const tenants = await Tenant.find({ isActive: true });
+
+    for (const tenant of tenants) {
+      try {
+        const result = await processTenant(tenant.clinicId, tenant.clinicName);
+
+        if (result.skippedByToggle) {
+          logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις εμβολίου απενεργοποιημένες — παράλειψη.`);
+          continue;
+        }
+        if (result.alreadyRanToday) {
+          continue;
+        }
+
+        logger.info(`✅ [${tenant.clinicId}] Vaccination reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
+      } catch (tenantErr) {
+        logger.error(`❌ [${tenant.clinicId}] Σφάλμα petVaccinationJob:`, tenantErr.message);
+      }
+    }
+  } catch (err) {
+    logger.error("❌ Σφάλμα petVaccinationJob:", err.message);
+  }
 }
 
 /**
@@ -103,31 +140,14 @@ async function processTenant(clinicId, clinicNameFallback) {
  * εμβολιασμός είναι σε 7 ή 1 μέρα, στέλνει υπενθύμιση email/SMS.
  */
 export function startPetVaccinationJob() {
-  cron.schedule("0 9 * * *", async () => {
-    logger.info("🐾 Έλεγχος για εμβόλια κατοικιδίων...");
+  cron.schedule("0 9 * * *", runVaccinationReminders);
 
-    try {
-      const Tenant = getTenantModel();
-      const tenants = await Tenant.find({ isActive: true });
-
-      for (const tenant of tenants) {
-        try {
-          const result = await processTenant(tenant.clinicId, tenant.clinicName);
-
-          if (result.skippedByToggle) {
-            logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις εμβολίου απενεργοποιημένες — παράλειψη.`);
-            continue;
-          }
-
-          logger.info(`✅ [${tenant.clinicId}] Vaccination reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
-        } catch (tenantErr) {
-          logger.error(`❌ [${tenant.clinicId}] Σφάλμα petVaccinationJob:`, tenantErr.message);
-        }
-      }
-    } catch (err) {
-      logger.error("❌ Σφάλμα petVaccinationJob:", err.message);
-    }
-  });
+  // Catch-up: βλ. σχόλιο στο appointmentReminder.js — ίδιο μοτίβο.
+  if (dayjs().hour() >= 9) {
+    runVaccinationReminders().catch((err) =>
+      logger.error("❌ Σφάλμα catch-up petVaccinationJob:", err.message)
+    );
+  }
 
   logger.info("💉 petVaccinationJob: ενεργό (09:00 κάθε μέρα)");
 }

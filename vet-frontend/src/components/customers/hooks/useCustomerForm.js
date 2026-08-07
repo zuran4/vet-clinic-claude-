@@ -26,7 +26,7 @@ export function useCustomerForm(initialData, onSaved, onCancel) {
       reminders: true,
       promotions: true,
     },
-    isNewCustomer: true,
+    isNewCustomer: false,
   });
 
   const [petName, setPetName] = useState("");

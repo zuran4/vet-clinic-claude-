@@ -38,6 +38,7 @@ import resolveTenant from "./middlewares/resolveTenant.js";
 import checkSubscription from "./middlewares/checkSubscription.js";
 import { connectAdmin } from "./services/adminConnection.js";
 import { closeAllTenantConnections } from "./services/tenantConnectionManager.js";
+import { listTrackedClinicIds, getRegistryWorkerProcess } from "./services/registryWorkerProcess.js";
 import { startAppointmentReminderJob } from "./jobs/appointmentReminder.js";
 import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";
@@ -295,6 +296,18 @@ connectAdmin(config.mongoUri)
 // ==============================
 async function gracefulShutdown(signal) {
   logger.warn(`🛑 ${signal} received. Closing all DB connections...`);
+
+  // Χωρίς αυτό, οι registry-worker child processes (ένας ανά κλινική) μένουν
+  // "ζόμπι" μετά από κάθε restart — ο επόμενος server συγκρούεται μαζί τους
+  // στο ίδιο port (EADDRINUSE) και ο παλιός μένει κολλημένος στη σελίδα login.
+  for (const clinicId of listTrackedClinicIds()) {
+    const proc = getRegistryWorkerProcess(clinicId);
+    if (proc && !proc.killed) {
+      logger.warn(`🛑 Τερματισμός registry worker (${clinicId}, pid ${proc.pid})...`);
+      proc.kill();
+    }
+  }
+
   await closeAllTenantConnections();
   logger.warn("✅ All connections closed. Exiting...");
   process.exit(0);

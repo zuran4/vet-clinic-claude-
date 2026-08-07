@@ -24,7 +24,7 @@ const QuickCreateCustomerModal = ({ initialName = "", onCreated, onCancel }) => 
     address: "",
     notes: "",
     notifications: { email: false, sms: true, reminders: true, promotions: true },
-    isNewCustomer: true,
+    isNewCustomer: false,
   });
   const [petName, setPetName] = useState("");
   const [petSpecies, setPetSpecies] = useState("Σκύλος");

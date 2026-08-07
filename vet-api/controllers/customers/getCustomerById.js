@@ -5,13 +5,14 @@
 
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
+import { computeShowNewBadge } from "../../utils/customerBadge.js";
 
 // ===============================
 // GET /api/customers/:id → επιστρέφει και κατοικίδια
 // ===============================
 export const getCustomerById = async (req, res, next) => {
   try {
-    const { Customer, Pet } = req.models;
+    const { Customer, Pet, Appointment } = req.models;
     const customer = await Customer.findById(req.params.id);
 
     if (!customer) {
@@ -24,8 +25,14 @@ export const getCustomerById = async (req, res, next) => {
       "name species gender neutered vaccinated microchip"
     );
 
+    let showNewBadge = false;
+    if (customer.isNewCustomer) {
+      const appointmentCount = await Appointment.countDocuments({ owner: req.params.id });
+      showNewBadge = computeShowNewBadge(customer.isNewCustomer, appointmentCount);
+    }
+
     logger.info(`📋 Επιστράφηκε πελάτης με ${pets.length} κατοικίδια`);
-    res.json({ ...customer.toObject(), pets });
+    res.json({ ...customer.toObject(), pets, showNewBadge });
   } catch (err) {
     logger.error("❌ Σφάλμα κατά τη λήψη πελάτη", { stack: err.stack });
     next(

@@ -75,7 +75,14 @@ const CustomerCard = ({ customer, onEdit, onDelete, onPurchases, onView }) => {
           </div>
 
           <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{customer.name}</p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{customer.name}</p>
+            {customer.showNewBadge && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex-shrink-0">
+                Νέος
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
             {customer.phone && (
               <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">

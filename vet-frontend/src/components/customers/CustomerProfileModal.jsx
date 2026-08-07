@@ -57,7 +57,7 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
 
   if (!customerData) return null;
 
-  const { _id, name, phone, email, address, city, afm, notes, notifications, alert } = customerData;
+  const { _id, name, phone, email, address, city, afm, notes, notifications, alert, showNewBadge } = customerData;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }} onClick={onClose}>
@@ -114,6 +114,11 @@ const CustomerProfileModal = ({ customer, onClose, onEdit, onPurchases }) => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold text-gray-900 dark:text-gray-100">{display(name)}</p>
+                  {showNewBadge && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                      Νέος
+                    </span>
+                  )}
                   {alert && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 text-[11px] font-medium">
                       <AlertTriangle className="w-3 h-3 flex-shrink-0" />

@@ -59,6 +59,16 @@ const settingsSchema = new mongoose.Schema({
     birthday:             { type: String, default: "" },
   },
 
+  // 🔹 Τελευταία ημερομηνία (YYYY-MM-DD) που έτρεξε επιτυχώς κάθε cron job —
+  // αποτρέπει διπλή αποστολή όταν το job τρέχει ξανά ως "catch-up" κατά το
+  // ξεκίνημα του server (π.χ. μετά από sleep του υπολογιστή που χάθηκε το
+  // προγραμματισμένο tick). Βλ. jobs/*.js.
+  jobRuns: {
+    appointmentReminder: { type: String, default: "" },
+    vaccinationReminder: { type: String, default: "" },
+    birthday:             { type: String, default: "" },
+  },
+
   // 🔹 Προσωπικό κλινικής
   staff: {
     type: [

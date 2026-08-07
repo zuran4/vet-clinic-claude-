@@ -950,7 +950,27 @@ const SettingsPage = ({ onClose, user }) => {
                 placeholder="Κενό = χρήση προεπιλεγμένου κειμένου"
                 className={INPUT}
               />
-              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+              {(() => {
+                // Το GSM-7 αλφάβητο (160 χαρακτήρες/SMS, 153/τμήμα) υποστηρίζει
+                // ΚΕΦΑΛΑΙΑ ελληνικά χωρίς τόνους — μόλις μπει πεζό ή τονισμένο
+                // ελληνικό γράμμα (π.χ. "ά"), όλο το μήνυμα πέφτει σε Unicode
+                // (70 χαρακτήρες/SMS, 67/τμήμα).
+                const text = form.smsTemplates?.[smsPreviewType] || "";
+                const len = text.length;
+                const isGsm7 = /^[A-Za-z0-9ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ@£$¥èéùìòÇØøÅåÆæßÉ!"#¤%&'()*+,\-./:;<=>?¡ÄÖÑÜ§¿äöñü\s]*$/.test(text);
+                const singleLimit = isGsm7 ? 160 : 70;
+                const multiLimit = isGsm7 ? 153 : 67;
+                const segments = len === 0 ? 0 : len <= singleLimit ? 1 : Math.ceil(len / multiLimit);
+                const over = segments > 1;
+                return (
+                  <p className={`mt-1.5 text-xs ${over ? "text-amber-600 dark:text-amber-400 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
+                    {len} χαρακτήρες ({isGsm7 ? "GSM-7" : "Unicode"})
+                    {segments > 0 && ` · ${segments} SMS${segments > 1 ? " (χρεώνεται ως πολλαπλό)" : ""}`}
+                    {len === 0 && " (0 = προεπιλεγμένο κείμενο)"}
+                  </p>
+                );
+              })()}
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                 Διαθέσιμα πεδία: {SMS_TEMPLATE_OPTIONS.find((o) => o.key === smsPreviewType)?.placeholders.map((p) => `{${p}}`).join(", ")}
               </p>
             </div>

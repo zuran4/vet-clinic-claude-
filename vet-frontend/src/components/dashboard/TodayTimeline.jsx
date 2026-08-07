@@ -40,6 +40,11 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 min-w-0">
             <span className={`text-sm font-bold flex-shrink-0 ${isCompleted ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-200"}`}>{appt.time}</span>
             <span className={`text-sm font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.clientName}</span>
+            {appt.showNewBadge && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex-shrink-0">
+                Νέος
+              </span>
+            )}
           </div>
           <div className="my-1.5 border-t border-gray-200/70 dark:border-win-border/50" />
           <div className="flex items-center flex-wrap gap-2 min-w-0">
@@ -67,6 +72,11 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           <p className={`text-sm font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-800 dark:text-gray-100"}`}>{appt.animalName}</p>
           <span className="text-gray-300 dark:text-gray-600 flex-shrink-0">·</span>
           <p className={`text-xs break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-400 dark:text-gray-500"}`}>{appt.clientName}</p>
+          {appt.showNewBadge && (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex-shrink-0">
+              Νέος
+            </span>
+          )}
           {isCompleted ? (
             <span className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               Ολοκληρώθηκε
@@ -212,13 +222,41 @@ export default function TodayTimeline({ appointments = [], onNewAppointment, onE
       {/* Gradient Header */}
       <div className="bg-gradient-to-r from-sky-400 to-indigo-500 px-5 py-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-5 h-5 text-white" />
+          <div className="flex items-center flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-base leading-tight">Σημερινά Ραντεβού</p>
+                <p className="text-white/70 text-xs mt-0.5 capitalize">{todayLabel}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-white font-bold text-base leading-tight">Σημερινά Ραντεβού</p>
-              <p className="text-white/70 text-xs mt-0.5 capitalize">{todayLabel}</p>
+            {/* Σήμερα / Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal.
+                Το "Σήμερα" ανοίγει το ίδιο modal σε mode="today" (πλήρες ωράριο
+                ημέρας με διαθέσιμες + κλεισμένες ώρες) — όχι κάτι άλλο. */}
+            <div className="flex items-center gap-1 bg-white/10 rounded-xl p-1 w-fit">
+              <button
+                type="button"
+                onClick={() => setAgendaMode("today")}
+                className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                Σήμερα
+              </button>
+              <button
+                type="button"
+                onClick={() => setAgendaMode("week")}
+                className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                Εβδομάδα
+              </button>
+              <button
+                type="button"
+                onClick={() => setAgendaMode("month")}
+                className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                Μήνας
+              </button>
             </div>
           </div>
           {todaysAppointments.length > 0 && (
@@ -226,33 +264,6 @@ export default function TodayTimeline({ appointments = [], onNewAppointment, onE
               {todaysAppointments.length} σήμερα
             </span>
           )}
-        </div>
-
-        {/* Σήμερα / Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal.
-            Το "Σήμερα" ανοίγει το ίδιο modal σε mode="today" (πλήρες ωράριο
-            ημέρας με διαθέσιμες + κλεισμένες ώρες) — όχι κάτι άλλο. */}
-        <div className="flex items-center gap-1 mt-3 bg-white/10 rounded-xl p-1 w-fit">
-          <button
-            type="button"
-            onClick={() => setAgendaMode("today")}
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Σήμερα
-          </button>
-          <button
-            type="button"
-            onClick={() => setAgendaMode("week")}
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Εβδομάδα
-          </button>
-          <button
-            type="button"
-            onClick={() => setAgendaMode("month")}
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Μήνας
-          </button>
         </div>
       </div>
 

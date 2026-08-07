@@ -21,6 +21,13 @@ async function processTenant(clinicId, clinicNameFallback) {
     return { skippedByToggle: true };
   }
 
+  // Guard κατά διπλής αποστολής: αν το job έτρεξε ήδη σήμερα γι' αυτή την
+  // κλινική (κανονικό tick ή catch-up στο boot), δεν ξανατρέχει.
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  if (settings.jobRuns?.appointmentReminder === todayStr) {
+    return { alreadyRanToday: true };
+  }
+
   const clinicName = settings?.clinicName || clinicNameFallback || "Κτηνιατρείο";
   const smsEnabled  = settings?.notifications?.smsEnabled === true;
 
@@ -90,7 +97,40 @@ async function processTenant(clinicId, clinicNameFallback) {
     }
   }
 
+  // Καταγράφει ότι το job έτρεξε επιτυχώς σήμερα γι' αυτή την κλινική.
+  settings.jobRuns = { ...(settings.jobRuns || {}), appointmentReminder: todayStr };
+  await settings.save();
+
   return { emailSent, emailSkipped, smsSent };
+}
+
+async function runAppointmentReminders() {
+  logger.info("⏰ Έλεγχος ραντεβού για υπενθυμίσεις...");
+
+  try {
+    const Tenant = getTenantModel();
+    const tenants = await Tenant.find({ isActive: true });
+
+    for (const tenant of tenants) {
+      try {
+        const result = await processTenant(tenant.clinicId, tenant.clinicName);
+
+        if (result.skippedByToggle) {
+          logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις ραντεβού απενεργοποιημένες — παράλειψη.`);
+          continue;
+        }
+        if (result.alreadyRanToday) {
+          continue;
+        }
+
+        logger.info(`✅ [${tenant.clinicId}] Appointment reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
+      } catch (tenantErr) {
+        logger.error(`❌ [${tenant.clinicId}] Σφάλμα appointmentReminderJob:`, tenantErr.message);
+      }
+    }
+  } catch (err) {
+    logger.error("❌ Σφάλμα appointmentReminderJob:", err.message);
+  }
 }
 
 /**
@@ -99,31 +139,17 @@ async function processTenant(clinicId, clinicNameFallback) {
  * υπενθύμιση email/SMS.
  */
 export function startAppointmentReminderJob() {
-  cron.schedule("0 8 * * *", async () => {
-    logger.info("⏰ Έλεγχος ραντεβού για υπενθυμίσεις...");
+  cron.schedule("0 8 * * *", runAppointmentReminders);
 
-    try {
-      const Tenant = getTenantModel();
-      const tenants = await Tenant.find({ isActive: true });
-
-      for (const tenant of tenants) {
-        try {
-          const result = await processTenant(tenant.clinicId, tenant.clinicName);
-
-          if (result.skippedByToggle) {
-            logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις ραντεβού απενεργοποιημένες — παράλειψη.`);
-            continue;
-          }
-
-          logger.info(`✅ [${tenant.clinicId}] Appointment reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
-        } catch (tenantErr) {
-          logger.error(`❌ [${tenant.clinicId}] Σφάλμα appointmentReminderJob:`, tenantErr.message);
-        }
-      }
-    } catch (err) {
-      logger.error("❌ Σφάλμα appointmentReminderJob:", err.message);
-    }
-  });
+  // Catch-up: αν ο server ξεκινάει/επανεκκινείται μετά τις 08:00 (π.χ. ο
+  // υπολογιστής κοιμήθηκε τη νύχτα και χάθηκε το προγραμματισμένο tick),
+  // τρέχει αμέσως μία φορά. Το guard στο processTenant αποτρέπει διπλή
+  // αποστολή αν το job είχε ήδη τρέξει σήμερα.
+  if (dayjs().hour() >= 8) {
+    runAppointmentReminders().catch((err) =>
+      logger.error("❌ Σφάλμα catch-up appointmentReminderJob:", err.message)
+    );
+  }
 
   logger.info("⏰ appointmentReminderJob: ενεργό (08:00 κάθε μέρα)");
 }

@@ -8,10 +8,11 @@
 import ApiError from "../../utils/apiError.js";
 import logger from "../../utils/logger.js";
 import { normalizeGreek } from "../../utils/greekNormalize.js";
+import { computeShowNewBadge } from "../../utils/customerBadge.js";
 
 export const getAllCustomers = async (req, res, next) => {
   try {
-    const { Customer, Pet } = req.models;
+    const { Customer, Pet, Appointment } = req.models;
     const raw = (req.query.search ?? req.query.q ?? "").trim();
     if (raw.length >= 2) {
       const safe = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -69,7 +70,7 @@ export const getAllCustomers = async (req, res, next) => {
       Customer.countDocuments({}),
       Customer.find(
         {},
-        { name: 1, phone: 1, email: 1, address: 1, city: 1, afm: 1, notes: 1, notifications: 1, createdAt: 1 }
+        { name: 1, phone: 1, email: 1, address: 1, city: 1, afm: 1, notes: 1, notifications: 1, createdAt: 1, isNewCustomer: 1 }
       )
         // .sort({ createdAt: -1 }) // αν το schema έχει timestamps
         .sort({ _id: -1 }) // ασφαλής ταξινόμηση χωρίς timestamps
@@ -77,6 +78,22 @@ export const getAllCustomers = async (req, res, next) => {
         .limit(pageSize)
         .lean(),
     ]);
+
+    // "Νέος" badge: μόνο για πελάτες με isNewCustomer=true ΚΑΙ λιγότερα από
+    // NEW_CUSTOMER_APPOINTMENT_LIMIT ραντεβού συνολικά — φεύγει αυτόματα
+    // μόλις φτάσουν το όριο.
+    const newCandidateIds = customers.filter((c) => c.isNewCustomer).map((c) => c._id);
+    const countsById = new Map();
+    if (newCandidateIds.length) {
+      const counts = await Appointment.aggregate([
+        { $match: { owner: { $in: newCandidateIds } } },
+        { $group: { _id: "$owner", count: { $sum: 1 } } },
+      ]);
+      for (const row of counts) countsById.set(String(row._id), row.count);
+    }
+    for (const c of customers) {
+      c.showNewBadge = computeShowNewBadge(c.isNewCustomer, countsById.get(String(c._id)));
+    }
 
     logger.info(`👥 Επιστράφηκαν ${customers.length} πελάτες (σελίδα ${page})`);
 

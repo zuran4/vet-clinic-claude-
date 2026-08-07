@@ -21,6 +21,11 @@ async function processTenant(clinicId, clinicNameFallback) {
     return { skippedByToggle: true };
   }
 
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  if (settings.jobRuns?.birthday === todayStr) {
+    return { alreadyRanToday: true };
+  }
+
   const clinicName = settings?.clinicName || clinicNameFallback || "Κτηνιατρείο";
   const smsEnabled  = settings?.notifications?.smsEnabled === true;
   const today = dayjs();
@@ -86,7 +91,39 @@ async function processTenant(clinicId, clinicNameFallback) {
     }
   }
 
+  settings.jobRuns = { ...(settings.jobRuns || {}), birthday: todayStr };
+  await settings.save();
+
   return { emailSent, emailSkipped, smsSent };
+}
+
+async function runBirthdayReminders() {
+  logger.info("🎂 Έλεγχος για γενέθλια κατοικιδίων...");
+
+  try {
+    const Tenant = getTenantModel();
+    const tenants = await Tenant.find({ isActive: true });
+
+    for (const tenant of tenants) {
+      try {
+        const result = await processTenant(tenant.clinicId, tenant.clinicName);
+
+        if (result.skippedByToggle) {
+          logger.info(`⏭️ [${tenant.clinicId}] Ειδοποιήσεις γενεθλίων απενεργοποιημένες — παράλειψη.`);
+          continue;
+        }
+        if (result.alreadyRanToday) {
+          continue;
+        }
+
+        logger.info(`✅ [${tenant.clinicId}] Birthday reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
+      } catch (tenantErr) {
+        logger.error(`❌ [${tenant.clinicId}] Σφάλμα petBirthdayJob:`, tenantErr.message);
+      }
+    }
+  } catch (err) {
+    logger.error("❌ Σφάλμα petBirthdayJob:", err.message);
+  }
 }
 
 /**
@@ -95,31 +132,14 @@ async function processTenant(clinicId, clinicNameFallback) {
  * (ίδια μέρα/μήνας birthDate) και στέλνει υπενθύμιση email/SMS.
  */
 export function startPetBirthdayJob() {
-  cron.schedule("0 10 * * *", async () => {
-    logger.info("🎂 Έλεγχος για γενέθλια κατοικιδίων...");
+  cron.schedule("0 10 * * *", runBirthdayReminders);
 
-    try {
-      const Tenant = getTenantModel();
-      const tenants = await Tenant.find({ isActive: true });
-
-      for (const tenant of tenants) {
-        try {
-          const result = await processTenant(tenant.clinicId, tenant.clinicName);
-
-          if (result.skippedByToggle) {
-            logger.info(`⏭️ [${tenant.clinicId}] Ειδοποιήσεις γενεθλίων απενεργοποιημένες — παράλειψη.`);
-            continue;
-          }
-
-          logger.info(`✅ [${tenant.clinicId}] Birthday reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
-        } catch (tenantErr) {
-          logger.error(`❌ [${tenant.clinicId}] Σφάλμα petBirthdayJob:`, tenantErr.message);
-        }
-      }
-    } catch (err) {
-      logger.error("❌ Σφάλμα petBirthdayJob:", err.message);
-    }
-  });
+  // Catch-up: βλ. σχόλιο στο appointmentReminder.js — ίδιο μοτίβο.
+  if (dayjs().hour() >= 10) {
+    runBirthdayReminders().catch((err) =>
+      logger.error("❌ Σφάλμα catch-up petBirthdayJob:", err.message)
+    );
+  }
 
   logger.info("🎂 petBirthdayJob: ενεργό (10:00 κάθε μέρα)");
 }

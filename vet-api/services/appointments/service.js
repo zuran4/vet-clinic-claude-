@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import logger from "../../utils/logger.js";
+import { computeShowNewBadge } from "../../utils/customerBadge.js";
 
 export function calculateEndTime(start, duration) {
   if (!start || !duration) {
@@ -45,11 +46,41 @@ export async function findSameDayByDoctor(date, doctor, excludeId, { Appointment
   return Appointment.find(q, { date: 1, time: 1, duration: 1 }).sort({ time: 1 }).lean();
 }
 
-export async function findAll({ Appointment }) {
-  return Appointment.find(
+export async function findAll({ Appointment, Customer }) {
+  const appointments = await Appointment.find(
     {},
     { clientName: 1, animalName: 1, date: 1, time: 1, duration: 1, type: 1, doctor: 1, phone: 1, owner: 1, notes: 1, status: 1 }
   ).sort({ date: 1, time: 1 }).lean();
+
+  // "Νέος" badge ανά ραντεβού: μόνο για owners με isNewCustomer=true ΚΑΙ
+  // λιγότερα από NEW_CUSTOMER_APPOINTMENT_LIMIT ραντεβού συνολικά.
+  const ownerIds = [...new Set(appointments.map((a) => a.owner).filter(Boolean).map(String))];
+  if (!ownerIds.length) return appointments;
+
+  const newCustomers = await Customer.find(
+    { _id: { $in: ownerIds }, isNewCustomer: true },
+    { _id: 1 }
+  ).lean();
+  if (!newCustomers.length) return appointments;
+
+  const newCustomerIds = newCustomers.map((c) => c._id);
+  const counts = await Appointment.aggregate([
+    { $match: { owner: { $in: newCustomerIds } } },
+    { $group: { _id: "$owner", count: { $sum: 1 } } },
+  ]);
+  const countsById = new Map(counts.map((row) => [String(row._id), row.count]));
+
+  const newBadgeOwnerIds = new Set(
+    newCustomerIds
+      .filter((id) => computeShowNewBadge(true, countsById.get(String(id))))
+      .map(String)
+  );
+
+  for (const appt of appointments) {
+    appt.showNewBadge = appt.owner ? newBadgeOwnerIds.has(String(appt.owner)) : false;
+  }
+
+  return appointments;
 }
 
 export async function create(data, { Appointment }) {

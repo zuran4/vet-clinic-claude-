@@ -40,7 +40,7 @@ const customerSchema = new mongoose.Schema(
     // τώρα ένας παλιός πελάτης που δεν ήταν ποτέ στο πρόγραμμα).
     isNewCustomer: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     email: {
       type: String,

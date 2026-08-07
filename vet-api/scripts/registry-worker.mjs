@@ -104,6 +104,26 @@ async function main() {
   runtime.ready = true;
   console.log("[Registry worker] Ready.");
 
+  // Το runStartupSequence παραπάνω κάνει login ΜΟΝΟ στην εκκίνηση (max 4
+  // κύκλοι) — αν δεν προλάβει (π.χ. αργή απόκριση gov.gr), ο worker έμενε
+  // κολλημένος σε NEEDS_LOGIN για πάντα, χωρίς δεύτερη προσπάθεια, μέχρι
+  // χειροκίνητο restart. Περιοδικός έλεγχος στο παρασκήνιο, ώστε να
+  // αυτο-θεραπεύεται χωρίς ανθρώπινη παρέμβαση.
+  const retryLoginIfNeeded = async () => {
+    try {
+      const s = await computeSessionStatus(runtime.sharedPage);
+      if (s.status !== "LOGGED_IN") {
+        console.log(`[Registry worker] 🔁 Περιοδικός έλεγχος: status=${s.status}, ξαναδοκιμάζω login...`);
+        await autoLoginIfNeeded(runtime.sharedPage);
+      }
+    } catch (err) {
+      console.error("[Registry worker] ⚠️ Σφάλμα στον περιοδικό έλεγχο login:", err?.message || err);
+    }
+  };
+  const retryIntervalMs = 60_000;
+  const retryTimer = setInterval(retryLoginIfNeeded, retryIntervalMs);
+  serverRef.once("close", () => clearInterval(retryTimer));
+
   // Περιμένουμε μέχρι να κλείσει ο server (graceful shutdown).
   await new Promise((resolve) => serverRef.on("close", resolve));
 }

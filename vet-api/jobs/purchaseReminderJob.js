@@ -100,37 +100,48 @@ async function processTenant(clinicId, clinicNameFallback) {
   return { emailSent, emailSkipped, smsSent };
 }
 
+async function runPurchaseReminders() {
+  logger.info("🛒 Έλεγχος για υπενθυμίσεις αγορών...");
+
+  try {
+    const Tenant = getTenantModel();
+    const tenants = await Tenant.find({ isActive: true });
+
+    for (const tenant of tenants) {
+      try {
+        const result = await processTenant(tenant.clinicId, tenant.clinicName);
+
+        if (result.skippedByToggle) {
+          logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις αγορών απενεργοποιημένες — παράλειψη.`);
+          continue;
+        }
+
+        logger.info(`✅ [${tenant.clinicId}] Purchase reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
+      } catch (tenantErr) {
+        logger.error(`❌ [${tenant.clinicId}] Σφάλμα purchaseReminderJob:`, tenantErr.message);
+      }
+    }
+  } catch (err) {
+    logger.error("❌ Σφάλμα purchaseReminderJob:", err.message);
+  }
+}
+
 /**
  * Τρέχει κάθε μέρα στις 10:00.
  * Για κάθε ενεργή κλινική, βρίσκει reminders που είναι για σήμερα και
  * δεν έχουν σταλεί ακόμα.
  */
 export function startPurchaseReminderJob() {
-  cron.schedule("0 10 * * *", async () => {
-    logger.info("🛒 Έλεγχος για υπενθυμίσεις αγορών...");
+  cron.schedule("0 10 * * *", runPurchaseReminders);
 
-    try {
-      const Tenant = getTenantModel();
-      const tenants = await Tenant.find({ isActive: true });
-
-      for (const tenant of tenants) {
-        try {
-          const result = await processTenant(tenant.clinicId, tenant.clinicName);
-
-          if (result.skippedByToggle) {
-            logger.info(`⏭️ [${tenant.clinicId}] Υπενθυμίσεις αγορών απενεργοποιημένες — παράλειψη.`);
-            continue;
-          }
-
-          logger.info(`✅ [${tenant.clinicId}] Purchase reminders: ${result.emailSent} email (${result.emailSkipped} χωρίς email), ${result.smsSent} SMS`);
-        } catch (tenantErr) {
-          logger.error(`❌ [${tenant.clinicId}] Σφάλμα purchaseReminderJob:`, tenantErr.message);
-        }
-      }
-    } catch (err) {
-      logger.error("❌ Σφάλμα purchaseReminderJob:", err.message);
-    }
-  });
+  // Catch-up: βλ. σχόλιο στο appointmentReminder.js. Εδώ δεν χρειάζεται
+  // επιπλέον guard ημέρας — το processTenant φιλτράρει ήδη μόνο reminders
+  // με sent:false, οπότε είναι φυσικά ασφαλές να ξανατρέξει.
+  if (dayjs().hour() >= 10) {
+    runPurchaseReminders().catch((err) =>
+      logger.error("❌ Σφάλμα catch-up purchaseReminderJob:", err.message)
+    );
+  }
 
   logger.info("🛒 purchaseReminderJob: ενεργό (10:00 κάθε μέρα)");
 }
