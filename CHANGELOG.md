@@ -2,6 +2,43 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.6.2 — 2026-08-07 (5205bb9)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/controllers/customers/getAllCustomers.js   | 21 +++++-
+ vet-api/controllers/customers/getCustomerById.js   | 11 +++-
+ vet-api/jobs/appointmentReminder.js                | 76 ++++++++++++++-------
+ vet-api/jobs/petBirthdayJob.js                     | 68 ++++++++++++-------
+ vet-api/jobs/petVaccinationJob.js                  | 68 ++++++++++++-------
+ vet-api/jobs/purchaseReminderJob.js                | 61 ++++++++++-------
+ vet-api/models/Customer.js                         |  2 +-
+ vet-api/models/Settings.js                         | 10 +++
+ vet-api/scripts/registry-worker.mjs                | 20 ++++++
+ vet-api/server.js                                  | 13 ++++
+ vet-api/services/appointments/service.js           | 35 +++++++++-
+ vet-api/utils/customerBadge.js                     |  8 +++
+ vet-api/validators/customers/createSchema.js       |  2 +-
+ .../src/components/customers/CustomerCard.jsx      |  9 ++-
+ .../components/customers/CustomerProfileModal.jsx  |  7 +-
+ .../customers/QuickCreateCustomerModal.jsx         |  2 +-
+ .../components/customers/hooks/useCustomerForm.js  |  2 +-
+ .../src/components/dashboard/TodayTimeline.jsx     | 77 ++++++++++++----------
+ vet-frontend/src/pages/SettingsPage.jsx            | 22 ++++++-
+ 19 files changed, 370 insertions(+), 144 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.6.1 — 2026-08-07 (b879508)
 
 ### Ενημέρωση κώδικα
