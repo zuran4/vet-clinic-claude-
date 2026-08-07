@@ -124,7 +124,7 @@ const emptyTreatmentForm = {
 const VAX_KEYWORDS = ["εμβόλ", "vaccine", "bravecto", "nexgard", "frontline", "αποπαρ", "stronghold", "advocate"];
 const isVaccination = (reason = "") => VAX_KEYWORDS.some((kw) => reason.toLowerCase().includes(kw));
 
-const SYMPTOM_CHIPS = ["Έμετος", "Διάρροια", "Ανορεξία", "Κινησιο", "Βήχας", "Χωλότητα", "Μάζα", "Επανέλεγχος", "Λήθαργος", "Κνησμός", "Πόνος", "Πυρετός"];
+const SYMPTOM_CHIPS = ["Έμετος", "Διάρροια", "Ανορεξία", "Βήχας", "Χωλότητα", "Μάζα", "Επανέλεγχος", "Λήθαργος", "Κνησμός", "Πόνος", "Πυρετός"];
 
 const BODY_SYSTEMS = [
   "Γενική εικόνα", "Δέρμα / Τρίχωμα", "Μάτια", "Αυτιά",
@@ -236,7 +236,7 @@ function WeightChart({ history }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <SectionLabel className="mb-0">Γράφημα Βάρους</SectionLabel>
+        <SectionLabel className="mb-0">ΓΡΑΦΗΜΑ ΒΑΡΟΥΣ</SectionLabel>
         <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">
           {last.weight} kg
         </span>
@@ -978,7 +978,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       `Συμπεριφορά (εξέταση): ${examForm.examBehavior || "—"}`,
       `Γενική κατάσταση: ${examForm.generalState || "—"}`,
       "",
-      "3. ΣΩΜΑΤΙΚΗ ΕΞΕΤΑΣΗ",
+      "3. ΚΛΙΝΙΚΗ ΕΞΕΤΑΣΗ",
       `Παθολογικά ευρήματα: ${abnormal.length > 0 ? abnormal.join(", ") : "—"}`,
       `Σημειώσεις: ${examForm.bodyNotes || "—"}`,
       "",
@@ -1179,13 +1179,13 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                       <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light p-4 space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse flex-shrink-0" />
-                          <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Νέα Επίσκεψη</p>
+                          <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">ΝΕΑ ΕΠΙΣΚΕΨΗ</p>
                         </div>
 
                         {/* Behavioral state + Weight side by side */}
                         <div className="flex items-start gap-4">
                           <div className="flex-1">
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Συμπεριφορά ζώου</p>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">ΣΥΜΠΕΡΙΦΟΡΑ ΖΩΟΥ</p>
                             <div className="flex flex-wrap gap-1.5">
                               {BEHAVIOR_OPTIONS.map(({ key, color }) => {
                                 const s = BEHAVIOR_STYLES[color];
@@ -1209,7 +1209,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               <div className="w-px self-stretch bg-gray-200 dark:bg-win-border-light flex-shrink-0" />
 
                               <div className="flex-shrink-0">
-                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Βάρος σήμερα</p>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">ΒΑΡΟΣ ΣΗΜΕΡΑ</p>
                                 <div className="flex items-center gap-1.5">
                                   <input
                                     name="weight"
@@ -1242,7 +1242,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                         <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                           <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Ιστορικό από Ιδιοκτήτη</p>
+                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΙΣΤΟΡΙΚΟ ΑΠΟ ΙΔΙΟΚΤΗΤΗ</p>
                           </div>
                           <div className="p-4 space-y-3">
                             <textarea
@@ -1272,14 +1272,14 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                         <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                           <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Κλινικά Στοιχεία</p>
+                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΚΛΙΝΙΚΑ ΣΤΟΙΧΕΙΑ</p>
                           </div>
                           <div className="p-4 space-y-3">
                             {/* Row 1: vitals */}
                             <div className="grid grid-cols-3 gap-2">
                               {[
-                                { label: "Βάρος",      name: "weight",      val: consultForm.weight,      unit: "kg", handler: handleConsultChange },
-                                { label: "Θερμοκρασία", name: "temperature", val: consultForm.temperature, unit: "°C", handler: handleConsultChange },
+                                { label: "ΒΑΡΟΣ",      name: "weight",      val: consultForm.weight,      unit: "kg", handler: handleConsultChange },
+                                { label: "ΘΕΡΜΟΚΡΑΣΙΑ", name: "temperature", val: consultForm.temperature, unit: "°C", handler: handleConsultChange },
                               ].map(({ label, name, val, unit, handler }) => (
                                 <div key={name}>
                                   <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
@@ -1291,7 +1291,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                 </div>
                               ))}
                               <div>
-                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">Ενυδάτωση</p>
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">ΕΝΥΔΑΤΩΣΗ</p>
                                 <select value={examForm.hydration} onChange={(e) => setExamForm((p) => ({ ...p, hydration: e.target.value }))}
                                   className="border border-gray-200 dark:border-win-border-light rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white dark:bg-win-elevated text-gray-900 dark:text-gray-100 w-full">
                                   {["Φυσιολογική", "Ήπια αφυδ.", "Μέτρια", "Σοβαρή"].map((o) => <option key={o}>{o}</option>)}
@@ -1301,9 +1301,9 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                             {/* Row 2 */}
                             <div className="grid grid-cols-3 gap-2">
                               {[
-                                { label: "Πόνος (0-5)",     name: "painScore",    val: examForm.painScore,    opts: ["0/5","1/5","2/5","3/5","4/5","5/5"] },
-                                { label: "Συμπεριφορά",     name: "examBehavior", val: examForm.examBehavior ?? "Ήρεμη", opts: ["Ήρεμη","Στρεσαρισμένη","Επιθετική","Ληθαργική"] },
-                                { label: "Γενική κατάσταση",name: "generalState", val: examForm.generalState, opts: ["Καλή","Μέτρια","Κακή","Κρίσιμη"] },
+                                { label: "ΠΟΝΟΣ (0-5)",     name: "painScore",    val: examForm.painScore,    opts: ["0/5","1/5","2/5","3/5","4/5","5/5"] },
+                                { label: "ΣΥΜΠΕΡΙΦΟΡΑ",     name: "examBehavior", val: examForm.examBehavior ?? "Ήρεμη", opts: ["Ήρεμη","Στρεσαρισμένη","Επιθετική","Ληθαργική"] },
+                                { label: "ΓΕΝΙΚΗ ΚΑΤΑΣΤΑΣΗ",name: "generalState", val: examForm.generalState, opts: ["Καλή","Μέτρια","Κακή","Κρίσιμη"] },
                               ].map(({ label, name, val, opts }) => (
                                 <div key={name}>
                                   <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
@@ -1321,7 +1321,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                         <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                           <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
-                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Σωματική Εξέταση</p>
+                            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΚΛΙΝΙΚΗ ΕΞΕΤΑΣΗ</p>
                           </div>
                           <div className="p-4 space-y-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
@@ -1354,7 +1354,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                 );
                               })}
                             </div>
-                            <textarea rows={2} placeholder="Σημειώσεις σωματικής εξέτασης..."
+                            <textarea rows={2} placeholder="Σημειώσεις κλινικής εξέτασης..."
                               value={examForm.bodyNotes}
                               onChange={(e) => setExamForm((p) => ({ ...p, bodyNotes: e.target.value }))}
                               className={inputClass + " resize-none"} />
@@ -1367,7 +1367,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Κατάσταση Τριχώματος / Δέρματος</p>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΚΑΤΑΣΤΑΣΗ ΤΡΙΧΩΜΑΤΟΣ / ΔΕΡΜΑΤΟΣ</p>
                             </div>
                             <div className="p-4 space-y-3">
                               <div className="flex flex-wrap gap-1.5">
@@ -1412,7 +1412,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               ))}
                               {treatmentForm.followUpReminder && (
                                 <div className="pl-12 space-y-1">
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">Προτεινόμενη ημερομηνία reminder</p>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">ΠΡΟΤΕΙΝΟΜΕΝΗ ΗΜΕΡΟΜΗΝΙΑ reminder</p>
                                   <DatePicker
                                     locale="el"
                                     dateFormat="dd/MM/yyyy"
@@ -1458,7 +1458,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Φαρμακευτική Αγωγή</p>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΦΑΡΜΑΚΕΥΤΙΚΗ ΑΓΩΓΗ</p>
                             </div>
                             <div className="p-4 space-y-3">
                               {treatmentForm.medications.length > 0 && (
@@ -1524,7 +1524,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                           <div className="bg-white dark:bg-win-elevated/40 rounded-xl border border-gray-200 dark:border-win-border-light overflow-hidden">
                             <div className="bg-gray-50 dark:bg-win-elevated/60 border-b border-gray-100 dark:border-win-border-light px-4 py-2.5 flex items-center gap-2">
                               <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">Οδηγίες / Σχέδιο</p>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest">ΟΔΗΓΙΕΣ / ΣΧΕΔΙΟ</p>
                             </div>
                             <div className="p-4 space-y-3">
                               <textarea rows={5} placeholder="Οδηγίες για τον ιδιοκτήτη..."
@@ -1569,7 +1569,7 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                               ))}
                               {treatmentForm.followUpReminder && (
                                 <div className="pl-12 space-y-1">
-                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">Προτεινόμενη ημερομηνία reminder</p>
+                                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">ΠΡΟΤΕΙΝΟΜΕΝΗ ΗΜΕΡΟΜΗΝΙΑ reminder</p>
                                   <DatePicker
                                     locale="el"
                                     dateFormat="dd/MM/yyyy"
@@ -1784,11 +1784,11 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
                                       {(entry.diagnosis || entry.treatment) && (
                                         <div className="grid grid-cols-2 gap-3">
                                           <div>
-                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Διάγνωση / Εκτίμηση</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">ΔΙΑΓΝΩΣΗ / ΕΚΤΙΜΗΣΗ</p>
                                             <p className="text-xs text-gray-700 dark:text-gray-200">{entry.diagnosis || "Καμία"}</p>
                                           </div>
                                           <div>
-                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Θεραπείες</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">ΘΕΡΑΠΕΙΕΣ</p>
                                             <p className="text-xs text-gray-700 dark:text-gray-200">{entry.treatment || "Καμία"}</p>
                                           </div>
                                         </div>
