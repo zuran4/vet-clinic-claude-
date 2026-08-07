@@ -2,6 +2,34 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.6.1 — 2026-08-07 (b879508)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/controllers/customers/createCustomer.js    | 12 +--
+ vet-api/models/Customer.js                         | 16 +++-
+ vet-api/services/emailTemplates.js                 | 18 ++---
+ vet-api/services/smsTemplates.js                   |  4 +-
+ vet-api/utils/greekNames.js                        | 89 ++++++++++++++++++++++
+ vet-api/validators/customers/createSchema.js       |  2 +
+ .../src/components/customers/CustomerForm.jsx      | 16 +++-
+ .../customers/QuickCreateCustomerModal.jsx         | 13 ++++
+ .../components/customers/hooks/useCustomerForm.js  |  7 ++
+ vet-frontend/src/pages/SettingsPage.jsx            | 79 ++++++++++++-------
+ 10 files changed, 205 insertions(+), 51 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.6.0 — 2026-08-06 (6282271)
 
 ### Προσαρμοσμένα πρότυπα SMS ανά κλινική
