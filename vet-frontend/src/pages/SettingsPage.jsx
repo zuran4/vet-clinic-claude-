@@ -291,6 +291,10 @@ const SettingsPage = ({ onClose, user }) => {
           fromNumber: "",
           ...(settings.smsConfig || {}),
         },
+        whatsappConfig: {
+          fromNumber: "",
+          ...(settings.whatsappConfig || {}),
+        },
         smsTemplates: {
           welcome:             "",
           appointmentReminder: "",
@@ -358,6 +362,7 @@ const SettingsPage = ({ onClose, user }) => {
   const patch      = (f, v) => { setForm(p => ({ ...p, [f]: v })); setSaved(false); setSaveError(null); };
   const patchEmail = (f, v) => { setForm(p => ({ ...p, emailConfig: { ...p.emailConfig, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchSms   = (f, v) => { setForm(p => ({ ...p, smsConfig: { ...p.smsConfig, [f]: v } })); setSaved(false); setSaveError(null); };
+  const patchWhatsapp = (f, v) => { setForm(p => ({ ...p, whatsappConfig: { ...p.whatsappConfig, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchNotif = (f, v) => { setForm(p => ({ ...p, notifications: { ...p.notifications, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchGov   = (f, v) => { setForm(p => ({ ...p, registryGov: { ...p.registryGov, [f]: v } })); setSaved(false); setSaveError(null); };
   const patchSmsTemplate = (f, v) => { setForm(p => ({ ...p, smsTemplates: { ...p.smsTemplates, [f]: v } })); setSaved(false); setSaveError(null); };
@@ -920,6 +925,11 @@ const SettingsPage = ({ onClose, user }) => {
             <div>
               <label className={LABEL}>Αριθμός αποστολέα</label>
               <input type="text" value={form.smsConfig?.fromNumber || ""} onChange={(e) => patchSms("fromNumber", e.target.value)} placeholder="+306912345678" className={INPUT} />
+            </div>
+            <div className="pt-2 border-t border-gray-100 dark:border-win-border">
+              <label className={LABEL}>Αριθμός WhatsApp (ίδιος λογαριασμός Twilio, registered ως WhatsApp sender)</label>
+              <input type="text" value={form.whatsappConfig?.fromNumber || ""} onChange={(e) => patchWhatsapp("fromNumber", e.target.value)} placeholder="+302392000000" className={INPUT} />
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Κενό = το WhatsApp δεν είναι ακόμα ενεργό. Συμπλήρωσέ το μόλις ολοκληρωθεί το registration στο Twilio.</p>
             </div>
           </Section>
         </div>

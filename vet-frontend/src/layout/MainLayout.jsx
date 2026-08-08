@@ -14,6 +14,7 @@ import PrescriptionsPage from "../pages/PrescriptionsPage";
 import ExportPage from "../pages/ExportPage";
 import PetsPage from "../pages/PetsPage";
 import SettingsPage from "../pages/SettingsPage";
+import MessagesPage from "../pages/MessagesPage";
 
 // ✅ i18n
 import i18n from "../i18n";
@@ -22,6 +23,7 @@ import { useRefetchOnFocus } from "../hooks/useRefetchOnFocus";
 import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 import request from "../api/apiClient.js";
+import { getConversations } from "../api/messagesApi.js";
 
 dayjs.locale("el");
 
@@ -48,6 +50,7 @@ function MainLayout({
   const [activePanel, setActivePanel] = useState("dashboard");
   const [petsCount, setPetsCount] = useState(0);
   const [customersCount, setCustomersCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [appointmentsDoctorFilter, setAppointmentsDoctorFilter] = useState(null);
 
   // ✅ Settings state
@@ -116,10 +119,17 @@ function MainLayout({
       .catch(() => {});
   }, []);
 
+  const loadUnreadMessagesCount = useCallback(() => {
+    getConversations()
+      .then((list) => setUnreadMessagesCount(list.reduce((sum, c) => sum + (c.unreadCount || 0), 0)))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     loadPetsCount();
     loadCustomersCount();
-  }, [loadPetsCount, loadCustomersCount]);
+    loadUnreadMessagesCount();
+  }, [loadPetsCount, loadCustomersCount, loadUnreadMessagesCount]);
 
   // 🔹 Φόρτωση settings από backend
   const loadSettings = useCallback(async () => {
@@ -140,6 +150,7 @@ function MainLayout({
     loadSettings();
     loadPetsCount();
     loadCustomersCount();
+    loadUnreadMessagesCount();
   });
 
   // 🔹 Real-time ενημέρωση όταν αλλάζουν δεδομένα από άλλη συσκευή
@@ -147,6 +158,7 @@ function MainLayout({
     settings: loadSettings,
     pets: loadPetsCount,
     customers: loadCustomersCount,
+    messages: loadUnreadMessagesCount,
   });
 
   // 🔹 Live αλλαγή γλώσσας όταν αλλάζουν τα settings
@@ -200,6 +212,8 @@ function MainLayout({
         return { title: "Πωλήσεις", subtitle: "Καταχώρηση πωλήσεων και ενημέρωση αποθέματος." };
       case "settings":
         return { title: "Ρυθμίσεις", subtitle: "Διαμόρφωση κτηνιατρείου και συστήματος." };
+      case "messages":
+        return { title: "Μηνύματα", subtitle: "Ενιαία αλληλογραφία (email, και σύντομα άλλα κανάλια)." };
       default:
         return { title: "Επισκόπηση" };
     }
@@ -259,6 +273,8 @@ function MainLayout({
         onShowPets={() => openPanel("pets")}
         onShowPrescriptions={() => openPanel("prescriptions")}
         onShowExportPanel={() => openPanel("export")}
+        onShowMessages={() => openPanel("messages")}
+        unreadMessagesCount={unreadMessagesCount}
       />
 
       {/* 🔹 Κύριο περιεχόμενο */}
@@ -322,6 +338,8 @@ function MainLayout({
               onShowPets={() => openPanel("pets")}
               onShowPrescriptions={() => openPanel("prescriptions")}
               onShowExportPanel={() => openPanel("export")}
+              onShowMessages={() => openPanel("messages")}
+              unreadMessagesCount={unreadMessagesCount}
               onEditProduct={(product) => {
                 openPanel("products");
                 setTimeout(() => {
@@ -337,6 +355,7 @@ function MainLayout({
         {/* 🔹 Panels */}
         {activePanel === "export" && <ExportPage onClose={closePanel} />}
         {activePanel === "customers" && <CustomersPage onClose={closePanel} />}
+        {activePanel === "messages" && <MessagesPage onClose={closePanel} />}
         {activePanel === "pets" && <PetsPage onClose={closePanel} />}
 
         {activePanel === "appointments" && (

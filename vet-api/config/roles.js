@@ -18,6 +18,7 @@ export const ROLES = {
     "reminders:read", "reminders:write",
     "suppliers:read",
     "settings:read",
+    "messages:read", "messages:write",
   ],
 
   secretary: [
@@ -29,6 +30,7 @@ export const ROLES = {
     "suppliers:read",
     "pets:read",
     "settings:read",
+    "messages:read", "messages:write",
   ],
 
   groomer: [

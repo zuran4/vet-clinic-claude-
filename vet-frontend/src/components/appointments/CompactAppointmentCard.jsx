@@ -8,15 +8,20 @@ import { getTypeColor } from "../../utils/appointmentTypeColors.js";
 export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDelete, canEdit = true, className = "", style }) {
   const isCompleted = appt.status === "completed";
   // Φόντο κάρτας = χρώμα τμήματος (στηθοσκόπιο/violet για Ιατρείο, ψαλίδι/sky
-  // για Grooming) — ίδιο χρώμα με το εικονίδιο του section header.
+  // για Grooming) — ίδιο χρώμα με το εικονίδιο του section header. Όταν
+  // ολοκληρωθεί, κρατάει την απόχρωση του τμήματος (μπλε για Grooming,
+  // πράσινο για Ιατρείο) αντί για ένα ενιαίο χρώμα.
   const isGrooming = appt.doctor === "Grooming";
+  const completedAccent = isGrooming
+    ? { card: "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/30", badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" }
+    : { card: "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" };
 
   return (
     <li
       style={style}
       className={`rounded-md border p-1 sm:p-1.5 transition-colors group ${
         isCompleted
-          ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
+          ? completedAccent.card
           : isGrooming
           ? "bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800/30"
           : "bg-violet-50 dark:bg-violet-900/10 border-violet-100 dark:border-violet-800/30"
@@ -28,14 +33,16 @@ export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDele
         </span>
         {canEdit && (
           <div className="flex items-center gap-px flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => onEdit?.(appt)}
-              title="Επεξεργασία"
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center transition-colors"
-            >
-              <Pencil className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-gray-400 dark:text-gray-500" />
-            </button>
+            {!isCompleted && (
+              <button
+                type="button"
+                onClick={() => onEdit?.(appt)}
+                title="Επεξεργασία"
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center transition-colors"
+              >
+                <Pencil className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-gray-400 dark:text-gray-500" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -55,7 +62,7 @@ export default function CompactAppointmentCard({ appt, onEdit, onConsult, onDele
         </p>
         <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate leading-tight">{appt.clientName}</p>
         {isCompleted ? (
-          <span className="inline-flex items-center gap-0.5 mt-0.5 text-[9px] font-medium px-1 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <span className={`inline-flex items-center gap-0.5 mt-0.5 text-[9px] font-medium px-1 py-0.5 rounded-full ${completedAccent.badge}`}>
             <CheckCircle2 className="w-2 h-2" /> OK
           </span>
         ) : (

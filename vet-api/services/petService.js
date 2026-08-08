@@ -1,4 +1,8 @@
 import logger from "../utils/logger.js";
+import { sendEmail } from "./emailService.js";
+import { treatmentInstructionsHtml } from "./emailTemplates.js";
+import { sendSMS } from "./smsService.js";
+import { treatmentInstructionsSms } from "./smsTemplates.js";
 
 // Όλες οι συναρτήσεις δέχονται { Pet, Customer } ως δεύτερο όρισμα (dependency injection)
 
@@ -114,7 +118,7 @@ export async function addHistoryEntry(petId, entryData, { Pet }) {
       logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για προσθήκη ιστορικού (id: ${petId})`);
       return null;
     }
-    const newEntry = {
+    const fields = {
       date: entryData.date || new Date(),
       category: entryData.category || "Ιατρείο",
       reason: entryData.reason,
@@ -126,15 +130,95 @@ export async function addHistoryEntry(petId, entryData, { Pet }) {
       treatment: entryData.treatment,
       nextVisit: entryData.nextVisit,
       vet: entryData.vet,
+      appointmentId: entryData.appointmentId,
+      formSnapshot: entryData.formSnapshot,
     };
-    pet.history.push(newEntry);
+
+    // Αν η εγγραφή έχει ήδη δημιουργηθεί για το ίδιο ραντεβού (π.χ. ο
+    // κτηνίατρος ξανανοίγει ένα ολοκληρωμένο ραντεβού και συμπληρώνει κάτι
+    // που ξέχασε), την ενημερώνουμε αντί να δημιουργούμε καινούργια.
+    const existing = entryData.appointmentId
+      ? pet.history.find((h) => h.appointmentId && String(h.appointmentId) === String(entryData.appointmentId))
+      : null;
+
+    if (existing) {
+      Object.assign(existing, fields);
+      logger.info(`🩺 Ενημερώθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);
+    } else {
+      pet.history.push(fields);
+      logger.info(`🩺 Προστέθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);
+    }
+
     await pet.save();
-    logger.info(`🩺 Προστέθηκε εγγραφή ιστορικού για κατοικίδιο: ${pet.name}`);
     return pet;
   } catch (err) {
     logger.error("❌ Σφάλμα κατά την προσθήκη εγγραφής ιστορικού", { stack: err.stack });
     throw err;
   }
+}
+
+// Στέλνει τις οδηγίες θεραπείας (φάρμακα + ελεύθερο κείμενο) στον
+// ιδιοκτήτη — εφάπαξ, με ρητή επιλογή του κτηνιάτρου κατά την ολοκλήρωση
+// ραντεβού (δεν σέβεται το customer.notifications toggle, είναι συνειδητή
+// απόφαση καθ' εξέρεση του κτηνιάτρου, όχι αυτόματη ειδοποίηση).
+export async function sendInstructions(petId, { diagnosis, medications, instructions }, { Pet, Settings }) {
+  const pet = await Pet.findById(petId).populate("owner");
+  if (!pet) {
+    logger.warn(`⚠️ Δεν βρέθηκε κατοικίδιο για αποστολή οδηγιών (id: ${petId})`);
+    return null;
+  }
+  const owner = pet.owner;
+  if (!owner) {
+    logger.warn(`⚠️ Το κατοικίδιο ${pet.name} δεν έχει συνδεδεμένο ιδιοκτήτη — δεν στάλθηκαν οδηγίες`);
+    return { pet, emailSent: false, smsSent: false };
+  }
+
+  const settings = await Settings.findOne();
+  const clinicName = settings?.clinicName || "Κτηνιατρείο";
+
+  let emailSent = false, smsSent = false;
+
+  if (owner.email) {
+    try {
+      await sendEmail({
+        settings,
+        to: owner.email,
+        subject: `Οδηγίες θεραπείας — ${pet.name} — ${clinicName}`,
+        html: treatmentInstructionsHtml({
+          clinicName,
+          clientName: owner.name || "",
+          petName: pet.name,
+          diagnosis: diagnosis || "",
+          medications: medications || [],
+          instructions: instructions || "",
+        }),
+      });
+      emailSent = true;
+      logger.info(`📧 Οδηγίες θεραπείας email → ${pet.name} (${owner.email})`);
+    } catch (err) {
+      logger.warn(`⚠️ Αποτυχία αποστολής οδηγιών email σε ${owner.email}: ${err.message}`);
+    }
+  }
+
+  if (owner.phone) {
+    try {
+      await sendSMS({
+        settings,
+        to: owner.phone,
+        message: treatmentInstructionsSms({
+          petName: pet.name,
+          medications: medications || [],
+          instructions: instructions || "",
+        }),
+      });
+      smsSent = true;
+      logger.info(`📱 Οδηγίες θεραπείας SMS → ${pet.name} (${owner.phone})`);
+    } catch (err) {
+      logger.warn(`⚠️ Αποτυχία αποστολής οδηγιών SMS σε ${owner.phone}: ${err.message}`);
+    }
+  }
+
+  return { pet, emailSent, smsSent };
 }
 
 export async function getPetHistory(petId, { Pet }) {

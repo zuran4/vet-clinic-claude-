@@ -9,5 +9,6 @@ const router = express.Router();
 router.post("/:id/history",              validateObjectId, requirePermission("pets.history:write"),  pets.addHistoryEntry);
 router.get("/:id/history",               validateObjectId, requirePermission("pets.history:read"),   pets.getPetHistory);
 router.delete("/:id/history/:entryId",   validateObjectId, requirePermission("pets.history:delete"), pets.deleteHistoryEntry);
+router.post("/:id/send-instructions",    validateObjectId, requirePermission("pets.history:write"),  pets.sendInstructions);
 
 export default router;

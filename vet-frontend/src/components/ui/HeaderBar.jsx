@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { LogOut, Settings, Menu, Package, Users, PawPrint, Pill, ShoppingCart, ChevronRight } from "lucide-react";
+import { LogOut, Settings, Menu, Package, Users, PawPrint, Pill, ShoppingCart, MessageSquare, ChevronRight } from "lucide-react";
 import logoFallback from "../../assets/logo.svg";
 import { Button } from "./button";
 import dayjs, { getSavedTimeZone } from "../../utils/dayjsConfig";
@@ -18,6 +18,8 @@ function HeaderBar({
   onShowPets,
   onShowPrescriptions,
   onShowExportPanel,
+  onShowMessages,
+  unreadMessagesCount = 0,
 }) {
   const { t } = useTranslation();
   const [timeZone, setTimeZone] = useState(getSavedTimeZone());
@@ -56,6 +58,7 @@ function HeaderBar({
     { key: "pets",          label: "Κατοικίδια", icon: PawPrint, onClick: onShowPets,         iconBg: "bg-sky-100 dark:bg-sky-900/40",          iconColor: "text-sky-500 dark:text-sky-400" },
     { key: "prescriptions", label: "Συνταγές",   icon: Pill,     onClick: onShowPrescriptions,iconBg: "bg-violet-100 dark:bg-violet-900/40",    iconColor: "text-violet-500 dark:text-violet-400" },
     { key: "export",        label: "Πωλήσεις",   icon: ShoppingCart, onClick: onShowExportPanel, iconBg: "bg-emerald-100 dark:bg-emerald-900/40",  iconColor: "text-emerald-500 dark:text-emerald-400" },
+    { key: "messages",      label: "Μηνύματα",   icon: MessageSquare, onClick: onShowMessages,   iconBg: "bg-rose-100 dark:bg-rose-900/40",        iconColor: "text-rose-500 dark:text-rose-400", badge: unreadMessagesCount },
   ];
 
   return (
@@ -150,6 +153,11 @@ function HeaderBar({
                           <Icon className={`w-4.5 h-4.5 ${item.iconColor}`} style={{width:"18px",height:"18px"}} />
                         </div>
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 flex-1">{item.label}</span>
+                        {!!item.badge && (
+                          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex-shrink-0">
+                            {item.badge}
+                          </span>
+                        )}
                         <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 flex-shrink-0" />
                       </button>
                     );

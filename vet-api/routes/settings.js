@@ -76,6 +76,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
       darkMode,
       emailConfig,
       smsConfig,
+      whatsappConfig,
       smsTemplates,
       notifications,
       registryGov,
@@ -106,6 +107,7 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
         smsConfig:     smsConfig
           ? { ...smsConfig, authToken: smsConfig.authToken ? encrypt(smsConfig.authToken) : "" }
           : {},
+        whatsappConfig: whatsappConfig || {},
         smsTemplates:  smsTemplates  || {},
         notifications: notifications || {},
         registryGov:   registryGov
@@ -149,6 +151,9 @@ router.put("/", requirePermission("settings:write"), async (req, res) => {
           ? encrypt(incomingToken)
           : existingToken;
         settings.smsConfig = { ...smsConfig, authToken: newToken };
+      }
+      if (whatsappConfig !== undefined) {
+        settings.whatsappConfig = { ...settings.whatsappConfig, ...whatsappConfig };
       }
       if (registryGov !== undefined) {
         // Ίδιο μοτίβο με το emailConfig.password: το GET δεν επιστρέφει ποτέ

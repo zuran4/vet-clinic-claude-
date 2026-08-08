@@ -15,7 +15,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { el } from "date-fns/locale";
 import { useCustomerPets } from "../../hooks/useCustomerPets";
-import { addPetHistoryEntry, getPetsByOwner, updatePet, uploadPetFile, deletePetFile } from "../../api/petsApi.js";
+import { addPetHistoryEntry, getPetsByOwner, updatePet, uploadPetFile, deletePetFile, sendPetInstructions } from "../../api/petsApi.js";
 import { getCustomerById, updateCustomer } from "../../api/customersApi.js";
 import { updateAppointmentStatus, createAppointment } from "../../api/appointmentsApi.js";
 import AppointmentDetailsForm from "./AppointmentDetailsForm.jsx";
@@ -818,21 +818,33 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     return () => { cancelled = true; };
   }, [isOpen, ownerId, appointment?.animalName]);
 
-  // Ολοκληρωμένο ραντεβού με ενεργό reminder τη στιγμή της καταχώρισης →
-  // ξαναδείξε το toggle/ημερομηνία ενεργά όταν το ξανανοίγεις
+  // Ξανανοίγοντας ένα ήδη ολοκληρωμένο ραντεβού → ξαναγεμίζει η φόρμα με
+  // ό,τι είχε καταχωρηθεί την προηγούμενη φορά (αντί να ξεκινάει κενή),
+  // ώστε να μπορείς να δεις/συμπληρώσεις κάτι που ξέχασες. Ταιριάζει την
+  // εγγραφή ιστορικού μέσω appointmentId — σταθερός δεσμός, όχι μαντεψιά
+  // βάσει ημερομηνίας.
   useEffect(() => {
-    if (!isOpen || appointment?.status !== "completed" || !fullPet?.history) return;
+    if (!isOpen || !fullPet?.history || !appointment?._id) return;
     const match = fullPet.history.find(
-      (h) => h.nextVisit && dayjs(h.date).format("YYYY-MM-DD") === appointment.date
+      (h) => h.appointmentId && String(h.appointmentId) === String(appointment._id)
     );
-    if (match) {
+    if (!match) return;
+
+    if (match.formSnapshot) {
+      const snap = match.formSnapshot;
+      if (snap.behavior !== undefined) setBehavior(snap.behavior);
+      if (snap.consultForm) setConsultForm((p) => ({ ...emptyConsultForm, ...snap.consultForm }));
+      if (snap.examForm) setExamForm((p) => ({ ...emptyExamForm, ...snap.examForm }));
+      if (snap.treatmentForm) setTreatmentForm((p) => ({ ...emptyTreatmentForm, ...snap.treatmentForm }));
+    } else if (match.nextVisit) {
+      // Παλιότερη εγγραφή, πριν υπάρξει formSnapshot — τουλάχιστον κράτα το reminder
       setTreatmentForm((p) => ({
         ...p,
         followUpReminder: true,
         reminderDate: dayjs(match.nextVisit).format("YYYY-MM-DD"),
       }));
     }
-  }, [isOpen, fullPet, appointment?.status, appointment?.date]);
+  }, [isOpen, fullPet, appointment?._id]);
 
   useEffect(() => {
     if (!isOpen || !ownerId) return;
@@ -950,6 +962,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
         reason:    consultForm.reason || "Grooming",
         result:    groomingLines.join("\n"),
         nextVisit: treatmentForm.followUpReminder && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+        appointmentId: appointment._id,
+        formSnapshot: { behavior, consultForm, examForm, treatmentForm },
       };
     }
 
@@ -1002,6 +1016,8 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
       diagnosis:   consultForm.diagnosis   || undefined,
       treatment:   consultForm.treatment   || undefined,
       nextVisit:   treatmentForm.followUpReminder && treatmentForm.reminderDate ? treatmentForm.reminderDate : undefined,
+      appointmentId: appointment._id,
+      formSnapshot: { behavior, consultForm, examForm, treatmentForm },
     };
   };
 
@@ -1010,6 +1026,16 @@ const AppointmentPreviewModal = ({ isOpen, onClose, appointment, initialTab = "o
     try {
       if (fullPet) await addPetHistoryEntry(fullPet._id, buildFinalPayload());
       await updateAppointmentStatus(appointment._id, "completed");
+
+      // Οδηγίες θεραπείας: ρητή επιλογή του κτηνιάτρου (checkbox), όχι
+      // αυτόματη ειδοποίηση — δεν σέβεται το notifications toggle του πελάτη.
+      if (fullPet && treatmentForm.sendEmailSms) {
+        sendPetInstructions(fullPet._id, {
+          diagnosis: consultForm.diagnosis || "",
+          medications: treatmentForm.medications || [],
+          instructions: treatmentForm.instructions || "",
+        }).catch((err) => console.warn("⚠️ Αποτυχία αποστολής οδηγιών:", err));
+      }
     } catch (err) {
       alert("❌ " + err.message);
       setSaving(false);

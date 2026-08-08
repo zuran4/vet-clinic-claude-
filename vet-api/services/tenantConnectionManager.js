@@ -13,6 +13,7 @@ import { reminderSchema }            from "../models/Reminder.js";
 import { supplierSchema }            from "../models/Supplier.js";
 import { settingsSchema }            from "../models/Settings.js";
 import { registrySearchHistorySchema } from "../models/RegistrySearchHistory.js";
+import { messageSchema }             from "../models/Message.js";
 import logger                        from "../utils/logger.js";
 
 // Χάρτης clinicId → mongoose.Connection (lazy, ανά αίτημα)
@@ -62,6 +63,7 @@ export function getTenantModels(clinicId) {
     Supplier:              m("Supplier",              supplierSchema),
     Settings:              m("Settings",              settingsSchema),
     RegistrySearchHistory: m("RegistrySearchHistory", registrySearchHistorySchema),
+    Message:               m("Message",               messageSchema),
   };
 }
 

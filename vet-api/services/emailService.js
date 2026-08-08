@@ -56,8 +56,10 @@ function buildTransporter(settings) {
  * @param {string}   opts.subject - θέμα
  * @param {string}   opts.html    - html περιεχόμενο
  * @param {string}  [opts.text]   - plain-text fallback (προαιρετικό)
+ * @param {string}  [opts.inReplyTo] - Message-ID στο οποίο απαντάμε (email threading)
+ * @param {string}  [opts.references] - References header (email threading)
  */
-export async function sendEmail({ settings, to, subject, html, text }) {
+export async function sendEmail({ settings, to, subject, html, text, inReplyTo, references }) {
   const { transporter, from } = buildTransporter(settings);
 
   const info = await transporter.sendMail({
@@ -66,6 +68,8 @@ export async function sendEmail({ settings, to, subject, html, text }) {
     subject,
     html,
     text: text || html.replace(/<[^>]*>/g, ""), // auto plain-text από html
+    ...(inReplyTo ? { inReplyTo } : {}),
+    ...(references ? { references } : {}),
   });
 
   logger.info(`📧 Email στάλθηκε σε ${to} — MessageId: ${info.messageId}`);

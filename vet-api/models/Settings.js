@@ -41,11 +41,25 @@ const settingsSchema = new mongoose.Schema({
     fromEmail: { type: String, default: "" },
   },
 
+  // 🔹 Παρακολούθηση IMAP για το unified "Μηνύματα" section — τελευταίο UID
+  // που έχει ήδη επεξεργαστεί το emailInboxService, ώστε κάθε poll να
+  // κατεβάζει μόνο τα νέα email (όχι όλο το ιστορικό του mailbox).
+  emailInboxState: {
+    lastUid: { type: Number, default: 0 },
+  },
+
   // 🔹 SMS config (Twilio) — το authToken αποθηκεύεται κρυπτογραφημένο,
   // ίδιο μοτίβο με το emailConfig.password.
   smsConfig: {
     accountSid: { type: String, default: "" },
     authToken:  { type: String, default: "" },
+    fromNumber: { type: String, default: "" },
+  },
+
+  // 🔹 WhatsApp config (Twilio) — ίδιος λογαριασμός Twilio με το SMS
+  // (accountSid/authToken από το smsConfig), αλλά ξεχωριστός αριθμός
+  // αποστολέα (ο registered WhatsApp sender, π.χ. το σταθερό της κλινικής).
+  whatsappConfig: {
     fromNumber: { type: String, default: "" },
   },
 

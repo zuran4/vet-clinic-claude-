@@ -29,7 +29,7 @@ function buildClient(settings) {
 // "6912345678"), αλλά το Twilio απαιτεί πάντα διεθνή μορφή E.164 (+30...)
 // — γι' αυτό η μετατροπή γίνεται εδώ, μόνο προς το Twilio, χωρίς να
 // αλλάζει πουθενά αλλού η αποθηκευμένη/εμφανιζόμενη μορφή του τηλεφώνου.
-function toE164Greek(phone) {
+export function toE164Greek(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
   if (!digits) return "";
   if (phone.trim().startsWith("+")) return `+${digits}`;

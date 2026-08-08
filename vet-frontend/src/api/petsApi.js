@@ -64,6 +64,14 @@ export const deletePetHistoryEntry = (id, entryId) =>
     method: "DELETE",
   });
 
+// 🔹 Αποστολή οδηγιών θεραπείας (email/SMS) στον ιδιοκτήτη — εφάπαξ, με
+// ρητή επιλογή του κτηνιάτρου κατά την ολοκλήρωση ραντεβού.
+export const sendPetInstructions = (id, payload) =>
+  request(`${PETS_ENDPOINT}/${id}/send-instructions`, {
+    method: "POST",
+    body: payload,
+  });
+
 // ===============================
 // 📎 Αρχεία Κατοικιδίου
 // (μόνο desktop προς το παρόν)
@@ -115,6 +123,7 @@ const petsApi = {
   addPetHistoryEntry,
   getPetHistory,
   deletePetHistoryEntry,
+  sendPetInstructions,
   uploadPetFile,
   getPetFiles,
   deletePetFile,

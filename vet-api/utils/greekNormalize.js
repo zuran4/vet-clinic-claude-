@@ -29,3 +29,17 @@ export function normalizeGreek(input) {
 
   return s.trim().replace(/\s+/g, " ");
 }
+
+// Κεφαλαία χωρίς τόνους/διαλυτικά — για SMS: το GSM-7 alphabet (160
+// χαρακτήρες/SMS) καλύπτει τα ελληνικά ΚΕΦΑΛΑΙΑ χωρίς τόνο, ενώ οποιοδήποτε
+// πεζό ή τονισμένο γράμμα αναγκάζει το δίκτυο σε UCS-2 (μόλις 70
+// χαρακτήρες/SMS) — άρα λιγότερα, φθηνότερα segments.
+// Σε αντίθεση με το normalizeGreek(), ΔΕΝ ενοποιεί ομόηχα — κρατάει το
+// κείμενο αναγνώσιμο, μόνο αφαιρεί τόνους και κάνει κεφαλαία.
+export function toUpperNoAccents(input) {
+  if (!input) return "";
+  return String(input)
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase();
+}

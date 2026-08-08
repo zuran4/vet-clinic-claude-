@@ -75,6 +75,14 @@ const petSchema = new mongoose.Schema({
       treatment: { type: String },
       nextVisit: { type: Date },
       vet: { type: String },
+      // 🔗 Συνδέει την εγγραφή με το ραντεβού που τη δημιούργησε — όταν
+      // ξανανοίγει το ίδιο ολοκληρωμένο ραντεβού, ξαναγράφει αυτή την
+      // εγγραφή αντί να δημιουργεί καινούργια (βλ. services/petService.js).
+      appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment" },
+      // 📋 Πλήρες snapshot της φόρμας (συμπτώματα, κλινική εξέταση,
+      // φάρμακα, οδηγίες κ.λπ.) — ώστε να ξαναγεμίζει η φόρμα αν ξανανοίξει
+      // το ραντεβού. Το `result` παραμένει για εμφάνιση/εκτύπωση.
+      formSnapshot: { type: mongoose.Schema.Types.Mixed },
     },
   ],
 

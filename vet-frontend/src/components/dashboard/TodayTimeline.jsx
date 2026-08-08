@@ -15,18 +15,23 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
   const isCompleted = appt.status === "completed";
   // Φόντο κάρτας = χρώμα τμήματος (στηθοσκόπιο/violet για Ιατρείο, ψαλίδι/sky
   // για Grooming) — ίδιο με το CompactAppointmentCard, ώστε dashboard και
-  // πλήρες ημερολόγιο να δείχνουν με τον ίδιο τρόπο.
+  // πλήρες ημερολόγιο να δείχνουν με τον ίδιο τρόπο. Όταν ολοκληρωθεί,
+  // κρατάει την απόχρωση του τμήματος (μπλε για Grooming, πράσινο για Ιατρείο)
+  // αντί για ένα ενιαίο χρώμα.
   const isGrooming = appt.doctor === "Grooming";
+  const completedAccent = isGrooming
+    ? { card: "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/30", icon: "text-blue-500", badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" }
+    : { card: "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30", icon: "text-emerald-500", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" };
   return (
     <li className={`flex items-center gap-3 p-3 rounded-xl border transition-colors group ${
       isCompleted
-        ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30"
+        ? completedAccent.card
         : isGrooming
         ? "bg-sky-50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-800/30"
         : "bg-violet-50 dark:bg-violet-900/10 border-violet-100 dark:border-violet-800/30"
     }`}>
       {isCompleted ? (
-        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+        <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${completedAccent.icon}`} />
       ) : (
         <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getTypeDot(appt.type)}`} />
       )}
@@ -50,7 +55,7 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           <div className="flex items-center flex-wrap gap-2 min-w-0">
             <span className={`text-xs font-medium break-words ${isCompleted ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-600 dark:text-gray-300"}`}>{appt.animalName}</span>
             {isCompleted ? (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${completedAccent.badge}`}>
                 Ολοκληρώθηκε
               </span>
             ) : (
@@ -78,7 +83,7 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
             </span>
           )}
           {isCompleted ? (
-            <span className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+            <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${completedAccent.badge}`}>
               Ολοκληρώθηκε
             </span>
           ) : (
@@ -93,14 +98,16 @@ function AppointmentItem({ appt, onClick, onConsult, onDelete }) {
           )}
         </div>
       </button>
-      <button
-        type="button"
-        onClick={onClick}
-        title="Επεξεργασία"
-        className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center flex-shrink-0 transition-colors"
-      >
-        <Pencil className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-      </button>
+      {!isCompleted && (
+        <button
+          type="button"
+          onClick={onClick}
+          title="Επεξεργασία"
+          className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-win-border/40 hover:bg-gray-200 dark:hover:bg-win-border/70 flex items-center justify-center flex-shrink-0 transition-colors"
+        >
+          <Pencil className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+        </button>
+      )}
       <button
         type="button"
         onClick={() => {
@@ -232,6 +239,7 @@ export default function TodayTimeline({ appointments = [], onNewAppointment, onE
                 <p className="text-white/70 text-xs mt-0.5 capitalize">{todayLabel}</p>
               </div>
             </div>
+            <div className="hidden sm:block w-px h-8 bg-white/25 flex-shrink-0" />
             {/* Σήμερα / Εβδομάδα / Μήνας — ανοίγουν πλήρη προβολή σε ξεχωριστό modal.
                 Το "Σήμερα" ανοίγει το ίδιο modal σε mode="today" (πλήρες ωράριο
                 ημέρας με διαθέσιμες + κλεισμένες ώρες) — όχι κάτι άλλο. */}

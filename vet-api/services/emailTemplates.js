@@ -27,6 +27,16 @@ const FOOTER_STYLE = `
   border-top: 1px solid #e2e8f0;
 `;
 
+// Χρησιμοποιείται για ελεύθερο κείμενο που γράφει ο κτηνίατρος (οδηγίες,
+// διάγνωση, ονόματα φαρμάκων) πριν μπει μέσα σε HTML email.
+function escapeHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // 🧪 Δοκιμαστικό email
 // ────────────────────────────────────────────────────────────────────────────
@@ -286,6 +296,72 @@ export function birthdayHtml({
         </p>
         <p style="color:#64748b; font-size:13px; margin-top:20px;">
           Μην ξεχάσετε να κλείσετε ραντεβού για το ετήσιο check-up!
+        </p>
+      </div>
+      <div style="${FOOTER_STYLE}">
+        ${clinicName} • Αυτόματο μήνυμα — παρακαλώ μην απαντάτε
+      </div>
+    </div>
+  </body>`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 💊 Οδηγίες θεραπείας — στέλνεται εφάπαξ, με ρητή επιλογή του κτηνιάτρου
+// κατά την ολοκλήρωση ραντεβού. Το περιεχόμενο είναι 100% δυναμικό ανά
+// επίσκεψη (φάρμακα/οδηγίες που μόλις κατέγραψε ο κτηνίατρος) — δεν υπάρχει
+// customizable template εδώ, μόνο σταθερό branding wrapper.
+// ────────────────────────────────────────────────────────────────────────────
+export function treatmentInstructionsHtml({
+  clinicName = "Κτηνιατρείο",
+  clientName = "",
+  petName = "",
+  diagnosis = "",
+  medications = [],
+  instructions = "",
+} = {}) {
+  const medsRows = medications.length > 0
+    ? medications.map(({ drug, dose, frequency, duration }, i) => {
+        const dosage = [dose, frequency, duration].filter(Boolean).map(escapeHtml).join(" · ");
+        return `
+          <tr>
+            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; font-size:14px; color:#1e293b; font-weight:600; width:40%;">${escapeHtml(drug)}</td>
+            <td style="padding:10px 12px; background:${i % 2 === 0 ? "#f1f5f9" : "#f8fafc"}; font-size:13px; color:#64748b;">${dosage || "—"}</td>
+          </tr>`;
+      }).join("")
+    : "";
+
+  return `
+  <body style="${BASE_STYLE}">
+    <div style="${CARD_STYLE}">
+      <div style="${HEADER_STYLE("#16a34a")}">
+        <h1 style="margin:0; color:#ffffff; font-size:22px;">🐾 ${clinicName}</h1>
+        <p style="margin:6px 0 0; color:#bbf7d0; font-size:14px;">Οδηγίες Θεραπείας</p>
+      </div>
+      <div style="${BODY_STYLE}">
+        <p style="font-size:16px; color:#1e293b;">
+          Αγαπητέ/ή <strong>${escapeHtml(clientName)}</strong>,
+        </p>
+        <p style="color:#475569; line-height:1.6;">
+          Ακολουθούν οι οδηγίες από τη σημερινή επίσκεψη του/της <strong>${escapeHtml(petName)}</strong>.
+        </p>
+        ${diagnosis ? `
+        <p style="color:#475569; line-height:1.6;">
+          <strong>Διάγνωση:</strong> ${escapeHtml(diagnosis)}
+        </p>` : ""}
+        ${medsRows ? `
+        <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+          <tr>
+            <td style="padding:4px 12px; font-size:11px; color:#94a3b8; text-transform:uppercase;">Φάρμακο</td>
+            <td style="padding:4px 12px; font-size:11px; color:#94a3b8; text-transform:uppercase;">Δοσολογία</td>
+          </tr>
+          ${medsRows}
+        </table>` : ""}
+        ${instructions ? `
+        <div style="margin-top:16px; padding:14px 16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+          <p style="margin:0; color:#1e293b; line-height:1.6; white-space:pre-wrap;">${escapeHtml(instructions)}</p>
+        </div>` : ""}
+        <p style="margin-top:20px; color:#64748b; font-size:13px;">
+          Αν έχετε οποιαδήποτε απορία, επικοινωνήστε μαζί μας.
         </p>
       </div>
       <div style="${FOOTER_STYLE}">

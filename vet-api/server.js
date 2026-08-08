@@ -29,9 +29,11 @@ import exportRoutes from "./routes/export.js";
 import registryRoutes from "./routes/registry/index.js";
 import userRoutes from "./routes/users/index.js";
 import clientEventsRoutes from "./routes/clientEvents.js";
+import messageRoutes from "./routes/messages.js";
 import healthRoutes from "./routes/health.js";
 import internalTenantRoutes from "./routes/internal/tenants.js";
 import internalSystemRoutes from "./routes/internal/system.js";
+import whatsappWebhookRoutes from "./routes/whatsappWebhook.js";
 import attachRequestId from "./middlewares/requestId.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import resolveTenant from "./middlewares/resolveTenant.js";
@@ -44,6 +46,7 @@ import { startPetVaccinationJob } from "./jobs/petVaccinationJob.js";
 import { startProductExpirationJob } from "./jobs/productExpirationJob.js";
 import { startPurchaseReminderJob } from "./jobs/purchaseReminderJob.js";
 import { startPetBirthdayJob } from "./jobs/petBirthdayJob.js";
+import { startEmailInboxPoller } from "./jobs/emailInboxPoller.js";
 
 // ==============================
 // 📁 Path Setup for ES Modules
@@ -176,6 +179,12 @@ app.use("/api/internal/tenants", internalTenantRoutes);
 app.use("/api/internal/system", internalSystemRoutes);
 
 // ==============================
+// 💬 WhatsApp webhook (Twilio) — δημόσιο, χωρίς JWT· γνησιότητα μέσω
+// υπογραφής Twilio (βλ. routes/whatsappWebhook.js)
+// ==============================
+app.use("/api/whatsapp/webhook", whatsappWebhookRoutes);
+
+// ==============================
 // 🔐 Auth Guard + Tenant Resolution
 // ==============================
 app.use("/api", (req, res, next) => {
@@ -224,6 +233,7 @@ app.use("/api/registry", registryRoutes);
 app.use("/api/export", exportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/client-events", clientEventsRoutes);
+app.use("/api/messages", messageRoutes);
 
 // ==============================
 // 🌐 Health Check
@@ -284,6 +294,7 @@ connectAdmin(config.mongoUri)
     startProductExpirationJob();
     startPurchaseReminderJob();
     startPetBirthdayJob();
+    startEmailInboxPoller();
     logger.info("✅ Cron jobs ξεκίνησαν.");
   })
   .catch((err) => {

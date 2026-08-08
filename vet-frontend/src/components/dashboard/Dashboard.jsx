@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import {
-  Package, Users, Pill, ShoppingCart, PawPrint, ChevronRight, LayoutGrid,
+  Package, Users, Pill, ShoppingCart, PawPrint, MessageSquare, ChevronRight, LayoutGrid,
 } from "lucide-react";
 
 import RegistryMicrochipSearchBlock from "../registry/RegistryMicrochipSearchBlock.jsx";
@@ -20,6 +20,8 @@ const Dashboard = ({
   onShowPets,
   onShowPrescriptions,
   onShowExportPanel,
+  onShowMessages,
+  unreadMessagesCount = 0,
 }) => {
   const quickActions = useMemo(
     () => [
@@ -78,8 +80,23 @@ const Dashboard = ({
         accent: "group-hover:border-emerald-200 dark:group-hover:border-emerald-700/50",
         ring: "group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/10",
       },
+      {
+        key: "messages",
+        title: "Μηνύματα",
+        description: unreadMessagesCount > 0 ? `${unreadMessagesCount} νέα μηνύματα` : "Ενιαία αλληλογραφία",
+        icon: MessageSquare,
+        onClick: onShowMessages,
+        iconBg: "bg-rose-100 dark:bg-rose-900/40",
+        iconColor: "text-rose-500 dark:text-rose-400",
+        accent: "group-hover:border-rose-200 dark:group-hover:border-rose-700/50",
+        ring: "group-hover:bg-rose-50 dark:group-hover:bg-rose-900/10",
+        badge: unreadMessagesCount,
+      },
     ],
-    [onShowProducts, onShowCustomers, onShowPets, onShowPrescriptions, onShowExportPanel, products.length, pets.length, customersCount]
+    [
+      onShowProducts, onShowCustomers, onShowPets, onShowPrescriptions, onShowExportPanel, onShowMessages,
+      products.length, pets.length, customersCount, unreadMessagesCount,
+    ]
   );
 
   return (
@@ -136,7 +153,14 @@ const Dashboard = ({
                         <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{a.description}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-200 dark:text-gray-700 group-hover:text-gray-400 dark:group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {!!a.badge && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                          {a.badge}
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-gray-200 dark:text-gray-700 group-hover:text-gray-400 dark:group-hover:text-gray-500 transition-colors" />
+                    </div>
                   </div>
                 </button>
               );

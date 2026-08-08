@@ -31,34 +31,42 @@ function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
           <div className="flex items-center justify-center gap-1 mb-1">
             <Stethoscope className="w-3 h-3 text-indigo-400" />
           </div>
-          <ul className="space-y-1">
-            {g.clinic.map((appt) => (
-              <CompactAppointmentCard
-                key={appt._id}
-                appt={appt}
-                onEdit={onEditAppointment}
-                onConsult={onConsult}
-                onDelete={onDeleteAppointment}
-              />
-            ))}
-          </ul>
+          {g.clinicEnabled ? (
+            <ul className="space-y-1">
+              {g.clinic.map((appt) => (
+                <CompactAppointmentCard
+                  key={appt._id}
+                  appt={appt}
+                  onEdit={onEditAppointment}
+                  onConsult={onConsult}
+                  onDelete={onDeleteAppointment}
+                />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-center text-[10px] text-gray-400 dark:text-gray-500 italic py-2">Κλειστό</p>
+          )}
         </div>
         {/* Grooming */}
         <div>
           <div className="flex items-center justify-center gap-1 mb-1">
             <Scissors className="w-3 h-3 text-sky-400" />
           </div>
-          <ul className="space-y-1">
-            {g.grooming.map((appt) => (
-              <CompactAppointmentCard
-                key={appt._id}
-                appt={appt}
-                onEdit={onEditAppointment}
-                onConsult={onConsult}
-                onDelete={onDeleteAppointment}
-              />
-            ))}
-          </ul>
+          {g.groomingEnabled ? (
+            <ul className="space-y-1">
+              {g.grooming.map((appt) => (
+                <CompactAppointmentCard
+                  key={appt._id}
+                  appt={appt}
+                  onEdit={onEditAppointment}
+                  onConsult={onConsult}
+                  onDelete={onDeleteAppointment}
+                />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-center text-[10px] text-gray-400 dark:text-gray-500 italic py-2">Κλειστό</p>
+          )}
         </div>
       </div>
     </div>
@@ -69,19 +77,23 @@ function DayColumn({ g, onEditAppointment, onConsult, onDeleteAppointment }) {
 // ενότητες η μία κάτω από την άλλη (όχι δίπλα-δίπλα σαν στο desktop), και τα
 // ραντεβού μέσα σε κάθε ενότητα μπαίνουν σε πλέγμα 4 ανά γραμμή — όσα δεν
 // χωράνε πάνε αυτόματα (wrap) σε επόμενη γραμμή.
-function MobileDaySection({ label, Icon, iconColor, appts, onEdit, onConsult, onDelete }) {
-  if (appts.length === 0) return null;
+function MobileDaySection({ label, Icon, iconColor, enabled, appts, onEdit, onConsult, onDelete }) {
+  if (enabled && appts.length === 0) return null;
   return (
     <div>
       <div className="flex items-center justify-center gap-1 mb-1">
         <Icon className={`w-3 h-3 ${iconColor}`} />
         <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500">{label}</span>
       </div>
-      <ul className="grid grid-cols-4 gap-1">
-        {appts.map((appt) => (
-          <CompactAppointmentCard key={appt._id} appt={appt} onEdit={onEdit} onConsult={onConsult} onDelete={onDelete} />
-        ))}
-      </ul>
+      {enabled ? (
+        <ul className="grid grid-cols-4 gap-1">
+          {appts.map((appt) => (
+            <CompactAppointmentCard key={appt._id} appt={appt} onEdit={onEdit} onConsult={onConsult} onDelete={onDelete} />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-center text-[10px] text-gray-400 dark:text-gray-500 italic py-1">Κλειστό</p>
+      )}
     </div>
   );
 }
@@ -97,6 +109,7 @@ function MobileDayBlock({ g, onEditAppointment, onConsult, onDeleteAppointment }
           label="Ιατρείο"
           Icon={Stethoscope}
           iconColor="text-indigo-400"
+          enabled={g.clinicEnabled}
           appts={g.clinic}
           onEdit={onEditAppointment}
           onConsult={onConsult}
@@ -106,6 +119,7 @@ function MobileDayBlock({ g, onEditAppointment, onConsult, onDeleteAppointment }
           label="Grooming"
           Icon={Scissors}
           iconColor="text-sky-400"
+          enabled={g.groomingEnabled}
           appts={g.grooming}
           onEdit={onEditAppointment}
           onConsult={onConsult}
@@ -119,23 +133,26 @@ function MobileDayBlock({ g, onEditAppointment, onConsult, onDeleteAppointment }
 // Προβολή "Σήμερα": πλήρες ωράριο ημέρας — δείχνει και τα κλεισμένα ραντεβού
 // ΚΑΙ τις κενές, διαθέσιμες ώρες (κλικ → δημιουργία νέου ραντεβού), βάσει του
 // πραγματικού ωραρίου λειτουργίας (clinicIntervals/groomingIntervals).
-function TodaySlotsSection({ title, Icon, iconColor, slots, slotDuration, doctor, onSlotSelect, onEdit, onConsult, onDelete }) {
-  if (!slots.length) return null;
+function TodaySlotsSection({ title, Icon, iconColor, enabled, slots, slotDuration, doctor, onSlotSelect, onEdit, onConsult, onDelete }) {
   return (
     <div className="w-full sm:flex-1 min-w-0">
       <div className="flex items-center justify-center gap-1.5 mb-2">
         <Icon className={`w-4 h-4 ${iconColor}`} />
         <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{title}</span>
       </div>
-      <CompactSlotGrid
-        slots={slots}
-        slotDuration={slotDuration}
-        doctor={doctor}
-        onSlotSelect={onSlotSelect}
-        onEdit={onEdit}
-        onConsult={onConsult}
-        onDelete={onDelete}
-      />
+      {!enabled ? (
+        <p className="text-center text-sm text-gray-400 dark:text-gray-500 italic py-8">Κλειστό σήμερα</p>
+      ) : (
+        <CompactSlotGrid
+          slots={slots}
+          slotDuration={slotDuration}
+          doctor={doctor}
+          onSlotSelect={onSlotSelect}
+          onEdit={onEdit}
+          onConsult={onConsult}
+          onDelete={onDelete}
+        />
+      )}
     </div>
   );
 }
@@ -233,16 +250,23 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
   const weekCount = countInRange(today.add(6, "day"));
   const monthCount = countInRange(today.add(29, "day"));
 
-  // Ομαδοποίηση ανά μέρα — μόνο μέρες που έχουν πράγματι ραντεβού, και μέσα
-  // σε κάθε μέρα 2 υπο-στήλες: Ιατρείο | Grooming.
+  // Ομαδοποίηση ανά μέρα — ΟΛΕΣ οι μέρες του διαστήματος (όχι μόνο όσες
+  // έχουν ραντεβού), ώστε οι κλειστές/κενές μέρες να φαίνονται κι αυτές
+  // (σαν "Κλειστό") αντί να λείπουν αθόρυβα. Μέσα σε κάθε μέρα 2
+  // υπο-στήλες: Ιατρείο | Grooming.
   const groups = [];
-  for (const appt of inRange) {
-    let g = groups[groups.length - 1];
-    if (!g || g.date !== appt.date) {
-      g = { date: appt.date, clinic: [], grooming: [] };
-      groups.push(g);
-    }
-    (appt.doctor === "Grooming" ? g.grooming : g.clinic).push(appt);
+  const daysInRange = rangeEnd.diff(today, "day") + 1;
+  for (let i = 0; i < daysInRange; i++) {
+    const d = today.add(i, "day");
+    const dateStr = d.format("YYYY-MM-DD");
+    const dayKey = d.locale("en").format("dddd").toLowerCase();
+    groups.push({
+      date: dateStr,
+      clinic: inRange.filter((a) => a.date === dateStr && a.doctor !== "Grooming"),
+      grooming: inRange.filter((a) => a.date === dateStr && a.doctor === "Grooming"),
+      clinicEnabled: !!clinicHours?.[dayKey]?.enabled,
+      groomingEnabled: !!groomingHours?.[dayKey]?.enabled,
+    });
   }
 
   // Στο μηνιαίο: οι μέρες μαζεύονται σε γραμμές ανά 7ήμερο — scroll προς τα
@@ -325,6 +349,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                 title="Ιατρείο"
                 Icon={Stethoscope}
                 iconColor="text-indigo-400"
+                enabled={!!clinicSchedule?.enabled}
                 slots={slotsIatreio}
                 slotDuration={clinicSlotDuration}
                 doctor="Ιατρείο"
@@ -337,6 +362,7 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                 title="Grooming"
                 Icon={Scissors}
                 iconColor="text-sky-400"
+                enabled={!!groomingSchedule?.enabled}
                 slots={slotsGrooming}
                 slotDuration={groomingSlotDuration}
                 doctor="Grooming"
@@ -345,11 +371,6 @@ const WeekMonthAgendaModal = ({ isOpen, mode, appointments = [], onClose, onEdit
                 onConsult={onConsult}
                 onDelete={onDeleteAppointment}
               />
-            </div>
-          ) : groups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
-              <Calendar className="w-8 h-8 text-gray-200 dark:text-gray-700" />
-              <p className="text-sm text-gray-400 dark:text-gray-500">Δεν υπάρχουν ραντεβού σε αυτό το διάστημα.</p>
             </div>
           ) : (
             <>
