@@ -2,6 +2,58 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.6.4 — 2026-08-08 (d369676)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/config/roles.js                            |   2 +
+ .../controllers/pets/history/sendInstructions.js   |  26 ++
+ vet-api/controllers/pets/index.js                  |   1 +
+ vet-api/jobs/emailInboxPoller.js                   |  38 ++
+ vet-api/models/Message.js                          |  56 +++
+ vet-api/models/Pet.js                              |   8 +
+ vet-api/models/Settings.js                         |  14 +
+ vet-api/package-lock.json                          | 520 ++++++++++++++++++++-
+ vet-api/package.json                               |   2 +
+ vet-api/routes/messages.js                         | 155 ++++++
+ vet-api/routes/pets/history.js                     |   1 +
+ vet-api/routes/settings.js                         |   5 +
+ vet-api/routes/whatsappWebhook.js                  |  80 ++++
+ vet-api/server.js                                  |  11 +
+ vet-api/services/emailInboxService.js              | 118 +++++
+ vet-api/services/emailService.js                   |   6 +-
+ vet-api/services/emailTemplates.js                 |  76 +++
+ vet-api/services/petService.js                     |  90 +++-
+ vet-api/services/smsService.js                     |   2 +-
+ vet-api/services/smsTemplates.js                   |  32 +-
+ vet-api/services/tenantConnectionManager.js        |   2 +
+ vet-api/services/whatsappService.js                |  48 ++
+ vet-api/utils/greekNormalize.js                    |  14 +
+ vet-frontend/src/api/messagesApi.js                |  16 +
+ vet-frontend/src/api/petsApi.js                    |   9 +
+ .../appointments/AppointmentPreviewModal.jsx       |  40 +-
+ .../appointments/CompactAppointmentCard.jsx        |  29 +-
+ .../src/components/dashboard/Dashboard.jsx         |  30 +-
+ .../src/components/dashboard/TodayTimeline.jsx     |  34 +-
+ .../components/dashboard/WeekMonthAgendaModal.jsx  | 129 ++---
+ vet-frontend/src/components/ui/HeaderBar.jsx       |  10 +-
+ vet-frontend/src/layout/MainLayout.jsx             |  21 +-
+ vet-frontend/src/pages/MessagesPage.jsx            | 300 ++++++++++++
+ vet-frontend/src/pages/SettingsPage.jsx            |  10 +
+ 34 files changed, 1830 insertions(+), 105 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.6.3 — 2026-08-07 (0badff3)
 
 ### Αλλαγές εμφάνισης στη φόρμα επίσκεψης
