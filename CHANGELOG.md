@@ -2,6 +2,25 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.7.0 — 2026-08-14 (8c4d179)
+
+### Υποστήριξη συνημμένων (media) σε μηνύματα WhatsApp
+
+**🔧 Τεχνική περιγραφή**
+
+- Προστέθηκε πεδίο `media` (array με `url`, `contentType`) στο μοντέλο `Message.js`
+- Νέα function `downloadTwilioMedia` στο `whatsappWebhook.js` που κατεβάζει τα media από Twilio (Basic Auth) και τα αποθηκεύει τοπικά στο φάκελο `uploads/`
+- Υποστήριξη πολλαπλών media ανά inbound WhatsApp μήνυμα μέσω `NumMedia`/`MediaUrl{i}`/`MediaContentType{i}`
+- Ενημέρωση aggregation στο `routes/messages.js` (`/conversations`) με νέο πεδίο `lastHasMedia`
+- Frontend: νέο shared util `resolveUploadUrl.js` (αντικαθιστά duplicate λογική στο `LogoUpload.jsx`)
+- `MessagesPage.jsx`: εμφάνιση εικόνων/αρχείων μέσα στη συνομιλία, καθώς και preview "📎 Εικόνα/αρχείο" στη λίστα συνομιλιών όταν δεν υπάρχει text
+
+**🌱 Σε απλά λόγια**
+
+Τώρα όταν ένας πελάτης στέλνει φωτογραφία ή αρχείο μέσω WhatsApp, εμφανίζεται κανονικά μέσα στη συνομιλία στο σύστημα, αντί να αγνοείται. Στη λίστα συνομιλιών φαίνεται σχετική ένδειξη όταν το μήνυμα περιέχει μόνο εικόνα χωρίς κείμενο.
+
+---
+
 ## v1.6.5 — 2026-08-14 (b95336a)
 
 ### Διόρθωση επικύρωσης υπογραφής Twilio webhook
