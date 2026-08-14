@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 
 import { getConversations, getThread, sendReply } from "../api/messagesApi";
 import { useRealtimeSync } from "../hooks/useRealtimeSync";
+import { resolveUploadUrl } from "../utils/resolveUploadUrl";
 
 function MessagesPage({ onClose }) {
   const [conversations, setConversations] = useState([]);
@@ -193,7 +194,7 @@ function MessagesPage({ onClose }) {
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-600 truncate mt-0.5">
                     {c.lastDirection === "outbound" ? "Εσείς: " : ""}
-                    {c.lastText}
+                    {c.lastText || (c.lastHasMedia ? "📎 Εικόνα/αρχείο" : "")}
                   </p>
                   <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">
                     {dayjs(c.lastReceivedAt).format("DD/MM HH:mm")}
@@ -257,7 +258,32 @@ function MessagesPage({ onClose }) {
                             {m.subject}
                           </p>
                         )}
-                        <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                        {m.media?.length > 0 && (
+                          <div className="flex flex-col gap-2 mb-1.5">
+                            {m.media.map((item, i) =>
+                              item.contentType?.startsWith("image/") ? (
+                                <a key={i} href={resolveUploadUrl(item.url)} target="_blank" rel="noreferrer">
+                                  <img
+                                    src={resolveUploadUrl(item.url)}
+                                    alt="Συνημμένο"
+                                    className="max-w-full max-h-64 rounded-xl border border-black/10"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  key={i}
+                                  href={resolveUploadUrl(item.url)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={`text-xs underline ${m.direction === "outbound" ? "text-white/90" : "text-indigo-600 dark:text-indigo-400"}`}
+                                >
+                                  📎 Συνημμένο αρχείο
+                                </a>
+                              )
+                            )}
+                          </div>
+                        )}
+                        {m.text && <p className="whitespace-pre-wrap break-words">{m.text}</p>}
                         <p
                           className={`text-[10px] mt-1 ${
                             m.direction === "outbound" ? "text-white/60" : "text-gray-400 dark:text-gray-500"

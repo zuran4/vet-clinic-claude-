@@ -30,6 +30,13 @@ const messageSchema = new mongoose.Schema(
     text: { type: String, default: "" },
     html: { type: String, default: "" },
 
+    // Συνημμένα (π.χ. φωτογραφίες από WhatsApp) — αποθηκεύονται τοπικά
+    // (ίδιος φάκελος με uploads/logo) και σερβίρονται από /uploads/...
+    media: {
+      type: [{ url: String, contentType: String }],
+      default: [],
+    },
+
     // Email threading headers (Message-ID/In-Reply-To) — ώστε οι απαντήσεις
     // μας να εμφανίζονται σωστά ως thread στο mail client του παραλήπτη.
     messageId: { type: String, default: "" },

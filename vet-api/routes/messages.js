@@ -22,6 +22,7 @@ router.get("/conversations", requirePermission("messages:read"), async (req, res
           customer: { $last: "$customer" },
           lastSubject: { $last: "$subject" },
           lastText: { $last: "$text" },
+          lastHasMedia: { $last: { $gt: [{ $size: { $ifNull: ["$media", []] } }, 0] } },
           lastDirection: { $last: "$direction" },
           lastReceivedAt: { $last: "$receivedAt" },
           unreadCount: {
@@ -44,6 +45,7 @@ router.get("/conversations", requirePermission("messages:read"), async (req, res
           customerName: "$customerDoc.name",
           lastSubject: 1,
           lastText: 1,
+          lastHasMedia: 1,
           lastDirection: 1,
           lastReceivedAt: 1,
           unreadCount: 1,
