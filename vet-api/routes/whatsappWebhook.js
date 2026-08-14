@@ -12,6 +12,7 @@ import logger from "../utils/logger.js";
 import { decrypt } from "../utils/crypto.js";
 import { getTenantModels } from "../services/tenantConnectionManager.js";
 import { emitChange } from "../utils/realtime.js";
+import config from "../config/index.js";
 
 const router = Router();
 
@@ -29,11 +30,16 @@ router.post("/:clinicId", async (req, res) => {
     }
 
     const twilioSignature = req.header("X-Twilio-Signature") || "";
-    const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+    // Χρησιμοποιούμε το γνωστό δημόσιο URL (config.publicBaseUrl) αντί να το
+    // ανακατασκευάζουμε από req.protocol/req.get("host") — αυτά εξαρτώνται
+    // από το πώς προωθεί τα headers το proxy chain (nginx/Cloudflare) και
+    // μπορεί να μην ταιριάζουν ακριβώς με το URL που υπολόγισε η υπογραφή
+    // του Twilio, οδηγώντας σε λάθος απόρριψη γνήσιων αιτημάτων.
+    const fullUrl = `${config.publicBaseUrl}${req.originalUrl}`;
 
     const isValid = twilio.validateRequest(authToken, twilioSignature, fullUrl, req.body);
     if (!isValid) {
-      logger.warn(`⚠️ [${clinicId}] WhatsApp webhook: μη έγκυρη υπογραφή Twilio — απορρίφθηκε.`);
+      logger.warn(`⚠️ [${clinicId}] WhatsApp webhook: μη έγκυρη υπογραφή Twilio — απορρίφθηκε. url=${fullUrl}`);
       return res.status(403).send();
     }
 
