@@ -2,6 +2,23 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.8.0 — 2026-09-01 (aa104c1)
+
+### Badge εικονιδίου για μη διαβασμένα μηνύματα
+
+**🔧 Τεχνική περιγραφή**
+
+- Το `sendPushToClinic` (pushService.js) δέχεται πλέον και το `Message` model και υπολογίζει `badgeCount` με βάση τα μη διαβασμένα inbound μηνύματα (`countDocuments`)
+- Το `badgeCount` προστίθεται στο payload των push notifications
+- Το `whatsappWebhook.js` και `emailInboxService.js` περνούν πλέον το `Message` model στο `sendPushToClinic`
+- Το service worker (`sw.js`) στο push event handler καλεί `navigator.setAppBadge()`/`clearAppBadge()` για ενημέρωση του badge στο εικονίδιο, λειτουργικό ακόμα κι όταν η εφαρμογή είναι κλειστή
+
+**🌱 Σε απλά λόγια**
+
+Τώρα η εφαρμογή δείχνει έναν αριθμό (badge) πάνω στο εικονίδιό της, δείχνοντας πόσα μηνύματα (WhatsApp ή email) δεν έχετε διαβάσει ακόμα — ακριβώς όπως συμβαίνει με τα unread μηνύματα σε άλλες εφαρμογές. Λειτουργεί ακόμα κι αν η εφαρμογή είναι κλειστή.
+
+---
+
 ## v1.7.1 — 2026-09-01 (a1935a0)
 
 ### Ενημέρωση κώδικα
