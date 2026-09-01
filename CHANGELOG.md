@@ -2,6 +2,40 @@
 
 Αυτόματο ιστορικό αλλαγών του project. Κάθε entry γράφεται αυτόματα μετά από push στο main.
 
+## v1.7.1 — 2026-09-01 (a1935a0)
+
+### Ενημέρωση κώδικα
+
+**🔧 Τεχνική περιγραφή**
+
+Αλλαγές στα εξής αρχεία (η αυτόματη περιγραφή του AI απέτυχε):
+
+```
+vet-api/config/index.js                        | 11 +++
+ vet-api/jobs/emailInboxPoller.js               |  4 +-
+ vet-api/models/PushSubscription.js             | 21 ++++++
+ vet-api/package-lock.json                      | 98 +++++++++++++++++++++++++-
+ vet-api/package.json                           |  1 +
+ vet-api/routes/push.js                         | 49 +++++++++++++
+ vet-api/routes/whatsappWebhook.js              |  9 ++-
+ vet-api/server.js                              |  2 +
+ vet-api/services/emailInboxService.js          | 11 ++-
+ vet-api/services/pushService.js                | 50 +++++++++++++
+ vet-api/services/tenantConnectionManager.js    |  2 +
+ vet-frontend/public/sw.js                      | 37 ++++++++++
+ vet-frontend/src/api/pushApi.js                | 10 +++
+ vet-frontend/src/hooks/usePushNotifications.js | 92 ++++++++++++++++++++++++
+ vet-frontend/src/layout/MainLayout.jsx         | 11 +++
+ vet-frontend/src/pages/MessagesPage.jsx        | 43 ++++++++++-
+ 16 files changed, 444 insertions(+), 7 deletions(-)
+```
+
+**🌱 Σε απλά λόγια**
+
+Έγιναν αλλαγές στον κώδικα, αλλά η αυτόματη περιγραφή δεν ήταν διαθέσιμη αυτή τη φορά. Δες το τεχνικό μέρος για τη λίστα αρχείων που άλλαξαν.
+
+---
+
 ## v1.7.0 — 2026-08-14 (8c4d179)
 
 ### Υποστήριξη συνημμένων (media) σε μηνύματα WhatsApp
