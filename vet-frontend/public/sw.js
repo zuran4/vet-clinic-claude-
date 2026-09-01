@@ -32,7 +32,17 @@ self.addEventListener("push", (event) => {
     data: { url: data.url || "/" },
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      await self.registration.showNotification(title, options);
+      // Ενημερώνει το κόκκινο badge στο εικονίδιο ακόμα κι όταν η εφαρμογή
+      // είναι κλειστή — δεν βασίζεται στο να είναι ανοιχτή η σελίδα.
+      if ("setAppBadge" in navigator && typeof data.badgeCount === "number") {
+        if (data.badgeCount > 0) navigator.setAppBadge(data.badgeCount).catch(() => {});
+        else navigator.clearAppBadge?.().catch(() => {});
+      }
+    })()
+  );
 });
 
 // 🔹 Κλικ πάνω στην ειδοποίηση — ανοίγει (ή επαναφέρνει σε πρώτο πλάνο) το Vetty.

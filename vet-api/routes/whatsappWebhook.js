@@ -126,7 +126,7 @@ router.post("/:clinicId", async (req, res) => {
       emitChange("messages");
       logger.info(`💬 [${clinicId}] Νέο WhatsApp μήνυμα από ${fromRaw}`);
 
-      await sendPushToClinic(clinicId, { PushSubscription }, {
+      await sendPushToClinic(clinicId, { PushSubscription, Message }, {
         title: `💬 ${profileName || fromRaw}`,
         body: body || (media.length > 0 ? "📎 Εικόνα/αρχείο" : "Νέο μήνυμα WhatsApp"),
         tag: "vetty-messages",

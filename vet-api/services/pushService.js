@@ -23,13 +23,20 @@ function ensureConfigured() {
  * υπηρεσία push (browser) λέει ότι δεν ισχύουν πια (410/404 — π.χ. ο χρήστης
  * αποεγκατέστησε την εφαρμογή ή απενεργοποίησε τις ειδοποιήσεις).
  */
-export async function sendPushToClinic(clinicId, { PushSubscription }, payload) {
+export async function sendPushToClinic(clinicId, { PushSubscription, Message }, payload) {
   if (!ensureConfigured()) return;
 
   const subs = await PushSubscription.find();
   if (subs.length === 0) return;
 
-  const body = JSON.stringify(payload);
+  // Το badgeCount ενημερώνει το κόκκινο badge στο εικονίδιο ΜΕΣΑ από το
+  // service worker (navigator.setAppBadge) — δουλεύει και όσο η εφαρμογή
+  // είναι κλειστή, σε αντίθεση με το να το ενημερώνει μόνο η ανοιχτή σελίδα.
+  const badgeCount = Message
+    ? await Message.countDocuments({ direction: "inbound", read: false })
+    : undefined;
+
+  const body = JSON.stringify({ ...payload, badgeCount });
 
   await Promise.all(
     subs.map(async (sub) => {

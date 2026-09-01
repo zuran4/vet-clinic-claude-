@@ -96,7 +96,7 @@ export async function pollClinicInbox(clinicId, { Settings, Message, Customer, P
           saved++;
 
           if (PushSubscription) {
-            await sendPushToClinic(clinicId, { PushSubscription }, {
+            await sendPushToClinic(clinicId, { PushSubscription, Message }, {
               title: `📧 ${fromName || fromAddr}`,
               body: parsed.subject || parsed.text?.slice(0, 100) || "Νέο email",
               tag: "vetty-messages",
