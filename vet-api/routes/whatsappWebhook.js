@@ -17,6 +17,7 @@ import logger from "../utils/logger.js";
 import { decrypt } from "../utils/crypto.js";
 import { getTenantModels } from "../services/tenantConnectionManager.js";
 import { emitChange } from "../utils/realtime.js";
+import { sendPushToClinic } from "../services/pushService.js";
 import config from "../config/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,7 +62,7 @@ router.post("/:clinicId", async (req, res) => {
   const { clinicId } = req.params;
 
   try {
-    const { Settings, Message, Customer } = getTenantModels(clinicId);
+    const { Settings, Message, Customer, PushSubscription } = getTenantModels(clinicId);
     const settings = await Settings.findOne();
     const authToken = settings?.smsConfig?.authToken ? decrypt(settings.smsConfig.authToken) : "";
 
@@ -124,6 +125,12 @@ router.post("/:clinicId", async (req, res) => {
 
       emitChange("messages");
       logger.info(`💬 [${clinicId}] Νέο WhatsApp μήνυμα από ${fromRaw}`);
+
+      await sendPushToClinic(clinicId, { PushSubscription }, {
+        title: `💬 ${profileName || fromRaw}`,
+        body: body || (media.length > 0 ? "📎 Εικόνα/αρχείο" : "Νέο μήνυμα WhatsApp"),
+        tag: "vetty-messages",
+      });
     }
 
     res.set("Content-Type", "text/xml");

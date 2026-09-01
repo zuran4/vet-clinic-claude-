@@ -133,6 +133,11 @@ const petBookletBaseUrl = optionalEnv(
 const petUsername = optionalEnv("PET_USERNAME", "");
 const petPassword = optionalEnv("PET_PASSWORD", "");
 
+// Web Push (ειδοποιήσεις στο κινητό όταν έρχεται νέο μήνυμα) — κενό = σιωπηλά off.
+const vapidPublicKey = optionalEnv("VAPID_PUBLIC_KEY", "");
+const vapidPrivateKey = optionalEnv("VAPID_PRIVATE_KEY", "");
+const vapidSubject = optionalEnv("VAPID_SUBJECT", "mailto:support@vetty.gr");
+
 // -----------------------------------------------
 // Export unified config (do not expose secrets in debug)
 // -----------------------------------------------
@@ -169,6 +174,12 @@ const config = Object.freeze({
     baseUrl: petBookletBaseUrl,
     username: petUsername,
     password: petPassword,
+  },
+
+  vapid: {
+    publicKey: vapidPublicKey,
+    privateKey: vapidPrivateKey,
+    subject: vapidSubject,
   },
 
   debug: {

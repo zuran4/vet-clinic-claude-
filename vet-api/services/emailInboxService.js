@@ -14,6 +14,7 @@ import { simpleParser } from "mailparser";
 import logger from "../utils/logger.js";
 import { decrypt } from "../utils/crypto.js";
 import { emitChange } from "../utils/realtime.js";
+import { sendPushToClinic } from "./pushService.js";
 
 const IMAP_PORT = 993;
 
@@ -25,7 +26,7 @@ function escapeRegex(str) {
  * Ελέγχει το inbox μιας κλινικής για νέα email (μόνο αυτά που ήρθαν μετά
  * το τελευταίο poll — παρακολουθούμε το IMAP UID στο Settings.emailInboxState).
  */
-export async function pollClinicInbox(clinicId, { Settings, Message, Customer }) {
+export async function pollClinicInbox(clinicId, { Settings, Message, Customer, PushSubscription }) {
   const settings = await Settings.findOne();
   const cfg = settings?.emailConfig;
 
@@ -93,6 +94,14 @@ export async function pollClinicInbox(clinicId, { Settings, Message, Customer })
             receivedAt: parsed.date || new Date(),
           });
           saved++;
+
+          if (PushSubscription) {
+            await sendPushToClinic(clinicId, { PushSubscription }, {
+              title: `📧 ${fromName || fromAddr}`,
+              body: parsed.subject || parsed.text?.slice(0, 100) || "Νέο email",
+              tag: "vetty-messages",
+            });
+          }
         } catch (msgErr) {
           if (msgErr.code !== 11000) {
             logger.warn(`⚠️ [${clinicId}] Αποτυχία επεξεργασίας εισερχόμενου email: ${msgErr.message}`);

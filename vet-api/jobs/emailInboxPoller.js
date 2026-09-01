@@ -12,8 +12,8 @@ async function runPollAllTenants() {
 
     for (const tenant of tenants) {
       try {
-        const { Settings, Message, Customer } = getTenantModels(tenant.clinicId);
-        const result = await pollClinicInbox(tenant.clinicId, { Settings, Message, Customer });
+        const { Settings, Message, Customer, PushSubscription } = getTenantModels(tenant.clinicId);
+        const result = await pollClinicInbox(tenant.clinicId, { Settings, Message, Customer, PushSubscription });
 
         if (result.skipped) continue;
         if (result.saved > 0) {

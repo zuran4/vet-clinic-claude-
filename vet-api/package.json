@@ -40,6 +40,7 @@
     "playwright": "^1.56.1",
     "socket.io": "^4.8.1",
     "twilio": "^5.10.3",
+    "web-push": "^3.6.7",
     "winston": "^3.18.3"
   },
   "devDependencies": {

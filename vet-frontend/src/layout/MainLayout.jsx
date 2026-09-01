@@ -131,6 +131,17 @@ function MainLayout({
     loadUnreadMessagesCount();
   }, [loadPetsCount, loadCustomersCount, loadUnreadMessagesCount]);
 
+  // 🔹 Badge στο εικονίδιο της εφαρμογής (σαν Viber) — υποστηρίζεται σε
+  // Android/desktop Chrome όταν το Vetty είναι εγκατεστημένο σαν εφαρμογή.
+  useEffect(() => {
+    if (!("setAppBadge" in navigator)) return;
+    if (unreadMessagesCount > 0) {
+      navigator.setAppBadge(unreadMessagesCount).catch(() => {});
+    } else {
+      navigator.clearAppBadge?.().catch(() => {});
+    }
+  }, [unreadMessagesCount]);
+
   // 🔹 Φόρτωση settings από backend
   const loadSettings = useCallback(async () => {
     try {

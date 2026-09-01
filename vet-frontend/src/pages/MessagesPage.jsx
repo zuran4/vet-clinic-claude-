@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MessageSquare, ArrowLeft, ChevronLeft, Send, Mail, MessageCircle } from "lucide-react";
+import { MessageSquare, ArrowLeft, ChevronLeft, Send, Mail, MessageCircle, Bell, BellOff } from "lucide-react";
 
 const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle };
 const CHANNEL_COLOR = { email: "text-indigo-500", whatsapp: "text-emerald-500" };
@@ -13,8 +13,10 @@ import dayjs from "dayjs";
 import { getConversations, getThread, sendReply } from "../api/messagesApi";
 import { useRealtimeSync } from "../hooks/useRealtimeSync";
 import { resolveUploadUrl } from "../utils/resolveUploadUrl";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 function MessagesPage({ onClose }) {
+  const push = usePushNotifications();
   const [conversations, setConversations] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -110,6 +112,45 @@ function MessagesPage({ onClose }) {
           </button>
         </div>
       </div>
+
+      {/* Ειδοποιήσεις κινητού */}
+      {push.supported && !push.subscribed && (
+        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Bell className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+            <p className="text-sm text-indigo-700 dark:text-indigo-300 truncate">
+              Θες ειδοποίηση στο κινητό σου όταν έρχεται νέο μήνυμα;
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={push.enable}
+            disabled={push.busy}
+            className="flex-shrink-0 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-medium px-3.5 py-1.5 rounded-xl transition-colors"
+          >
+            {push.busy ? "..." : "Ενεργοποίηση"}
+          </button>
+        </div>
+      )}
+      {push.supported && push.subscribed && (
+        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/15 border border-emerald-100 dark:border-emerald-800/40">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Bell className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            <p className="text-sm text-emerald-700 dark:text-emerald-400">Οι ειδοποιήσεις είναι ενεργές σε αυτή τη συσκευή.</p>
+          </div>
+          <button
+            type="button"
+            onClick={push.disable}
+            disabled={push.busy}
+            className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <BellOff className="w-3.5 h-3.5" /> Απενεργοποίηση
+          </button>
+        </div>
+      )}
+      {push.error && (
+        <p className="text-xs text-red-500 mb-3 px-1">{push.error}</p>
+      )}
 
       {/* Φίλτρο καναλιού */}
       <div className="flex items-center gap-2 mb-4">

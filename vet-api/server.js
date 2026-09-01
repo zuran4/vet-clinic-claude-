@@ -30,6 +30,7 @@ import registryRoutes from "./routes/registry/index.js";
 import userRoutes from "./routes/users/index.js";
 import clientEventsRoutes from "./routes/clientEvents.js";
 import messageRoutes from "./routes/messages.js";
+import pushRoutes from "./routes/push.js";
 import healthRoutes from "./routes/health.js";
 import internalTenantRoutes from "./routes/internal/tenants.js";
 import internalSystemRoutes from "./routes/internal/system.js";
@@ -234,6 +235,7 @@ app.use("/api/export", exportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/client-events", clientEventsRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/push", pushRoutes);
 
 // ==============================
 // 🌐 Health Check
