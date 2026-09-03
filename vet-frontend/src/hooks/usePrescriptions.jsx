@@ -32,6 +32,7 @@ export function usePrescriptions() {
     } catch (err) {
       console.error("❌ Σφάλμα αποθήκευσης συνταγής:", err);
       setError(err.message || "Αποτυχία αποθήκευσης συνταγής");
+      throw err; // ο caller (η φόρμα) πρέπει να ξέρει ότι απέτυχε, ώστε να ΜΗΝ κλείσει σαν να πέτυχε
     }
   };
 

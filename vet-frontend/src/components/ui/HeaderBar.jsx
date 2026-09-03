@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { LogOut, Settings, Menu, Package, Users, PawPrint, Pill, ShoppingCart, MessageSquare, ChevronRight } from "lucide-react";
 import logoFallback from "../../assets/logo.svg";
 import { Button } from "./button";
+import { resolveUploadUrl } from "../../utils/resolveUploadUrl";
 import dayjs, { getSavedTimeZone } from "../../utils/dayjsConfig";
 import "dayjs/locale/el";
 import { useTranslation } from "react-i18next";
@@ -71,11 +72,11 @@ function HeaderBar({
           className="flex items-center gap-2 sm:gap-3 hover:opacity-75 transition-opacity bg-transparent border-0 p-0 cursor-pointer min-w-0"
         >
           <img
-            src={logo || logoFallback}
+            src={logo ? resolveUploadUrl(logo) : logoFallback}
             alt={clinicName || "Κτηνιατρείο"}
             className="w-9 h-9 object-contain rounded-xl flex-shrink-0"
           />
-          <span className="text-lg sm:text-xl font-bold text-indigo-600 tracking-tight truncate">
+          <span className="text-[17px] sm:text-[19px] font-bold text-indigo-600 tracking-tight leading-tight break-words text-left">
             {clinicName || "Vet Clinic"}
           </span>
         </button>
@@ -132,7 +133,7 @@ function HeaderBar({
               <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-win-surface border border-gray-100 dark:border-win-border rounded-2xl shadow-xl z-50 overflow-hidden">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 flex items-center gap-2.5">
-                  <img src={logo || logoFallback} alt="" className="w-7 h-7 rounded-lg object-contain bg-white/20 p-0.5 flex-shrink-0" />
+                  <img src={logo ? resolveUploadUrl(logo) : logoFallback} alt="" className="w-7 h-7 rounded-lg object-contain bg-white/20 p-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-white font-bold text-sm leading-tight">{clinicName || "Vet Clinic"}</p>
                     <p className="text-white/60 text-xs">Πλοήγηση</p>

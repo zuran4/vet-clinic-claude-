@@ -92,12 +92,11 @@ const InlinePrescriptions = ({ petId, pet, customer }) => {
   useRealtimeSync({ prescriptions: fetchPrescriptions });
 
   const handleSubmit = async (prescriptionData) => {
-    try {
-      await request("/prescriptions", { method: "POST", body: prescriptionData });
-      await fetchPrescriptions();
-    } catch (err) {
-      alert("❌ " + (err.message || "Αποτυχία αποθήκευσης"));
-    }
+    // Δεν κάνουμε catch εδώ -- το PrescriptionFormModal περιμένει να πετάξει
+    // (throw) σε αποτυχία, ώστε να δείξει το σφάλμα inline αντί να κλείσει
+    // σαν να πέτυχε η αποθήκευση.
+    await request("/prescriptions", { method: "POST", body: prescriptionData });
+    await fetchPrescriptions();
   };
 
   if (!petId) return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   FilePlus, X, Save, PawPrint, Pill, FlaskConical,
-  StickyNote, Stethoscope, Search, User,
+  StickyNote, Stethoscope, Search, User, AlertTriangle,
 } from "lucide-react";
 import request from "@/api/apiClient.js";
 import { useModalScrollLock } from "../../hooks/useModalScrollLock.js";
@@ -217,6 +217,8 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
   const [form, setForm] = useState({ medicines: [], dosage: "", notes: "", doctor: "" });
   const [doctors, setDoctors] = useState([]);
   const [customDoctor, setCustomDoctor] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const scrollRef = useModalScrollLock(isOpen);
 
   // Φόρτωση γιατρών από settings
@@ -254,15 +256,34 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
     }
   }, [initialData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    onSubmit({
-      ...form,
-      clientName: selectedCustomer?.name || "",
-      animalName: selectedPet?.name || "",
-      animalId: selectedPet?._id || null,
-    });
+
+    if (!selectedPet) {
+      setSaveError("Επίλεξε κατοικίδιο πριν την αποθήκευση.");
+      return;
+    }
+
+    setSaving(true);
+    setSaveError("");
+    try {
+      await onSubmit({
+        ...form,
+        clientName: selectedCustomer?.name || "",
+        animalName: selectedPet.name || "",
+        animalId: selectedPet._id,
+      });
+      onClose();
+    } catch (err) {
+      setSaveError(err?.message || "Αποτυχία αποθήκευσης συνταγής.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClose = () => {
+    setSaveError("");
     onClose();
   };
 
@@ -270,7 +291,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style={{ touchAction: "none" }}>
-      <div className="absolute inset-0" onClick={onClose} />
+      <div className="absolute inset-0" onClick={handleClose} />
       <div className="relative w-full max-w-[560px] shadow-2xl z-10 rounded-2xl overflow-visible">
 
         {/* Header */}
@@ -286,7 +307,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
               <p className="text-white/70 text-xs mt-0.5">Συμπλήρωσε τα στοιχεία</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+          <button onClick={handleClose} className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -312,7 +333,7 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
                 />
               </div>
               <div>
-                <label className={LABEL}>Κατοικίδιο</label>
+                <label className={LABEL}>Κατοικίδιο *</label>
                 <PetSelector
                   customerId={selectedCustomer?._id}
                   selectedPet={selectedPet}
@@ -400,14 +421,21 @@ const PrescriptionFormModal = ({ isOpen, onClose, onSubmit, initialData, initial
             </div>
           </div>
 
+          {saveError && (
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 rounded-2xl px-4 py-2.5">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              {saveError}
+            </div>
+          )}
+
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 dark:border-win-border-light text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-win-elevated transition-colors">
+            <button type="button" onClick={handleClose} disabled={saving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-gray-200 dark:border-win-border-light text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-win-elevated transition-colors disabled:opacity-50">
               <X className="w-4 h-4" /> Ακύρωση
             </button>
-            <button type="submit"
-              className="flex items-center gap-1.5 px-5 py-2 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors">
-              <Save className="w-4 h-4" /> Αποθήκευση
+            <button type="submit" disabled={saving}
+              className="flex items-center gap-1.5 px-5 py-2 rounded-2xl bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors">
+              <Save className="w-4 h-4" /> {saving ? "Αποθήκευση..." : "Αποθήκευση"}
             </button>
           </div>
         </form>

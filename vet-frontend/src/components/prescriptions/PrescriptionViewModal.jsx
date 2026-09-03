@@ -38,21 +38,23 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
 
     const medsHtml = medicines.length > 0
       ? `<div class="section">
-          <div class="section-title">💊 Φάρμακα</div>
+          <div class="section-title">Φάρμακα</div>
+          <div class="med-list">
           ${medicines.map((m, i) => `
             <div class="med-item">
-              <span class="med-num">${i + 1}</span>
+              <span class="med-num">${i + 1}.</span>
               <span class="med-name">${m}</span>
             </div>`).join("")}
+          </div>
         </div>`
       : "";
 
     const dosageHtml = prescription.dosage
-      ? `<div class="section"><div class="section-title">📋 Δοσολογία</div><div class="note">${prescription.dosage}</div></div>`
+      ? `<div class="section"><div class="section-title">Δοσολογία</div><div class="note">${prescription.dosage}</div></div>`
       : "";
 
     const notesHtml = (prescription.instructions || prescription.notes)
-      ? `<div class="section"><div class="section-title">📝 Οδηγίες / Σημειώσεις</div>
+      ? `<div class="section"><div class="section-title">Οδηγίες / Σημειώσεις</div>
           ${prescription.instructions ? `<div class="note">${prescription.instructions}</div>` : ""}
           ${prescription.notes ? `<div class="note" style="margin-top:6px">${prescription.notes}</div>` : ""}
         </div>`
@@ -63,41 +65,48 @@ const PrescriptionViewModal = ({ prescription, onClose }) => {
 <meta charset="UTF-8"/>
 <title>${refNo} — Κτηνιατρική Συνταγή</title>
 <style>
-@page{size:A5;margin:10mm 14mm}
+@page{size:A5;margin:14mm 16mm}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;background:#fff;font-size:12px;padding:10mm 14mm;padding-top:28mm}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#111827;background:#fff;font-size:12.5px;line-height:1.5;padding:14mm 16mm;padding-top:32mm}
 .close-btn{position:fixed;top:14px;right:14px;z-index:9999;width:78px;height:78px;border-radius:50%;background:#fff;border:2px solid #e5e7eb;box-shadow:0 3px 12px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:39px;color:#6b7280;line-height:1;padding:0}
 .close-btn:hover{background:#f3f4f6;color:#111827}
-.header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:12px;margin-bottom:6px}
-.logo-wrap{display:flex;align-items:center;gap:10px}
-.logo{width:38px;height:38px;border-radius:50%;object-fit:contain}
-.logo-fallback{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
-.brand-name{font-size:15px;font-weight:800;color:#1f2937;letter-spacing:-.2px}
-.brand-sub{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+
+/* ── Letterhead ── */
+.header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:1.5px solid #111827;margin-bottom:20px}
+.logo-wrap{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:8px;object-fit:contain}
+.logo-fallback{width:44px;height:44px;border-radius:8px;background:#4c1d95;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.brand-name{font-size:17px;font-weight:700;color:#111827;letter-spacing:-.3px}
+.brand-sub{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
 .doc-meta{text-align:right}
-.doc-badge{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7c3aed;background:#f5f3ff;border:1px solid #e9d5ff;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:4px}
-.doc-title{font-size:16px;font-weight:800;color:#6d28d9;letter-spacing:-.2px}
-.doc-ref{font-size:9px;color:#9ca3af;font-family:monospace;margin-top:2px}
-.doc-date{font-size:10px;font-weight:600;color:#374151;margin-top:3px}
-.rule{height:3px;background:linear-gradient(90deg,#7c3aed 0%,#a855f7 60%,#fff 100%);border-radius:2px;margin-bottom:14px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
-.info-box{border:1px solid #e9d5ff;border-left:3px solid #7c3aed;border-radius:6px;padding:7px 10px;background:#faf5ff}
-.info-label{font-size:8px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
-.info-value{font-size:12.5px;font-weight:700;color:#1f2937}
-.section{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:10px;overflow:hidden}
-.section-title{background:#f5f3ff;border-bottom:1px solid #e9d5ff;padding:6px 12px;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6d28d9}
-.med-item{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid #f3f4f6}
+.doc-eyebrow{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#6b7280;margin-bottom:3px}
+.doc-title{font-size:19px;font-weight:700;color:#4c1d95;letter-spacing:-.3px}
+.doc-ref{font-size:9.5px;color:#6b7280;font-family:'Courier New',monospace;margin-top:5px}
+.doc-date{font-size:10px;color:#374151;margin-top:2px}
+
+/* ── Patient / prescriber block -- καθαρός πίνακας, όχι έγχρωμα chips ── */
+.info-table{width:100%;border-collapse:collapse;margin-bottom:22px}
+.info-table td{padding:9px 0;border-bottom:1px solid #e5e7eb;vertical-align:top}
+.info-table .lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;padding-right:10px;white-space:nowrap;width:1%}
+.info-table .val{font-size:13px;font-weight:600;color:#111827;padding-right:24px}
+
+/* ── Sections ── */
+.section{margin-bottom:16px}
+.section-title{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#4c1d95;padding-bottom:5px;border-bottom:1px solid #ddd6fe;margin-bottom:8px}
+.med-list{}
+.med-item{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6}
 .med-item:last-child{border-bottom:none}
-.med-item:nth-child(even){background:#faf5ff}
-.med-num{width:20px;height:20px;border-radius:50%;background:#7c3aed;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.med-name{font-size:12px;font-weight:600;color:#1f2937}
-.note{padding:8px 12px;font-size:11.5px;color:#374151;line-height:1.65}
-.footer{margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.med-num{font-size:12px;font-weight:700;color:#6b7280;min-width:16px}
+.med-name{font-size:12.5px;font-weight:600;color:#111827}
+.note{font-size:12px;color:#374151;line-height:1.65}
+
+/* ── Footer ── */
+.footer{margin-top:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:14px;border-top:1px solid #e5e7eb}
 .footer-left{font-size:9px;color:#9ca3af;line-height:1.8}
-.sig-box{text-align:center;min-width:90px}
-.sig-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:22px}
-.sig-line{border-top:1px solid #d1d5db;padding-top:4px;font-size:8px;color:#9ca3af}
-@media print{body{padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}.close-btn{display:none}}
+.sig-box{text-align:center;min-width:100px}
+.sig-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:24px}
+.sig-line{border-top:1px solid #9ca3af;padding-top:4px;font-size:8px;color:#9ca3af}
+@media print{body{padding:0 16mm;padding-top:18mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}.close-btn{display:none}}
 </style></head>
 <body>
 <button class="close-btn" onclick="window.close()" title="Κλείσιμο">&#x2715;</button>
@@ -107,19 +116,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;background:#fff;font-
     <div><div class="brand-name">Κτηνιατρείο</div><div class="brand-sub">Σύστημα Διαχείρισης</div></div>
   </div>
   <div class="doc-meta">
-    <div class="doc-badge">Επίσημο Έγγραφο</div>
+    <div class="doc-eyebrow">Επίσημο Έγγραφο</div>
     <div class="doc-title">Κτηνιατρική Συνταγή</div>
     <div class="doc-ref">${refNo}</div>
     <div class="doc-date">${prescription.date ? dayjs(prescription.date).format("DD/MM/YYYY") : "—"}</div>
   </div>
 </div>
-<div class="rule"></div>
-<div class="info-grid">
-  <div class="info-box"><div class="info-label">Ιδιοκτήτης</div><div class="info-value">${prescription.clientName || "—"}</div></div>
-  <div class="info-box"><div class="info-label">Κατοικίδιο</div><div class="info-value">${animalName}</div></div>
-  <div class="info-box"><div class="info-label">Κτηνίατρος</div><div class="info-value">${prescription.doctor || "—"}</div></div>
-  <div class="info-box"><div class="info-label">Αρ. Συνταγής</div><div class="info-value" style="font-family:monospace;font-size:11px">${refNo}</div></div>
-</div>
+<table class="info-table">
+  <tr>
+    <td class="lbl">Ιδιοκτήτης</td><td class="val">${prescription.clientName || "—"}</td>
+    <td class="lbl">Κατοικίδιο</td><td class="val">${animalName}</td>
+  </tr>
+  <tr>
+    <td class="lbl">Κτηνίατρος</td><td class="val">${prescription.doctor || "—"}</td>
+    <td class="lbl">Αρ. Συνταγής</td><td class="val" style="font-family:'Courier New',monospace;font-size:11px">${refNo}</td>
+  </tr>
+</table>
 ${medsHtml}${dosageHtml}${notesHtml}
 <div class="footer">
   <div class="footer-left">
